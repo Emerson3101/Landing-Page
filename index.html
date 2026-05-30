@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portafolio Profesional de Emerson Salvador Plancarte Cerecedo - Ingeniero en Sistemas Computacionales y Especialista en Sistemas Embebidos y Desarrollo de Software.">
+  <title>Emerson Plancarte | Ingeniero de Software y Sistemas Embebidos</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Ambient backgrounds -->
+  <div class="bg-grid-overlay"></div>
+  <div class="bg-ambient-glow"></div>
+
+  <!-- Header Navigation -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="#" class="logo">
+        <i class="fa-solid fa-microchip"></i>
+        <span>EP.Tech</span>
+      </a>
+      
+      <nav class="nav-menu" id="navMenu">
+        <a href="#hero" class="nav-link active" data-translate-key="nav_home">Inicio</a>
+        <a href="#about" class="nav-link" data-translate-key="nav_about">Acerca de mí</a>
+        <a href="#experience" class="nav-link" data-translate-key="nav_experience">Trayectoria</a>
+        <a href="#portfolio" class="nav-link" data-translate-key="nav_portfolio">Proyectos</a>
+        <a href="#contact" class="nav-link" data-translate-key="nav_contact">Contacto</a>
+      </nav>
+      
+      <div class="nav-actions">
+        <button class="lang-btn" id="langToggle" title="Cambiar Idioma">EN</button>
+        <button class="theme-btn" id="themeToggle" title="Cambiar Tema">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+        <div class="menu-toggle" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-info reveal">
+          <div class="hero-tag">
+            <i class="fa-solid fa-bolt"></i>
+            <span data-translate-key="hero_tag">Sistemas Embebidos y Software</span>
+          </div>
+          <h1 class="hero-title">
+            <span data-translate-key="hero_title_1">Diseñando Soluciones</span><br>
+            <span class="accent-text" data-translate-key="hero_title_2">Tecnológicas de Calidad</span>
+          </h1>
+          <p class="hero-description" data-translate-key="hero_desc">
+            Ingeniero en Sistemas Computacionales con experiencia en desarrollo de sistemas embebidos, automatización de procesos, aplicaciones web integradas y administración de bases de datos. Soluciones sólidas alineadas a estándares técnicos.
+          </p>
+          <div class="hero-buttons">
+            <a href="#portfolio" class="btn btn-primary">
+              <span data-translate-key="btn_portfolio">Ver Proyectos</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#contact" class="btn btn-secondary">
+              <span data-translate-key="btn_contact">Contactar</span>
+              <i class="fa-regular fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="hero-graphic reveal">
+          <div class="orbit-ring orbit-ring-1">
+            <div class="orbit-node node-1"></div>
+          </div>
+          <div class="orbit-ring orbit-ring-2">
+            <div class="orbit-node node-2"></div>
+          </div>
+          <div class="avatar-frame">
+            <img src="assets/engineer_avatar.png" alt="Emerson Salvador Plancarte Cerecedo" class="avatar-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Me Section -->
+  <section class="section" id="about">
+    <div class="container">
+      <h2 class="section-title reveal" data-translate-key="about_title">Acerca de Mí</h2>
+      
+      <div class="about-grid">
+        <div class="reveal">
+          <h3 class="about-intro-title" data-translate-key="about_intro">Perfil Profesional</h3>
+          <p class="about-intro-text" data-translate-key="about_desc">
+            Soy un ingeniero enfocado en resolver problemas técnicos complejos a través de soluciones estructuradas y robustas. Combino conocimientos de diseño electrónico, desarrollo web/móvil y bases de datos para automatizar tareas, optimizar la eficiencia y auditar calidad de servicios en entornos corporativos y de infraestructura crítica.
+          </p>
+          
+          <div class="credentials-grid">
+            <div class="credential-card glass-card">
+              <div class="credential-title" data-translate-key="cred_lbl_edu">Educación</div>
+              <div class="credential-value">TecNM</div>
+              <div class="credential-subtitle" data-translate-key="cred_edu_sub">Lic. en Sistemas Computacionales</div>
+            </div>
+            
+            <div class="credential-card glass-card">
+              <div class="credential-title" data-translate-key="cred_lbl_gpa">Promedio</div>
+              <div class="credential-value">92.33 / 100</div>
+              <div class="credential-subtitle" data-translate-key="cred_gpa_sub">GPA Equivalente: 3.7</div>
+            </div>
+            
+            <div class="credential-card glass-card">
+              <div class="credential-title" data-translate-key="cred_lbl_lang">Idiomas</div>
+              <div class="credential-value" data-translate-key="cred_lang_val">Bilingüe</div>
+              <div class="credential-subtitle" data-translate-key="cred_lang_sub">Certificación TOEFL certificada</div>
+            </div>
+            
+            <div class="credential-card glass-card">
+              <div class="credential-title" data-translate-key="cred_lbl_loc">Ubicación</div>
+              <div class="credential-value">Acapulco, Gro.</div>
+              <div class="credential-subtitle" data-translate-key="cred_loc_sub">Guerrero, México</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="reveal skills-container">
+          <h3 class="skills-title" data-translate-key="skills_header">Habilidades Clave</h3>
+          <div class="skills-category-group">
+            
+            <!-- Skill Card 1: Hardware & Embedded -->
+            <div class="skills-card glass-card">
+              <div class="skills-card-header">
+                <i class="fa-solid fa-microchip"></i>
+                <h4 class="skills-card-title" data-translate-key="skills_cat_embedded">Sistemas Embebidos y Hardware</h4>
+              </div>
+              <div class="skills-list">
+                <span class="skills-tag">Raspberry Pi</span>
+                <span class="skills-tag">Arduino IDE</span>
+                <span class="skills-tag">ESP32</span>
+                <span class="skills-tag">C/C++</span>
+                <span class="skills-tag">Sistemas de Control</span>
+                <span class="skills-tag">Electrónica</span>
+              </div>
+            </div>
+
+            <!-- Skill Card 2: Software & Web Development -->
+            <div class="skills-card glass-card">
+              <div class="skills-card-header">
+                <i class="fa-solid fa-code"></i>
+                <h4 class="skills-card-title" data-translate-key="skills_cat_software">Programación y Web</h4>
+              </div>
+              <div class="skills-list">
+                <span class="skills-tag">C# (.NET Core)</span>
+                <span class="skills-tag">Python</span>
+                <span class="skills-tag">PHP (Laravel)</span>
+                <span class="skills-tag">Node.js</span>
+                <span class="skills-tag">React</span>
+                <span class="skills-tag">JavaScript / jQuery</span>
+                <span class="skills-tag">Kotlin</span>
+                <span class="skills-tag">Java</span>
+              </div>
+            </div>
+
+            <!-- Skill Card 3: Databases & Cloud -->
+            <div class="skills-card glass-card">
+              <div class="skills-card-header">
+                <i class="fa-solid fa-database"></i>
+                <h4 class="skills-card-title" data-translate-key="skills_cat_data">Bases de Datos e Infraestructura</h4>
+              </div>
+              <div class="skills-list">
+                <span class="skills-tag">SQL Server</span>
+                <span class="skills-tag">PostgreSQL</span>
+                <span class="skills-tag">MySQL</span>
+                <span class="skills-tag">Azure</span>
+                <span class="skills-tag">AWS Cloud</span>
+                <span class="skills-tag">OSIsoft PI System</span>
+                <span class="skills-tag">Git</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience & Achievements Section -->
+  <section class="section" id="experience">
+    <div class="container">
+      <h2 class="section-title reveal" data-translate-key="experience_title">Experiencia y Logros</h2>
+      
+      <div class="timeline">
+        
+        <!-- Timeline Item 1: CFE Residence -->
+        <div class="timeline-item reveal">
+          <div class="timeline-badge">
+            <i class="fa-solid fa-briefcase"></i>
+          </div>
+          <div class="timeline-card glass-card">
+            <span class="timeline-date">03/2024 - 03/2026</span>
+            <h3 class="timeline-title" data-translate-key="exp1_company">CFE Zona de Transmisión Guerrero Morelos</h3>
+            <h4 class="timeline-subtitle" data-translate-key="exp1_role">Residente de Ingeniería en Sistemas Computacionales</h4>
+            <ul class="timeline-desc">
+              <li data-translate-key="exp1_point1">Diseñé e implementé un sistema web de evaluación del Índice de Calidad de Voltaje (ICV) conforme al Código de Red nacional, optimizando los reportes de más de 50 subestaciones.</li>
+              <li data-translate-key="exp1_point2">Integré la plataforma con sistemas industriales PI System (OSIsoft) mediante C#, PHP y AJAX, reduciendo el tiempo de análisis de calidad de voltaje en más de un 80%.</li>
+              <li data-translate-key="exp1_point3">Desarrollé paneles de monitoreo e interfaces intuitivas que automatizan el filtrado manual, disminuyendo errores de auditoría humana.</li>
+              <li data-translate-key="exp1_point4">Realicé mantenimiento preventivo y correctivo en servidores locales y estaciones de trabajo críticas, logrando una disponibilidad de sistemas superior al 99.9%.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Timeline Item 2: Contest Award -->
+        <div class="timeline-item reveal">
+          <div class="timeline-badge">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <div class="timeline-card glass-card">
+            <span class="timeline-date">12/2025</span>
+            <h3 class="timeline-title" data-translate-key="exp2_company">Concurso de Innovación Tecnológica</h3>
+            <h4 class="timeline-subtitle" data-translate-key="exp2_role">1er Lugar Local - Categoría Ciudades Inteligentes</h4>
+            <ul class="timeline-desc">
+              <li data-translate-key="exp2_point1">Diseñé y programé "TecAssist: Asistente Virtual", un agente inteligente enfocado en el soporte del entorno local escolar y asistencia de trámites urbanos/institucionales.</li>
+              <li data-translate-key="exp2_point2">Implementé técnicas de procesamiento de lenguaje y menús dinámicos con persistencia en base de datos PostgreSQL, premiado por su utilidad práctica e integración tecnológica.</li>
+            </ul>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Section -->
+  <section class="section" id="portfolio">
+    <div class="container">
+      <h2 class="section-title reveal" data-translate-key="portfolio_title">Proyectos Destacados</h2>
+      
+      <div class="portfolio-grid">
+        
+        <!-- Project 1: ICV Analyzer Simulator -->
+        <div class="portfolio-card glass-card reveal">
+          <div class="portfolio-card-header">
+            <span class="portfolio-badge" data-translate-key="port_badge_system">Infraestructura</span>
+            <h3 class="portfolio-card-title" data-translate-key="port1_title">Simulador de Código de Red (ICV)</h3>
+            <p class="portfolio-card-desc" data-translate-key="port1_desc">Auditoría automática de calidad de voltaje basada en límites del Código de Red de México.</p>
+          </div>
+          
+          <div class="portfolio-demo-area">
+            <!-- JS Widget 1 Inserted Here -->
+            <div class="widget-icv">
+              <div class="icv-slider-box">
+                <div class="icv-slider-header">
+                  <span data-translate-key="widget_icv_slider">Voltaje de Entrada:</span>
+                  <span id="icvVoltageVal">115.0 kV</span>
+                </div>
+                <input type="range" min="95" max="135" value="115" step="0.5" class="icv-slider" id="icvVoltageSlider">
+              </div>
+              <div class="icv-metrics">
+                <div class="icv-metric-box">
+                  <div class="icv-metric-label" data-translate-key="widget_icv_lbl_nom">Línea Nominal</div>
+                  <div class="icv-metric-value">115.0 kV</div>
+                </div>
+                <div class="icv-metric-box">
+                  <div class="icv-metric-label" data-translate-key="widget_icv_lbl_dev">Desviación</div>
+                  <div class="icv-metric-value" id="icvDevVal">0.00%</div>
+                </div>
+              </div>
+              <div class="icv-status-indicator status-compliant" id="icvStatus">
+                <i class="fa-solid fa-circle-check"></i>
+                <span data-translate-key="widget_icv_status_ok">Voltaje Estable (Conforme)</span>
+              </div>
+              <div class="icv-violations-list" id="icvLog">
+                [04:00:00] Sistema inicializado en subestación de 115 kV. Monitoreo activo.
+              </div>
+            </div>
+          </div>
+          
+          <div class="portfolio-card-footer">
+            <div class="portfolio-tech-list">
+              <span>C#</span>
+              <span>•</span>
+              <span>PHP</span>
+              <span>•</span>
+              <span>jQuery</span>
+              <span>•</span>
+              <span>OSIsoft</span>
+            </div>
+            <a href="https://github.com/Emerson3101" target="_blank" class="portfolio-link">
+              <span>GitHub</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Project 2: TecAssist Chat Assistant -->
+        <div class="portfolio-card glass-card reveal">
+          <div class="portfolio-card-header">
+            <span class="portfolio-badge" data-translate-key="port_badge_ai">Inteligencia Artificial</span>
+            <h3 class="portfolio-card-title" data-translate-key="port2_title">TecAssist - Asistente Virtual</h3>
+            <p class="portfolio-card-desc" data-translate-key="port2_desc">Agente automatizado interactivo que responde sobre la experiencia y habilidades de Emerson.</p>
+          </div>
+          
+          <div class="portfolio-demo-area">
+            <!-- JS Widget 2 Inserted Here -->
+            <div class="widget-chat">
+              <div class="chat-header">
+                <div class="chat-dot"></div>
+                <span>TecAssist bot</span>
+              </div>
+              <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg chat-msg-bot">
+                  ¡Hola! Soy TecAssist. Haz clic en una opción abajo para consultarme sobre Emerson.
+                </div>
+              </div>
+              <div class="chat-options">
+                <button class="chat-option-btn" data-chat-action="skills" data-translate-key="widget_chat_opt1">¿Habilidades?</button>
+                <button class="chat-option-btn" data-chat-action="experience" data-translate-key="widget_chat_opt2">¿Experiencia CFE?</button>
+                <button class="chat-option-btn" data-chat-action="contact" data-translate-key="widget_chat_opt3">¿Contacto?</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="portfolio-card-footer">
+            <div class="portfolio-tech-list">
+              <span>Node.js</span>
+              <span>•</span>
+              <span>PostgreSQL</span>
+              <span>•</span>
+              <span>JS</span>
+            </div>
+            <a href="https://github.com/Emerson3101" target="_blank" class="portfolio-link">
+              <span>GitHub</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Project 3: ESP32 IoT Live Telemetry -->
+        <div class="portfolio-card glass-card reveal">
+          <div class="portfolio-card-header">
+            <span class="portfolio-badge" data-translate-key="port_badge_hardware">Hardware & IoT</span>
+            <h3 class="portfolio-card-title" data-translate-key="port3_title">ESP32 Telemetría de Sensores</h3>
+            <p class="portfolio-card-desc" data-translate-key="port3_desc">Osciloscopio y graficador de ondas de sensores analógicos IoT en tiempo real.</p>
+          </div>
+          
+          <div class="portfolio-demo-area">
+            <!-- JS Widget 3 Inserted Here -->
+            <div class="widget-telemetry">
+              <div class="telemetry-header">
+                <span data-translate-key="widget_tele_sensor">Señal de Entrada (ADC):</span>
+                <span class="telemetry-status scanning" id="telemetryStatus">
+                  <i class="fa-solid fa-circle-notch fa-spin"></i>
+                  <span data-translate-key="widget_tele_status">Simulando...</span>
+                </span>
+              </div>
+              <div class="canvas-container">
+                <canvas id="telemetryCanvas" class="telemetry-canvas"></canvas>
+              </div>
+              <div class="telemetry-controls">
+                <button class="telemetry-btn active" data-wave="sine" data-translate-key="widget_tele_sine">Senoidal</button>
+                <button class="telemetry-btn" data-wave="square" data-translate-key="widget_tele_square">Cuadrada</button>
+                <button class="telemetry-btn" data-wave="random" data-translate-key="widget_tele_noisy">Ruido</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="portfolio-card-footer">
+            <div class="portfolio-tech-list">
+              <span>C++</span>
+              <span>•</span>
+              <span>ESP32</span>
+              <span>•</span>
+              <span>Canvas API</span>
+              <span>•</span>
+              <span>Arduino</span>
+            </div>
+            <a href="https://github.com/Emerson3101" target="_blank" class="portfolio-link">
+              <span>GitHub</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section" id="contact">
+    <div class="container">
+      <h2 class="section-title reveal" data-translate-key="contact_title">Contacto</h2>
+      
+      <div class="contact-grid">
+        <div class="contact-info reveal">
+          <h3 class="contact-info-title" data-translate-key="contact_subtitle">Hablemos</h3>
+          <p class="contact-info-text" data-translate-key="contact_desc">
+            ¿Tienes alguna consulta técnica, deseas colaborar en un proyecto o estás interesado en conocer más sobre mis calificaciones? Contáctame a través del formulario o mis canales de contacto directo.
+          </p>
+          
+          <div class="contact-details">
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div class="contact-content">
+                <span class="contact-label">Email</span>
+                <a href="mailto:emersonplancarte@gmail.com" class="contact-value">emersonplancarte@gmail.com</a>
+              </div>
+            </div>
+            
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fa-solid fa-phone"></i>
+              </div>
+              <div class="contact-content">
+                <span class="contact-label" data-translate-key="contact_lbl_phone">Teléfono</span>
+                <a href="tel:+527444473905" class="contact-value">+52 (744) 447 3905</a>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div class="contact-content">
+                <span class="contact-label" data-translate-key="contact_lbl_address">Dirección</span>
+                <span class="contact-value">Acapulco, Guerrero, México</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="social-links">
+            <a href="https://linkedin.com/in/emerson-plancarte" target="_blank" class="social-btn" title="LinkedIn">
+              <i class="fa-brands fa-linkedin-in"></i>
+            </a>
+            <a href="https://github.com/Emerson3101" target="_blank" class="social-btn" title="GitHub">
+              <i class="fa-brands fa-github"></i>
+            </a>
+          </div>
+        </div>
+        
+        <form class="contact-form glass-card reveal" id="contactForm">
+          <div class="form-alert" id="formAlert"></div>
+          
+          <div class="form-group-row">
+            <div class="form-group">
+              <label for="nameInput" class="form-label" data-translate-key="form_lbl_name">Nombre completo</label>
+              <input type="text" id="nameInput" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label for="emailInput" class="form-label">Email</label>
+              <input type="email" id="emailInput" class="form-control" placeholder="johndoe@example.com" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="subjectInput" class="form-label" data-translate-key="form_lbl_subject">Asunto</label>
+            <input type="text" id="subjectInput" class="form-control" placeholder="Propuesta de proyecto..." required>
+          </div>
+          
+          <div class="form-group">
+            <label for="messageInput" class="form-label" data-translate-key="form_lbl_msg">Mensaje</label>
+            <textarea id="messageInput" class="form-control" placeholder="Escribe tu mensaje aquí..." required></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-primary submit-btn">
+            <span data-translate-key="form_btn_send">Enviar Mensaje</span>
+            <i class="fa-regular fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-copy">
+        &copy; 2026 Emerson Plancarte. <span data-translate-key="footer_rights">Todos los derechos reservados.</span>
+      </div>
+      <div class="footer-stats">
+        <div class="footer-stat-item">
+          <i class="fa-solid fa-code-commit"></i>
+          <span>v1.0.0</span>
+        </div>
+        <div class="footer-stat-item">
+          <i class="fa-solid fa-earth-americas"></i>
+          <span data-translate-key="footer_lang">Bilingüe (ES/EN)</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

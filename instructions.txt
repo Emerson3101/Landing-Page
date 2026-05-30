@@ -1,0 +1,4 @@
+Project Goal: A landing page with full features and stylish design.
+Process: Create a document previous to the project design where the development of the page breaks down on multiple phases of development, employ info from the file CV Emerson Plancarte(1) to create the page.
+Requirements: Home page, Portfolio with several competent and outstanding coding projects that demonstrates coding expertise and style, custom animations and transitions, professional fonts.
+Restriction: Work only within the home directory, do not stray from html, php, css, js and web based stacks unless working on the portfolio section.
