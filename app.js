@@ -23,7 +23,8 @@ const translations = {
 
     about_title: "Acerca de Mí",
     about_intro: "Perfil Profesional",
-    about_desc: "Profesional de ingeniería con experiencia en desarrollo tecnológico, automatización de procesos y optimización operativa. Especializado en dar solución a problemas técnicos complejos mediante soluciones estructuradas y robustas. \n Con sólidos conocimientos en desarrollo web/móvil, bases de datos y diseño electrónico para impulsar la eficiencia operativa y la calidad de los servicios mediante un enfoque analítico y orientado a resultados.",
+    about_desc: "Profesional de ingeniería con experiencia en desarrollo tecnológico, automatización de procesos y optimización operativa. Especializado en dar solución a problemas técnicos complejos mediante soluciones estructuradas y robustas.",
+    about_desc2: "Con sólidos conocimientos en desarrollo web/móvil, bases de datos y diseño electrónico para impulsar la eficiencia operativa y la calidad de los servicios mediante un enfoque analítico y orientado a resultados.",
     cred_lbl_edu: "Educación",
     cred_edu_sub: "Lic. en Sistemas Computacionales",
     cred_lbl_gpa: "Promedio",
