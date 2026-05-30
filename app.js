@@ -23,7 +23,9 @@ const translations = {
 
     about_title: "Acerca de Mí",
     about_intro: "Perfil Profesional",
-    about_desc: "Soy un ingeniero enfocado en resolver problemas técnicos complejos a través de soluciones estructuradas y robustas. Combino conocimientos de diseño electrónico, desarrollo web/móvil y bases de datos para automatizar tareas, optimizar la eficiencia y auditar calidad de servicios en entornos corporativos y de infraestructura crítica.",
+    about_desc: "Profesional de ingeniería con experiencia en desarrollo tecnológico, automatización de procesos y optimización operativa. Especializado en dar solución a problemas técnicos complejos mediante soluciones estructuradas y robustas. 
+
+Con sólidos conocimientos en desarrollo web/móvil, bases de datos y diseño electrónico para impulsar la eficiencia operativa y la calidad de los servicios mediante un enfoque analítico y orientado a resultados.",
     cred_lbl_edu: "Educación",
     cred_edu_sub: "Lic. en Sistemas Computacionales",
     cred_lbl_gpa: "Promedio",
