@@ -20,6 +20,7 @@
 
 $page_title       = 'Emerson Plancarte — Software & Embedded Systems Engineer';
 $page_description = 'Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer. ICV voltage-quality tooling at CFE, TecNM graduate, innovation award winner.';
+$body_class       = 'page-home';   // scopes home-only CSS (section numbering)
 require __DIR__ . '/includes/header.php';
 ?>
 
@@ -45,7 +46,7 @@ require __DIR__ . '/includes/header.php';
       </a>
     </div>
     <p class="hero__prompt" data-reveal>
-      <?= t('Press', 'Presiona') ?> <span class="kbd">Ctrl</span>+<span class="kbd">K</span> <?= t('to explore', 'para explorar') ?>
+      <?= t('Press', 'Presiona') ?> <span class="kbd" data-key="ctrl">Ctrl</span>+<span class="kbd">K</span> <?= t('to explore', 'para explorar') ?>
     </p>
   </div>
   <div class="hero__cue" aria-hidden="true">
@@ -368,7 +369,7 @@ require __DIR__ . '/includes/header.php';
             class="field__input" id="cf-email" name="email"
             type="email" required autocomplete="email"
             aria-describedby="cf-email-err"
-            placeholder="you@example.com"
+            <?= lang_attr('you@example.com', 'tu@correo.com', 'placeholder') ?>
           >
           <p class="field__error" id="cf-email-err"></p>
         </div>

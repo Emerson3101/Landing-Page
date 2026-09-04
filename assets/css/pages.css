@@ -49,6 +49,16 @@
   background: var(--color-surface);
 }
 .sg-swatch__chip { height: 5rem; }
+/* Glass tokens are translucent — give them a checker backdrop so the
+   alpha actually reads on the inventory page. */
+.sg-swatch__chip--glass {
+  background-image:
+    linear-gradient(45deg, var(--color-border) 25%, transparent 25% 75%, var(--color-border) 75%),
+    linear-gradient(45deg, var(--color-border) 25%, transparent 25% 75%, var(--color-border) 75%),
+    linear-gradient(0deg, var(--color-surface), var(--color-surface)) !important;
+  background-size: 1rem 1rem, 1rem 1rem, 100% 100% !important;
+  background-position: 0 0, 0.5rem 0.5rem, 0 0 !important;
+}
 .sg-swatch__meta { padding: var(--space-2); }
 .sg-swatch__name { font-family: var(--font-mono); font-size: var(--step--2); }
 .sg-swatch__val { font-family: var(--font-mono); font-size: var(--step--2); color: var(--color-text-muted); }
@@ -82,6 +92,7 @@
 .about__intro p { font-size: var(--step-1); }
 
 .stats {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: var(--space-3);
@@ -90,9 +101,30 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
+/* Instrument-ruler texture: faint horizontal hairlines reading as a
+   measurement band. Abstract and quiet (~4% effective alpha); sits under
+   content via z-index and never intercepts pointer events. */
+.stats::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2.4rem,
+    color-mix(in srgb, var(--color-text-muted) 8%, transparent) 2.4rem,
+    color-mix(in srgb, var(--color-text-muted) 8%, transparent) calc(2.4rem + 1px)
+  );
+}
+/* Content stays above the texture. */
+.stats > * { position: relative; z-index: 1; }
 /* Stat value scales down on very tight rows so the band never overflows. */
 .stats .stat__value { font-size: var(--step-4); }
 
@@ -107,20 +139,55 @@
 }
 
 /* Experience — the timeline lives in components.css; this is the ICV
-   featured callout that sits under it: two columns on wide screens. */
+   featured callout that sits under it: two columns on wide screens.
+
+   Border: animated accent→accent-2 gradient ring (double-background
+   technique — a gradient "border" layer behind a surface layer inset by
+   1px). The solid-accent fallback line precedes the gradient for older
+   engines, per the §7 degradation rule. The gradient hue slowly shifts
+   (composited background-position; guarded off under reduced motion). */
 .feature {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-4);
   margin-top: var(--space-6);
   padding: var(--space-5);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-left: 3px solid var(--color-accent);
+  border: 1px solid var(--color-accent);   /* fallback before gradient ring */
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
+  background:
+    linear-gradient(120deg,
+      var(--color-accent),
+      var(--color-accent-2),
+      var(--color-accent)) border-box;
+  background-size: 200% 100%;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-md),
     inset 0 0 60px -30px var(--color-accent-soft);
+  animation: featureBorderShift 9s var(--ease-in-out) infinite;
+}
+/* The surface sits inside the 1px gradient ring. This second layer is
+   what the content actually reads on; ~90% opaque so the gradient reads
+   as a ring with only a whisper of inner glow, not a tinted card. */
+.feature::before {
+  content: "";
+  position: absolute;
+  inset: 1px;   /* inside the gradient ring */
+  z-index: 0;
+  border-radius: calc(var(--radius-lg) - 1px);
+  background: var(--color-surface);   /* fallback before color-mix */
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  pointer-events: none;
+}
+.feature > * { position: relative; z-index: 1; }
+@keyframes featureBorderShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature { animation: none; }
 }
 .feature__title {
   font-size: var(--step-3);
@@ -190,6 +257,7 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: transform var(--dur-fast) var(--ease-out),
               border-color var(--dur-fast) var(--ease-out),
@@ -568,11 +636,15 @@
    Contact form (Phase 6)
    ===================================================================== */
 .contact-form {
+  position: relative;
   margin-top: var(--space-5);
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);           /* glass, consistent with the band */
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md);
   display: grid;
   gap: var(--space-3);
 }
@@ -601,8 +673,8 @@
   background: var(--color-accent-soft);
 }
 .contact-form__status[data-state="error"] {
-  color: #ff7a7a;
-  background: rgba(255, 122, 122, 0.10);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 .contact-form__submit { justify-self: start; }
 

@@ -68,17 +68,19 @@
 
 /* ----------------------------------------------------------------------
    Dark theme — DEFAULT surface palette.
-   Near-black with a faint cool cast; raised surfaces lift a notch.
+   Near-black with a faint cool cast, lifted a notch above pure black so
+   the ambient layers (aura + section tints) have something to read
+   against; raised surfaces lift a notch further.
    ---------------------------------------------------------------------- */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --color-bg:           #06080c;
-  --color-surface:      #0d1118;
-  --color-surface-2:    #131826;
-  --color-surface-3:    #1a2133;   /* hover lift / glass raise   */
-  --color-overlay:      rgba(4, 6, 10, 0.72);
+  --color-bg:           #0a0e15;
+  --color-surface:      #111724;
+  --color-surface-2:    #17202f;
+  --color-surface-3:    #1e2839;   /* hover lift / glass raise   */
+  --color-overlay:      rgba(6, 9, 14, 0.72);
 
   --color-text:         #eef2f7;
   --color-text-muted:   #a8b2c0;
@@ -93,8 +95,14 @@
   --color-link:         #36e8a0;
   --color-link-hover:   #6df6bd;
 
-  --color-border:       #1c2432;
-  --color-border-strong:#2b3749;
+  /* Error/danger — AA-checked on every surface in both themes. The light
+     value is deliberately darkened (raw #ff7a7a fails AA on light bg). */
+  --color-danger:       #ff7a7a;
+  --color-danger-hover: #ffa1a1;
+  --color-danger-soft:  rgba(255, 122, 122, 0.12);
+
+  --color-border:       #202a3a;
+  --color-border-strong:#2f3d51;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.50);
@@ -102,7 +110,7 @@
   --shadow-glow: 0 0 0 1px rgba(54, 232, 160, 0.22), 0 10px 34px rgba(54, 232, 160, 0.12);
 
   /* Glass surface used by cards/feature bands; composited over --color-bg. */
-  --glass-bg: rgba(16, 21, 31, 0.55);
+  --glass-bg: rgba(17, 23, 36, 0.55);
   --glass-border: rgba(255, 255, 255, 0.06);
 
   /* Soft radial auras painted behind content sections via body::after. */
@@ -110,6 +118,16 @@
     radial-gradient(50rem 30rem at 85% -5%, rgba(74, 168, 255, 0.07), transparent 65%),
     radial-gradient(46rem 28rem at -10% 40%, rgba(54, 232, 160, 0.05), transparent 60%),
     radial-gradient(40rem 26rem at 90% 95%, rgba(54, 232, 160, 0.05), transparent 60%);
+
+  /* Per-section ambient tints (consumed by .section::before in fx.css).
+     Alpha stays low (4–8%) so text contrast is untouched; the gradients
+     are fully opaque *shapes* fading to transparent, which the theme
+     cross-fade can transition via background-color on the section. */
+  --tint-green: radial-gradient(48rem 34rem at 12% 0%, rgba(54, 232, 160, 0.07), transparent 62%);
+  --tint-blue:  radial-gradient(48rem 34rem at 88% 8%, rgba(74, 168, 255, 0.06), transparent 62%);
+  --tint-contact:
+    radial-gradient(42rem 30rem at 20% 12%, rgba(54, 232, 160, 0.07), transparent 60%),
+    radial-gradient(46rem 32rem at 85% 88%, rgba(74, 168, 255, 0.07), transparent 60%);
 
   --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(54, 232, 160, 0.10), transparent 60%);
 }
@@ -142,6 +160,11 @@
   --color-link:         #0a6d46;
   --color-link-hover:   #085637;
 
+  /* Darkened for AA on the light ground (raw #ff7a7a is ~2:1 there). */
+  --color-danger:       #b3261e;
+  --color-danger-hover: #9a1f18;
+  --color-danger-soft:  rgba(179, 38, 30, 0.10);
+
   --color-border:       #ddd9cf;
   --color-border-strong:#c4bfb3;
 
@@ -157,6 +180,12 @@
     radial-gradient(50rem 30rem at 85% -5%, rgba(47, 111, 214, 0.08), transparent 65%),
     radial-gradient(46rem 28rem at -10% 40%, rgba(10, 117, 73, 0.06), transparent 60%),
     radial-gradient(40rem 26rem at 90% 95%, rgba(10, 117, 73, 0.05), transparent 60%);
+
+  --tint-green: radial-gradient(48rem 34rem at 12% 0%, rgba(10, 117, 73, 0.05), transparent 62%);
+  --tint-blue:  radial-gradient(48rem 34rem at 88% 8%, rgba(47, 111, 214, 0.05), transparent 62%);
+  --tint-contact:
+    radial-gradient(42rem 30rem at 20% 12%, rgba(10, 117, 73, 0.05), transparent 60%),
+    radial-gradient(46rem 32rem at 85% 88%, rgba(47, 111, 214, 0.05), transparent 60%);
 
   --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(10, 117, 73, 0.10), transparent 60%);
 }

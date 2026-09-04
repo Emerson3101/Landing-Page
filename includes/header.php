@@ -24,6 +24,8 @@ $page_lang        = $page_lang        ?? 'en'; // JS updates <html lang> when th
 $site_url  = $site_url  ?? (getenv('SITE_URL') ?: 'https://emerson-plancarte.example');
 $canonical = $canonical ?? ($site_url . ($_SERVER['REQUEST_URI'] ?? '/'));
 $og_type   = $og_type   ?? 'website';
+// Optional per-page <body> class (e.g. 'page-home') for page-scoped CSS.
+$body_class = $body_class ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($page_lang, ENT_QUOTES, 'UTF-8') ?>"
@@ -60,7 +62,7 @@ $og_type   = $og_type   ?? 'website';
 
   <!-- Browser-chrome color follows the OS color scheme. The in-page
        light/dark toggle is data-theme-driven and persisted separately. -->
-  <meta name="theme-color" content="#0b0f14" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0a0e15" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
 
   <!-- Structured data (Phase 8): Person. Static, site-wide. -->
@@ -130,7 +132,7 @@ $og_type   = $og_type   ?? 'website';
     })();
   </script>
 </head>
-<body>
+<body<?= $body_class ? ' class="' . htmlspecialchars($body_class, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <?php require __DIR__ . '/nav.php'; ?>

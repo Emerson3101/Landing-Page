@@ -110,13 +110,13 @@ assets/
     components.css              Component primitives (buttons, cards, nav, hero, fields, tags, stats, timeline…)
     pages.css                   Page-level LAYOUT using the components (home, portfolio, project, contact form)
     animations.css              Motion layer (reveal, hover, theme cross-fade, ctaPulse, countGlow, reduced-motion safety)
-    fx.css                      "Terminal Noir" effects layer — auras, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer status bar
+    fx.css                      "Terminal Noir" effects layer — living aura, per-section tints, section hairlines, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer status bar
     fonts.css                  GENERATED — @font-face for the self-hosted subsets (see §6)
   js/
     main.js                     Theme + lang toggles, mobile nav, back-to-top, contact form (see §11)
     animations.js               Reveal (blur+rise), countUp (+count-done glow), scrollSpy (see §10)
     webgl-hero.js               Vanilla-WebGL abstract aurora/particle shader behind the home hero (no electrical motifs; graceful fallbacks)
-    fx.js                       Scroll progress, cursor glow, magnetic buttons, tilt cards, text scramble, timeline rail draw, Ctrl+K command palette (+ `sudo hire me` easter egg), page wipe, footer clock
+    fx.js                       Scroll progress, cursor glow, magnetic buttons, tilt cards, text scramble, timeline rail draw, Ctrl+K command palette (+ `sudo hire me` easter egg), page wipe, footer clock, platform-aware ⌘/Ctrl labels
     portfolio.js                Portfolio grid filtering (no-ops off the portfolio page)
   fonts/
     space-grotesk-latin.woff2, space-grotesk-latin-ext.woff2
@@ -266,16 +266,25 @@ by editing this one file. The categories:
 `[data-theme="light"]` on `<html>` (the nav toggle does this; `main.js`
 persists the choice to `localStorage`; `header.php`'s pre-paint script
 restores it). Color tokens: `--color-bg`, `--color-surface`,
-`--color-surface-2`, `--color-overlay`, `--color-text`, `--color-text-muted`,
-`--color-text-subtle`, `--color-accent` / `-hover` / `-soft` / `-contrast`,
-`--color-link` / `-hover`, `--color-border` / `-strong`, `-shadow-sm/md/lg/glow`,
-`--grad-hero`.
+`--color-surface-2`, `--color-surface-3`, `--color-overlay`, `--color-text`,
+`--color-text-muted`, `--color-text-subtle`,
+`--color-accent` / `-hover` / `-2` (secondary blue hue) / `-soft` /
+`-contrast`, `--color-link` / `-hover`, `--color-danger` / `-hover` /
+`-soft` (AA-checked in both themes — never use raw hex for errors),
+`--color-border` / `-strong`, `-shadow-sm/md/lg/glow`, `--glass-bg`,
+`--glass-border`, `--grad-hero`.
 
-**Accent is voltage-green.** Dark `--color-accent: #3ddc97`; light
-`#0a7549` (deliberately darkened from `#0b8052` so accent-on-softBadge text
-clears WCAG AA 4.5:1; the `--color-text-subtle` values were likewise adjusted
-to clear AA on every surface in both themes). **Verified WCAG 2.2 AA** for
-body text ≥4.5:1 and large/non-text ≥3:1 in both themes.
+**Ambient tint tokens** (`--tint-green`, `--tint-blue`, `--tint-contact`)
+feed the per-section washes painted by `.section::before` in `fx.css` —
+literal gradients defined in both theme blocks, ~4–8% alpha, consumed
+only via those tokens.
+
+**Accent is voltage-green.** Dark `--color-accent: #3ddc97-family
+(#36e8a0)`; light `#0a7549` (deliberately darkened from `#0b8052` so
+accent-on-softBadge text clears WCAG AA 4.5:1; the `--color-text-subtle`
+values were likewise adjusted to clear AA on every surface in both
+themes). **Verified WCAG 2.2 AA** for body text ≥4.5:1 and large/non-text
+≥3:1 in both themes.
 
 ### When adding color or a new component
 - Define a new token in `tokens.css` if it's a *system-wide* decision; use an
@@ -465,6 +474,7 @@ don't "tidy" it to the top):
 <?php
 $page_title       = ' Portfolio — Emerson Plancarte';      // <title> + OG
 $page_description = 'Selected work by…';                   // <meta description> + OG
+$body_class       = 'page-home';                            // optional: page-scoped CSS hook
 // optional: $canonical, $og_type, $site_url (override per-page)
 require __DIR__ . '/../includes/header.php';                // <head>, fonts, SEO, opens <main>
 ?>

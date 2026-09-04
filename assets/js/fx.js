@@ -22,6 +22,7 @@
 (function fx() {
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = window.matchMedia('(pointer: fine)').matches;
+  var isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
   var isEs = function () {
     return document.documentElement.getAttribute('data-active-lang') === 'es';
   };
@@ -204,6 +205,19 @@
     }
   }
 
+  /* --- 7. Platform-aware shortcut labels --------------------------------
+     On Apple platforms the palette trigger is ⌘K, not Ctrl+K. Two spots
+     carry the label: the nav hint button (#palette-open) and any hero
+     prompt <kbd data-key="ctrl">. The kbd swap also keeps the literal
+     "+" separator honest (⌘ + K reads fine). */
+  function initPlatformKeys() {
+    var btn = document.getElementById('palette-open');
+    if (btn) btn.textContent = isMac ? '⌘K' : 'Ctrl K';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-key="ctrl"]'), function (k) {
+      if (isMac) k.textContent = '⌘';
+    });
+  }
+
   /* --- 7. Command palette ------------------------------------------------- */
   function initPalette() {
     var openBtn = document.getElementById('palette-open');
@@ -214,7 +228,8 @@
     root.setAttribute('aria-modal', 'true');
     root.innerHTML =
       '<div class="palette__box">' +
-        '<input class="palette__input" id="palette-input" type="text" autocomplete="off" spellcheck="false">' +
+        '<input class="palette__input" id="palette-input" type="text" autocomplete="off" spellcheck="false"' +
+        ' aria-label="' + (isEs() ? 'Escribe un comando o busca' : 'Type a command or search') + '">' +
         '<ul class="palette__list" id="palette-list" role="listbox"></ul>' +
         '<p class="palette__hint">↑↓ navigate · ⏎ select · esc close</p>' +
       '</div>';
@@ -269,6 +284,7 @@
       render('');
       input.value = '';
       input.placeholder = isEs() ? 'Escribe un comando o busca…' : 'Type a command or search…';
+      input.setAttribute('aria-label', isEs() ? 'Escribe un comando o busca' : 'Type a command or search');
       root.classList.add('is-open');
       document.body.style.overflow = 'hidden';
       setTimeout(function () { input.focus(); }, 50);
@@ -383,6 +399,7 @@
     initTilt();
     initScramble();
     initTimelineRail();
+    initPlatformKeys();
     initPalette();
     initPageWipe();
     initClock();

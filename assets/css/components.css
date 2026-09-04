@@ -457,6 +457,7 @@ body[data-nav-open="true"] { overflow: hidden; }
    Card
    ---------------------------------------------------------------------- */
 .card {
+  position: relative;
   background: var(--color-surface);
   background: linear-gradient(160deg, color-mix(in srgb, var(--color-surface) 92%, var(--color-accent) 8%), var(--color-surface));
   border: 1px solid var(--color-border);
@@ -465,6 +466,29 @@ body[data-nav-open="true"] { overflow: hidden; }
   transition: transform var(--dur-base) var(--ease-out),
               border-color var(--dur-base) var(--ease-out),
               box-shadow var(--dur-base) var(--ease-out);
+}
+/* Accent top-hairline — grows in on hover/focus as a green→blue gradient
+   edge. Sits above the card face; ::after belongs to the fx tilt sheen. */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-3);
+  right: var(--space-3);
+  height: 1px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+  pointer-events: none;
+}
+.card:hover::before,
+.card:focus-visible::before,
+.card:focus-within::before {
+  opacity: 1;
+  transform: scaleX(1);
 }
 .card:hover {
   border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
@@ -608,21 +632,20 @@ body[data-nav-open="true"] { overflow: hidden; }
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 .field__help { font-size: var(--step--2); color: var(--color-text-subtle); }
-.field__error { font-size: var(--step--2); color: #ff7a7a; display: none; }
+.field__error { font-size: var(--step--2); color: var(--color-danger); display: none; }
 
 /* Toggle the error on when the field is invalid. */
 .field--error .field__error { display: block; }
 .field--error .field__input,
 .field--error .field__textarea {
-  border-color: #ff7a7a;
-  box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.18);
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
 }
 
 /* ----------------------------------------------------------------------
    Footer
    ---------------------------------------------------------------------- */
 .site-footer {
-  border-top: 1px solid var(--color-border);
   padding-block: var(--space-5);
   padding-inline: var(--space-3);
   color: var(--color-text-muted);

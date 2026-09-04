@@ -27,15 +27,17 @@ require __DIR__ . '/includes/header.php';
     <div class="sg-swatches">
       <?php
       $swatches = [
-        '--color-bg', '--color-surface', '--color-surface-2',
+        '--color-bg', '--color-surface', '--color-surface-2', '--color-surface-3',
         '--color-text', '--color-text-muted', '--color-text-subtle',
-        '--color-accent', '--color-accent-hover', '--color-link',
+        '--color-accent', '--color-accent-hover', '--color-accent-2', '--color-link',
+        '--color-danger', '--color-danger-hover',
         '--color-border', '--color-border-strong',
+        '--glass-bg', '--glass-border',
       ];
       foreach ($swatches as $tok):
       ?>
         <div class="sg-swatch">
-          <div class="sg-swatch__chip" style="background: var(<?= $tok ?>);"></div>
+          <div class="sg-swatch__chip<?= (strpos($tok, 'glass') !== false) ? ' sg-swatch__chip--glass' : '' ?>" style="background: var(<?= $tok ?>);"></div>
           <div class="sg-swatch__meta">
             <div class="sg-swatch__name"><?= $tok ?></div>
             <div class="sg-swatch__val">current theme</div>
