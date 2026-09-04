@@ -25,6 +25,12 @@
 }
 .section--tight { padding-block: var(--space-5); }
 .section--bleed { padding-block: var(--space-8); }
+/* The last section before the footer shouldn't dump its full bottom
+   gutter into the page end — the footer's own padding takes over there,
+   so the page closes tight instead of trailing a screen of void. */
+main > .section:last-child {
+  padding-bottom: var(--space-3);
+}
 
 .section__header {
   max-width: var(--maxw-prose);
@@ -301,12 +307,6 @@ body[data-nav-open="true"] { overflow: hidden; }
   display: grid;
   gap: var(--space-2);
   justify-items: center;
-}
-.hero__eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--step-0);
-  color: var(--color-accent);
-  letter-spacing: 0.06em;
 }
 .hero__title {
   font-size: var(--step-5);
@@ -646,7 +646,7 @@ body[data-nav-open="true"] { overflow: hidden; }
    Footer
    ---------------------------------------------------------------------- */
 .site-footer {
-  padding-block: var(--space-5);
+  padding-block: var(--space-3);
   padding-inline: var(--space-3);
   color: var(--color-text-muted);
   font-size: var(--step--1);

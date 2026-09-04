@@ -33,7 +33,7 @@ if ($path === '/' || $path === '') {
 foreach ($candidates as $c) {
   $file = $root . $c;
   if (is_file($file)) {
-    $GLOBALS['site_url'] = getenv('SITE_URL') ?: 'http://localhost:8080';
+    $GLOBALS['site_url'] = getenv('SITE_URL') ?: 'http://localhost:8000';
     require $file;
     return true;
   }

@@ -175,6 +175,23 @@ body::after {
 }
 
 /* ----------------------------------------------------------------------
+   Particle drift field — fixed canvas behind content, above the body
+   aura (-2). Zero pointer capture so it never competes with content.
+   Reduced-motion renders a static constellation, no animation needed.
+   ---------------------------------------------------------------------- */
+.fx-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+/* Bring body::after aura below the particle layer.
+   (aura stays at -2, cursor-glow at 1 sits above everything) */
+/* In reduced motion the canvas class has --static; nothing to gate. */
+
+/* ----------------------------------------------------------------------
    Hero — WebGL canvas + presentation of the hero copy
    ---------------------------------------------------------------------- */
 /* Horizontal clip only — the canvas deliberately overflows the hero's
@@ -221,40 +238,26 @@ body::after {
   color: transparent;
   text-wrap: balance;
 }
-
-/* Eyebrow — terminal line with a blinking caret. The pill is an inline-
-   flex row [caret][text][ghost caret]; the ghost ::after repeats the same
-   glyph at the same size/margins but invisible, so the caret's advance is
-   mirrored exactly on both sides and the TEXT sits at the pill's optical
-   center — regardless of which font actually renders the glyph (the ●
-   comes from a fallback face, so its metrics can't be predicted in ems). */
-.hero__eyebrow {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+/* Once split, letters carry the per-glyph gradient. */
+.hero__title.is-split {
+  background: none;
 }
-.hero__eyebrow::before {
-  content: "●";
-  font-size: 0.55em;
-  margin-right: 0.6em;
+.hero__title.is-split .pc {
+  background: linear-gradient(
+    160deg,
+    var(--color-text) 55%,
+    color-mix(in srgb, var(--color-accent) 55%, var(--color-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* When a shimmery letter is mid-decode, switch to plain accent text so the
+   glyph cycles read on the mono font, not the gradient. */
+.hero__title .pc--shimmer {
+  background: none;
   color: var(--color-accent);
-  text-shadow: 0 0 8px var(--color-accent);
-  animation: heroBlink 2.4s var(--ease-in-out) infinite;
 }
-/* The invisible mirror of the caret (same glyph, same size, same gap). */
-.hero__eyebrow::after {
-  content: "●";
-  font-size: 0.55em;
-  margin-left: 0.6em;
-  visibility: hidden;
-}
-@keyframes heroBlink { 50% { opacity: 0.35; } }
 
 /* Scramble effect stages (fx.js writes spans; .is-jitter flickers). */
 [data-scramble] .scramble-jitter {
@@ -534,7 +537,7 @@ body::after {
 .btn--primary:hover::before { transform: translateX(120%); }
 
 /* ----------------------------------------------------------------------
-   Footer — status bar treatment
+   Footer — row treatment (copyright left, mono clock right)
    ---------------------------------------------------------------------- */
 .site-footer__row {
   display: flex;
@@ -544,23 +547,6 @@ body::after {
   justify-content: space-between;
   max-width: var(--maxw-wide);
   margin-inline: auto;
-}
-.site-footer__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  color: var(--color-text-muted);
-}
-.site-footer__status::before {
-  content: "";
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  box-shadow: 0 0 8px var(--color-accent);
-  animation: heroBlink 2.6s var(--ease-in-out) infinite;
 }
 .site-footer__clock {
   font-family: var(--font-mono);

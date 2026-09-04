@@ -25,10 +25,11 @@ depends on them. Everything stays within this directory.
 
 The site is served from the host root, so asset paths are root-absolute
 (`/assets/...`, `/portfolio/...`). Run PHP's built-in server from the project
-root and visit `http://localhost:8000`:
+root, **using `serve.php` as the router** (it maps clean URLs like
+`/portfolio/icv/` to `portfolio/icv.php`), and visit `http://localhost:8000`:
 
 ```
-php -S localhost:8000
+php -S localhost:8000 serve.php
 ```
 
 That single command serves the pages, the PHP includes assemble, and the

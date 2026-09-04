@@ -11,7 +11,7 @@
      6. timelineRail    draws the experience rail with scroll (--rail)
      7. palette         Ctrl+K command palette (nav, toggles, easter egg)
      8. pageWipe        accent wipe on same-origin navigation
-     9. clock           live mono clock in the footer status bar
+     9. clock           live mono clock in the footer
 
    Nothing here is load-bearing: fine-pointer checks, reduced-motion,
    and try/catch fences keep the base experience intact everywhere.
@@ -138,12 +138,159 @@
     });
   }
 
-  /* --- 5. Scramble / decode-in ------------------------------------------- */
+  /* --- 5. Text choreography: first-letter fade → caret typing → decode -----
+     [data-typetrick] elements are split into .pc letter spans at BOOT (before
+     reveal runs), so the reveal CSS on the parent never flashes the full
+     text. Typing begins when the element scrolls into view.
+
+     BATCH PACING: elements that enter the viewport within ~80ms of each
+     other are treated as one batch (e.g. hero title + subtitle). We fix the
+     batch budget UP FRONT so every member's typing ENDS AT THE SAME TIME:
+       budget = max(shortest * BASE_MS, longest * MIN_MS)
+     — long texts accelerate, short texts keep the calm base pace.
+
+     After the caret settles on the last letter, "typeflow:done" fires and
+     the decode effect (section 6) — the scramble you asked to keep — runs
+     as the final polish pass. */
+  function initTypeflow() {
+    var BASE_MS  = 24;    /* per-char pace for the "header" text        */
+    var MIN_MS   = 8;     /* fastest per-char pace for very long texts  */
+    var FIRST_MS = 140;   /* extra air on the first letter              */
+    var NOTE_MS  = 80;    /* pause at spaces (word boundaries)          */
+
+    /* Split each choreographed element ONCE at boot — the letters start
+       invisible (opacity 0 from animations.css), so nothing prints
+       whole before typing begins. */
+    function splitFor(el) {
+      if (el.__pcSplit) return;
+      var target = el;
+      var spans = el.querySelectorAll('[data-lang]');
+      if (spans.length) {
+        for (var i = 0; i < spans.length; i++) {
+          if (spans[i].offsetParent !== null) { target = spans[i]; break; }
+        }
+      }
+      var text = target.textContent;
+      /* screen readers must never letter-by-letter through the .pc spans —
+         the untyped container keeps the full string as its accessible name */
+      target.setAttribute('aria-label', text);
+      target.textContent = '';
+      var frag = document.createDocumentFragment();
+      for (var i = 0; i < text.length; i++) {
+        var s = document.createElement('span');
+        s.className = 'pc';
+        s.setAttribute('aria-hidden', 'true');
+        s.textContent = text.charAt(i);
+        frag.appendChild(s);
+      }
+      target.appendChild(frag);
+      /* when the element used background-clip:text for a gradient fill
+         (hero titles), the parent keeps painting the gradient underneath
+         "already-typed" — strip it and let the letters own the gradient */
+      el.classList.add('is-split');
+      el.__pcSplit = true;
+      el.__letterCount = text.length;
+    }
+
+    /* Typing driver. perChar is computed by the batch so everyone in the
+       batch ends at the same instant. */
+    function typeInto(el, perChar) {
+      var spans = el.querySelectorAll('[data-lang]');
+      var target = el;
+      if (spans.length) {
+        for (var i = 0; i < spans.length; i++) {
+          if (spans[i].offsetParent !== null) { target = spans[i]; break; }
+        }
+      }
+      var letters = target.querySelectorAll('.pc');
+      var count = letters.length;
+      if (!count) return;
+
+      var idx = 0;
+      var caret = null;
+      var first = true;
+      (function step() {
+        if (idx >= count) {
+          setTimeout(function () {
+            if (caret) caret.classList.remove('pc--cursor');
+            el.dispatchEvent(new CustomEvent('typeflow:done', { bubbles: true }));
+          }, 380);
+          return;
+        }
+        if (caret) caret.classList.remove('pc--cursor');
+        caret = letters[idx];
+        caret.classList.add('pc--in', 'pc--cursor');
+        var ch = caret.textContent;
+        var gap = perChar + (first ? FIRST_MS : 0) + (ch === ' ' ? NOTE_MS : 0);
+        first = false;
+        idx++;
+        setTimeout(step, gap);
+      })();
+    }
+
+    /* Batch collection: elements intersecting within 80ms of each other
+       are paced together so they end simultaneously. */
+    var batch = [];
+    var timer = null;
+    function flushBatch() {
+      if (!batch.length) return;
+      /* DOM order — the title/header is first, it sets the reference pace */
+      batch.sort(function (a, b) {
+        var r = a.compareDocumentPosition(b);
+        return (r & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+      });
+      var lens = batch.map(function (el) { return el.__letterCount; });
+      var longest = Math.max.apply(null, lens);
+      var budgetMs = Math.max(
+        lens[0] * BASE_MS,      /* header at the calm base pace */
+        longest * MIN_MS        /* long texts at the fastest pace */
+      );
+      batch.forEach(function (el) {
+        var n = el.__letterCount;
+        var perChar = Math.min(BASE_MS, Math.max(MIN_MS, budgetMs / n));
+        setTimeout(function () { typeInto(el, perChar); }, 0);
+      });
+      batch = [];
+    }
+    function enqueue(el) {
+      batch.push(el);
+      clearTimeout(timer);
+      timer = setTimeout(flushBatch, 80);
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-typetrick]'), function (el) {
+      splitFor(el);   /* boot-time split — nothing ever prints whole */
+      if (!('IntersectionObserver' in window)) {
+        enqueue(el);
+        return;
+      }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          obs.unobserve(el);
+          if (reduceMotion) return;
+          enqueue(el);
+        });
+      }, { rootMargin: '0px 0px -12% 0px', threshold: 0.2 });
+      obs.observe(el);
+    });
+  }
+
+  /* --- 6. Scramble / decode-in -----------------------------------------
+     Two modes:
+       - [data-typetrick] elements: the scramble is the FINAL flourish of
+         the type choreography. It waits for "typeflow:done" (fired when
+         typing completes), then briefly shimmers ~10 letters at a time
+         through glyph cycles before settling. Operates on the .pc letter
+         spans directly so the split is never collapsed.
+       - Bare [data-scramble] elements: legacy behavior — whole-string
+         decode on a short random delay. */
   function initScramble() {
     if (reduceMotion) return;
     var GLYPHS = '!<>-_\\/[]{}=+*^?#________';
 
-    function scramble(el) {
+    /* Legacy whole-string scramble (unchanged from the original behavior). */
+    function decodeString(el) {
       var finalText = el.textContent;
       var len = finalText.length;
       var frame = 0;
@@ -163,8 +310,60 @@
       })();
     }
 
+    /* Choreographed span decode — identical visual behavior to the legacy
+       whole-string scramble, but works on the .pc letter spans the typing
+       choreography created. The element keeps its split; only contents
+       of the spans change frame by frame. */
+    function decodeSpans(letters, originals, done) {
+      var len = letters.length;
+      var frame = 0;
+      var totalFrames = Math.min(20, 6 + len);
+      (function step() {
+        var solved = Math.floor((frame / totalFrames) * len);
+        for (var i = 0; i < len; i++) {
+          if (letters[i].textContent === originals[i] &&
+              originals[i] === ' ') continue;  /* spaces never scramble */
+          var c = originals[i];
+          if (i >= solved) {
+            letters[i].classList.add('pc--shimmer');
+            letters[i].textContent = GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
+          } else {
+            letters[i].classList.remove('pc--shimmer');
+            letters[i].textContent = c;
+          }
+        }
+        frame++;
+        if (frame <= totalFrames) requestAnimationFrame(step);
+        else {
+          /* final settle */
+          for (var j = 0; j < len; j++) {
+            letters[j].classList.remove('pc--shimmer');
+            letters[j].textContent = originals[j];
+          }
+          if (done) done();
+        }
+      })();
+    }
+
     Array.prototype.forEach.call(document.querySelectorAll('[data-scramble]'), function (el) {
-      /* bilingual wrapper → scramble the SPAN that is currently visible */
+      if (el.hasAttribute('data-typetrick')) {
+        /* choreographed: scramble is the third act of the typing flow */
+        el.addEventListener('typeflow:done', function onDone() {
+          el.removeEventListener('typeflow:done', onDone);
+          var spans = el.querySelectorAll('[data-lang]');
+          var target = el;
+          if (spans.length) {
+            for (var i = 0; i < spans.length; i++) {
+              if (spans[i].offsetParent !== null) { target = spans[i]; break; }
+            }
+          }
+          var letters = target.querySelectorAll('.pc');
+          var originals = Array.prototype.map.call(letters, function (s) { return s.textContent; });
+          decodeSpans(letters, originals);
+        });
+        return;
+      }
+      /* non-choreographed scramble: legacy timing */
       var spans = el.querySelectorAll('[data-lang]');
       var target = el;
       if (spans.length) {
@@ -172,12 +371,11 @@
           if (spans[i].offsetParent !== null) { target = spans[i]; break; }
         }
       }
-      /* hero items are above the fold: run shortly after their reveal */
-      setTimeout(scramble.bind(null, target), 350 + Math.random() * 250);
+      setTimeout(decodeString.bind(null, target), 350 + Math.random() * 250);
     });
   }
 
-  /* --- 6. Timeline rail + node lighting ---------------------------------- */
+  /* --- 7. Timeline rail + node lighting --------------------------------- */
   function initTimelineRail() {
     var tl = document.querySelector('.timeline');
     if (!tl) return;
@@ -205,7 +403,7 @@
     }
   }
 
-  /* --- 7. Platform-aware shortcut labels --------------------------------
+  /* --- 8. Platform-aware shortcut labels --------------------------------
      On Apple platforms the palette trigger is ⌘K, not Ctrl+K. Two spots
      carry the label: the nav hint button (#palette-open) and any hero
      prompt <kbd data-key="ctrl">. The kbd swap also keeps the literal
@@ -218,7 +416,7 @@
     });
   }
 
-  /* --- 7. Command palette ------------------------------------------------- */
+  /* --- 9. Command palette ------------------------------------------------- */
   function initPalette() {
     var openBtn = document.getElementById('palette-open');
     var root = document.createElement('div');
@@ -332,7 +530,7 @@
     if (openBtn) openBtn.addEventListener('click', open);
   }
 
-  /* --- 8. Page wipe on same-origin navigation ------------------------------ */
+  /* --- 10. Page wipe on same-origin navigation ----------------------------- */
   function initPageWipe() {
     if (reduceMotion) return;
     var wipe = document.querySelector('.page-wipe');
@@ -365,7 +563,7 @@
     });
   }
 
-  /* --- 9. Footer clock ----------------------------------------------------- */
+  /* --- 11. Footer clock ---------------------------------------------------- */
   function initClock() {
     var el = document.getElementById('footer-clock');
     if (!el) return;
@@ -397,7 +595,8 @@
     initCursorGlow();
     initMagnetic();
     initTilt();
-    initScramble();
+    initScramble();      /* registers the typeflow:done listener first */
+    initTypeflow();      /* then starts the choreography */
     initTimelineRail();
     initPlatformKeys();
     initPalette();

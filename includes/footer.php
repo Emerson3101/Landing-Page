@@ -12,9 +12,6 @@
 ?>
   <footer class="site-footer">
     <div class="site-footer__row">
-      <span class="site-footer__status">
-        <?= t('All systems normal', 'Todos los sistemas operando') ?>
-      </span>
       <p>&copy; <?= date('Y') ?> Emerson Plancarte</p>
       <time class="site-footer__clock" id="footer-clock" aria-hidden="true"></time>
     </div>
@@ -41,6 +38,7 @@
   <script src="/assets/js/animations.js" defer></script>
   <script src="/assets/js/webgl-hero.js" defer></script>
   <script src="/assets/js/fx.js" defer></script>
+  <script src="/assets/js/fx-particles.js" defer></script>
   <script src="/assets/js/portfolio.js" defer></script>
   <script src="/assets/js/main.js" defer></script>
 </body>

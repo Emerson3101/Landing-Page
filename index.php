@@ -30,11 +30,8 @@ require __DIR__ . '/includes/header.php';
 <section class="hero" id="top" aria-labelledby="hero-title">
   <canvas class="hero__canvas" id="hero-gl" aria-hidden="true"></canvas>
   <div class="hero__inner" data-reveal-group>
-    <p class="hero__eyebrow" data-reveal>
-      <?= t('Available for new opportunities', 'Disponible para nuevas oportunidades') ?>
-    </p>
-    <h1 class="hero__title" id="hero-title" data-reveal data-scramble>Emerson Plancarte</h1>
-    <p class="hero__subtitle" data-reveal data-scramble>
+    <h1 class="hero__title" id="hero-title" data-reveal data-scramble data-typetrick>Emerson Plancarte</h1>
+    <p class="hero__subtitle" data-reveal data-scramble data-typetrick>
       <?= t('Software & Embedded Systems Engineer', 'Ingeniero de Software y Sistemas Embebidos') ?>
     </p>
     <div class="hero__actions" data-reveal>
@@ -62,7 +59,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('About', 'Acerca de') ?></p>
-      <h2 class="section__title" id="about-title">
+      <h2 class="section__title" id="about-title" data-typetrick>
         <?= t('A bit about me', 'Un poco sobre mí') ?>
       </h2>
     </header>
@@ -103,7 +100,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Skills', 'Habilidades') ?></p>
-      <h2 class="section__title" id="skills-title">
+      <h2 class="section__title" id="skills-title" data-typetrick>
         <?= t('Tools I reach for', 'Herramientas que utilizo') ?>
       </h2>
       <p class="section__lead">
@@ -161,7 +158,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Experience', 'Experiencia') ?></p>
-      <h2 class="section__title" id="experience-title">
+      <h2 class="section__title" id="experience-title" data-typetrick>
         <?= t('Where I’ve worked', 'Dónde he trabajado') ?>
       </h2>
     </header>
@@ -241,7 +238,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Education & Awards', 'Educación y Reconocimientos') ?></p>
-      <h2 class="section__title" id="education-title">
+      <h2 class="section__title" id="education-title" data-typetrick>
         <?= t('School & recognition', 'Estudios y reconocimiento') ?>
       </h2>
     </header>
@@ -296,7 +293,7 @@ require __DIR__ . '/includes/header.php';
   <div class="container container--prose">
     <header class="section__header section__header--center" data-reveal>
       <p class="section__eyebrow"><?= t('Contact', 'Contacto') ?></p>
-      <h2 class="section__title" id="contact-title">
+      <h2 class="section__title" id="contact-title" data-typetrick>
         <?= t('Let’s build something', 'Construyamos algo juntos') ?>
       </h2>
       <p class="section__lead">

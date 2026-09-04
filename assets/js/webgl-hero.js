@@ -79,7 +79,7 @@
     '',
     '  /* drifting bokeh field — one loop of layered orbs */',
     '  float glow = 0.0;',
-    '  for (int i = 0; i < 14; i++){',
+    '  for (int i = 0; i < 40; i++){',
     '    float fi = float(i);',
     '    float seed = fi * 17.23;',
     '    vec2 c = vec2(',

@@ -57,11 +57,15 @@ C:\Users\Emerson Plancarte\php-portable\php.exe
 ```
 
 (PHP 8.5.8 ZTS, OPcache on, downloaded from windows.php.net.) Start the
-built-in dev server with the project root as docroot — the root-absolute
-paths require this:
+built-in dev server from the project root **with `serve.php` as the router
+script** — the router is what maps clean URLs (`/portfolio/icv/`) to their
+source files (`portfolio/icv.php`). Without it, PHP's built-in server falls
+back to the nearest ancestor `index.php`, so every `/portfolio/<slug>/`
+silently renders the portfolio grid instead of the detail page (and bogus
+URLs 200 as the home page instead of 404ing):
 
 ```
-& "C:\Users\Emerson Plancarte\php-portable\php.exe" -S localhost:8000 -t "C:\Users\Emerson Plancarte\StudioProjects\LandingPage4_GLM"
+& "C:\Users\Emerson Plancarte\php-portable\php.exe" -S localhost:8000 serve.php
 ```
 
 Then open `http://localhost:8000`. The process runs detached and survives the
@@ -110,7 +114,7 @@ assets/
     components.css              Component primitives (buttons, cards, nav, hero, fields, tags, stats, timeline…)
     pages.css                   Page-level LAYOUT using the components (home, portfolio, project, contact form)
     animations.css              Motion layer (reveal, hover, theme cross-fade, ctaPulse, countGlow, reduced-motion safety)
-    fx.css                      "Terminal Noir" effects layer — living aura, seamless cross-fading section tints, footer hairline, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer status bar
+    fx.css                      "Terminal Noir" effects layer — living aura, seamless cross-fading section tints, footer hairline, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer row
     fonts.css                  GENERATED — @font-face for the self-hosted subsets (see §6)
   js/
     main.js                     Theme + lang toggles, mobile nav, back-to-top, contact form (see §11)

@@ -38,11 +38,10 @@ function bi_field(array $field) {
      ======================================================= -->
 <section class="hero hero--compact" aria-labelledby="portfolio-title">
   <div class="hero__inner" data-reveal-group>
-    <p class="hero__eyebrow" data-reveal><?= t('Portfolio', 'Portafolio') ?></p>
-    <h1 class="hero__title" id="portfolio-title" data-reveal>
-      <?= t('Selected work', 'Trabajo seleccionado') ?>
+    <h1 class="hero__title" id="portfolio-title" data-reveal data-typetrick>
+      <?= t('Portfolio', 'Portafolio') ?>
     </h1>
-    <p class="hero__subtitle" data-reveal>
+    <p class="hero__subtitle" data-reveal data-typetrick>
       <?= t(
         'Real projects from the CV alongside built-for-portfolio showcase demos — spanning web, backend, embedded, and mobile.',
         'Proyectos reales del CV junto con demostraciones creadas para el portafolio — abarcando web, backend, embebido y móvil.'
