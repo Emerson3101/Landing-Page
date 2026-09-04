@@ -44,3 +44,33 @@
 
 # --- Don't list directories. --------------------------------------
 Options -Indexes
+
+# --- Clean URLs (dynamic mode) ----------------------------------------
+# The static build emits portfolio/icv/index.html for /portfolio/icv/;
+# these rules make the dynamic tree (portfolio/icv.php) answer the SAME
+# URLs on Apache + mod_php, so both deploy modes share one URL space.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Directory index: /portfolio/ resolves via DirectoryIndex (below).
+  # Direct requests for real files/dirs pass through untouched — this
+  # also keeps /api/contact.php (form endpoint) and assets working.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # /portfolio/icv  (or /portfolio/icv/) -> portfolio/icv.php, when it exists.
+  # Trailing slash tolerated so both spellings work.
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^(.+?)/?$ $1.php [L]
+
+  # Canonical: direct /page.php requests 301 to the clean URL (except /api/).
+  RewriteCond %{ENV:REDIRECT_STATUS} ^$
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteCond %{REQUEST_URI} ^/(.+)\.php$
+  RewriteRule ^ /%1/ [R=301,L]
+</IfModule>
+
+# /portfolio/ -> portfolio/index.php (put before index.html so dynamic
+# mode wins when both exist; harmless in pure-static hosting).
+DirectoryIndex index.php index.html

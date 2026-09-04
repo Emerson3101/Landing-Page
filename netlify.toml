@@ -1,0 +1,25 @@
+# netlify.toml — build wiring ONLY. The site itself is host-agnostic:
+# - Static hosts: publish the _site/ output of `php build.php` (this file).
+# - Apache/PHP hosts: deploy the repo as-is; .htaccess serves clean URLs
+#   and api/contact.php works natively.
+# - Other static hosts (Cloudflare Pages, GH Pages): same build command,
+#   publish _site — no source changes needed.
+
+[build]
+  command = "php build.php"
+  publish = "_site"
+
+[build.environment]
+  PHP_VERSION = "8.2"
+
+# Clean URLs are already real directories (portfolio/icv/index.html) —
+# no rewrites needed. The trailing-slash-less variant is normalized here
+# to avoid duplicate-URL SEO issues on the CDN edge.
+[[redirects]]
+  from = "/portfolio"
+  to = "/portfolio/"
+  status = 301
+[[redirects]]
+  from = "/styleguide"
+  to = "/styleguide/"
+  status = 301

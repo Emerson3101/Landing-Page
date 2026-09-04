@@ -24,7 +24,7 @@
         "en": "A web tool that computes the Voltage Quality Index (ICV) per Mexico’s Grid Code across 50+ transmission localities — cutting analysis time by more than 80% with manual validation, per-level ICV, exports, and automatic reports.",
         "es": "Una herramienta web que calcula el Índice de Calidad de Voltaje (ICV) conforme al Código de Red en más de 50 localidades de transmisión — reduciendo el tiempo de análisis en más de un 80%, con validación manual, ICV por nivel, exportaciones y reportes automáticos."
       },
-      "links": { "detail": "/portfolio/icv.php" }
+      "links": { "detail": "/portfolio/icv/" }
     },
     {
       "slug": "grid-code-explorer",
@@ -39,7 +39,7 @@
         "en": "A small single-page React app that lets transmission engineers look up Grid-Code voltage limits by level and locality, with fast client-side search.",
         "es": "Una SPA en React que permite a ingenieros de transmisión consultar los límites de voltaje del Código de Red por nivel y localidad, con búsqueda rápida en el cliente."
       },
-      "links": { "detail": "/portfolio/grid-code-explorer.php" }
+      "links": { "detail": "/portfolio/grid-code-explorer/" }
     },
     {
       "slug": "laravel-rest-api",
@@ -54,7 +54,7 @@
         "en": "A tiny REST resource API for storing and validating ICV evaluation records — migrations, request validation, and token auth included.",
         "es": "Una API REST pequeña para almacenar y validar registros de evaluación ICV — con migraciones, validación de solicitudes y autenticación por token."
       },
-      "links": { "detail": "/portfolio/laravel-rest-api.php" }
+      "links": { "detail": "/portfolio/laravel-rest-api/" }
     },
     {
       "slug": "esp32-voltage-dashboard",
@@ -69,7 +69,7 @@
         "en": "An ESP32 reads AC voltage and streams readings to a lightweight browser dashboard with live charts and configurable alert thresholds.",
         "es": "Un ESP32 lee voltaje de CA y envía las lecturas a un tablero ligero en el navegador, con gráficas en vivo y umbrales de alerta configurables."
       },
-      "links": { "detail": "/portfolio/esp32-voltage-dashboard.php" }
+      "links": { "detail": "/portfolio/esp32-voltage-dashboard/" }
     },
     {
       "slug": "teassist",
@@ -84,7 +84,7 @@
         "en": "First place in the local Technological Innovation Contest, Smart Cities category (Dec 2025). The full write-up will be added once the project’s stack and scope are confirmed.",
         "es": "Primer lugar del Concurso de Innovación Tecnológica local, categoría Ciudades Inteligentes (dic 2025). La descripción completa se añadirá una vez confirmada la pila tecnológica y el alcance del proyecto."
       },
-      "links": { "detail": "/portfolio/teassist.php" }
+      "links": { "detail": "/portfolio/teassist/" }
     },
     {
       "slug": "kotlin-demo",
@@ -99,7 +99,7 @@
         "en": "A minimal Android UI in Kotlin/Compose that lists transmission localities and shows their latest ICV status — representing the mobile line on the CV.",
         "es": "Una UI mínima para Android en Kotlin/Compose que lista localidades de transmisión y muestra su estado ICV más reciente — representando la línea móvil del CV."
       },
-      "links": { "detail": "/portfolio/kotlin-demo.php" }
+      "links": { "detail": "/portfolio/kotlin-demo/" }
     }
   ]
 }

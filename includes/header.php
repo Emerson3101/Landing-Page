@@ -18,9 +18,10 @@ $page_title       = $page_title       ?? 'Emerson Plancarte — Software & Embed
 $page_description = $page_description ?? 'Personal landing page of Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer.';
 $page_lang        = $page_lang        ?? 'en'; // JS updates <html lang> when the language toggle flips
 
-// Origin for canonical / Open Graph URLs. Override on deploy (or per-page
-// via $site_url) so absolute URLs resolve. sitemap.xml must match this.
-$site_url  = $site_url  ?? 'https://emerson-plancarte.example';
+// Origin for canonical / Open Graph URLs. Precedence: per-page $site_url,
+// then the SITE_URL environment variable (set by build.php/serve.php or the
+// host), then the placeholder default. sitemap.xml must match this.
+$site_url  = $site_url  ?? (getenv('SITE_URL') ?: 'https://emerson-plancarte.example');
 $canonical = $canonical ?? ($site_url . ($_SERVER['REQUEST_URI'] ?? '/'));
 $og_type   = $og_type   ?? 'website';
 ?>
