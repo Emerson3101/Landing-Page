@@ -1,0 +1,105 @@
+{
+  "_comment": "Single source of truth for the portfolio grid. Each project also has a hand-written bilingual detail page at portfolio/<slug>.php; the JSON drives only the grid cards (title, subtitle, category, tier, year, stack, summary, links). Bilingual fields use {en, es}; the card renderer emits both as data-lang spans so the existing EN/ES toggle works without rebuilding the grid. The 'tier' field separates real CV projects ('real') from built-for-portfolio showcase demos ('demo') — the card surfaces this honestly.",
+  "categories": {
+    "web":       { "en": "Web",      "es": "Web" },
+    "backend":   { "en": "Backend",  "es": "Backend" },
+    "embedded":  { "en": "Embedded", "es": "Embebido" },
+    "mobile":    { "en": "Mobile",   "es": "Móvil" }
+  },
+  "tiers": {
+    "real": { "en": "Real project",   "es": "Proyecto real" },
+    "demo": { "en": "Showcase demo",  "es": "Demostración" }
+  },
+  "projects": [
+    {
+      "slug": "icv",
+      "title": { "en": "ICV — Voltage Quality Evaluation Tool", "es": "ICV — Herramienta de Evaluación de Calidad de Voltaje" },
+      "subtitle": { "en": "Automated Grid-Code voltage-quality index at CFE", "es": "Índice de calidad de voltaje automatizado conforme al Código de Red en CFE" },
+      "category": "web",
+      "tier": "real",
+      "year": "2024–2026",
+      "featured": true,
+      "stack": [".NET 3.5", "C#", "PHP", "JavaScript", "jQuery", "Bootstrap", "AJAX", "PI System"],
+      "summary": {
+        "en": "A web tool that computes the Voltage Quality Index (ICV) per Mexico’s Grid Code across 50+ transmission localities — cutting analysis time by more than 80% with manual validation, per-level ICV, exports, and automatic reports.",
+        "es": "Una herramienta web que calcula el Índice de Calidad de Voltaje (ICV) conforme al Código de Red en más de 50 localidades de transmisión — reduciendo el tiempo de análisis en más de un 80%, con validación manual, ICV por nivel, exportaciones y reportes automáticos."
+      },
+      "links": { "detail": "/portfolio/icv.php" }
+    },
+    {
+      "slug": "grid-code-explorer",
+      "title": { "en": "Grid Code Explorer", "es": "Explorador del Código de Red" },
+      "subtitle": { "en": "React SPA for looking up voltage limits", "es": "SPA en React para consultar límites de voltaje" },
+      "category": "web",
+      "tier": "demo",
+      "year": "2025",
+      "featured": false,
+      "stack": ["React", "JavaScript", "Vite", "CSS Modules"],
+      "summary": {
+        "en": "A small single-page React app that lets transmission engineers look up Grid-Code voltage limits by level and locality, with fast client-side search.",
+        "es": "Una SPA en React que permite a ingenieros de transmisión consultar los límites de voltaje del Código de Red por nivel y localidad, con búsqueda rápida en el cliente."
+      },
+      "links": { "detail": "/portfolio/grid-code-explorer.php" }
+    },
+    {
+      "slug": "laravel-rest-api",
+      "title": { "en": "ICV Records API", "es": "API de Registros ICV" },
+      "subtitle": { "en": "Laravel resource API with migrations + validation", "es": "API REST en Laravel con migraciones y validación" },
+      "category": "backend",
+      "tier": "demo",
+      "year": "2025",
+      "featured": false,
+      "stack": ["Laravel", "PHP", "MySQL", "Eloquent", "Sanctum"],
+      "summary": {
+        "en": "A tiny REST resource API for storing and validating ICV evaluation records — migrations, request validation, and token auth included.",
+        "es": "Una API REST pequeña para almacenar y validar registros de evaluación ICV — con migraciones, validación de solicitudes y autenticación por token."
+      },
+      "links": { "detail": "/portfolio/laravel-rest-api.php" }
+    },
+    {
+      "slug": "esp32-voltage-dashboard",
+      "title": { "en": "ESP32 Voltage Monitor", "es": "Monitor de Voltaje con ESP32" },
+      "subtitle": { "en": "Embedded sensor + real-time JS dashboard", "es": "Sensor embebido + tablero JS en tiempo real" },
+      "category": "embedded",
+      "tier": "demo",
+      "year": "2025",
+      "featured": false,
+      "stack": ["C/C++", "ESP32", "Arduino IDE", "WebSockets", "Chart.js"],
+      "summary": {
+        "en": "An ESP32 reads AC voltage and streams readings to a lightweight browser dashboard with live charts and configurable alert thresholds.",
+        "es": "Un ESP32 lee voltaje de CA y envía las lecturas a un tablero ligero en el navegador, con gráficas en vivo y umbrales de alerta configurables."
+      },
+      "links": { "detail": "/portfolio/esp32-voltage-dashboard.php" }
+    },
+    {
+      "slug": "teassist",
+      "title": { "en": "TecAssist — Virtual Assistant", "es": "TecAssist — Asistente Virtual" },
+      "subtitle": { "en": "Smart Cities innovation award winner", "es": "Ganador del concurso de innovación, Ciudades Inteligentes" },
+      "category": "mobile",
+      "tier": "real",
+      "year": "2025",
+      "featured": false,
+      "stack": [],
+      "summary": {
+        "en": "First place in the local Technological Innovation Contest, Smart Cities category (Dec 2025). The full write-up will be added once the project’s stack and scope are confirmed.",
+        "es": "Primer lugar del Concurso de Innovación Tecnológica local, categoría Ciudades Inteligentes (dic 2025). La descripción completa se añadirá una vez confirmada la pila tecnológica y el alcance del proyecto."
+      },
+      "links": { "detail": "/portfolio/teassist.php" }
+    },
+    {
+      "slug": "kotlin-demo",
+      "title": { "en": "Voltage Scout", "es": "Voltage Scout" },
+      "subtitle": { "en": "Minimal Kotlin Android UI", "es": "UI mínima en Kotlin para Android" },
+      "category": "mobile",
+      "tier": "demo",
+      "year": "2025",
+      "featured": false,
+      "stack": ["Kotlin", "Android", "Jetpack Compose", "MVVM"],
+      "summary": {
+        "en": "A minimal Android UI in Kotlin/Compose that lists transmission localities and shows their latest ICV status — representing the mobile line on the CV.",
+        "es": "Una UI mínima para Android en Kotlin/Compose que lista localidades de transmisión y muestra su estado ICV más reciente — representando la línea móvil del CV."
+      },
+      "links": { "detail": "/portfolio/kotlin-demo.php" }
+    }
+  ]
+}

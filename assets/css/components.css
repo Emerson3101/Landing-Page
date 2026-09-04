@@ -1,0 +1,692 @@
+/* =====================================================================
+   components.css — Reusable UI primitives
+   ---------------------------------------------------------------------
+   Every primitive consumes tokens from tokens.css — no raw hex/rems.
+   Naming is BEM-ish (block__element--modifier). Component-local layout
+   only; page-level arrangement lives in pages.css. Order roughly follows
+   the styleguide.php inventory so the two stay reviewable together.
+   ===================================================================== */
+
+/* ----------------------------------------------------------------------
+   Layout primitives
+   ---------------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--maxw-content);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+.container--wide { max-width: var(--maxw-wide); }
+.container--prose { max-width: var(--maxw-prose); }
+
+.section {
+  padding-block: var(--space-7);
+}
+.section--tight { padding-block: var(--space-5); }
+.section--bleed { padding-block: var(--space-8); }
+
+.section__header {
+  max-width: var(--maxw-prose);
+  margin-bottom: var(--space-5);
+}
+.section__header--center {
+  margin-inline: auto;
+  text-align: center;
+}
+/* Centered header: the eyebrow's leading rule and the lead both center. */
+.section__header--center .section__eyebrow { justify-content: center; }
+.section__header--center .section__eyebrow::before { display: none; }
+.section__header--center .section__lead { margin-inline: auto; }
+
+.section__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+}
+/* The leading dash before the eyebrow text; hidden when centered. */
+.section__eyebrow::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
+.section__title {
+  font-size: var(--step-4);
+  line-height: 1.1;
+}
+.section__lead {
+  margin-top: var(--space-2);
+  font-size: var(--step-1);
+  color: var(--color-text-muted);
+  max-width: 60ch;
+}
+
+/* Vertical rhythm helper for stacked children. */
+.stack > * + * { margin-top: var(--space-3); }
+.stack--lg > * + * { margin-top: var(--space-5); }
+.stack--sm > * + * { margin-top: var(--space-2); }
+
+/* ----------------------------------------------------------------------
+   Skip link (a11y)
+   ---------------------------------------------------------------------- */
+.skip-link {
+  position: absolute;
+  left: var(--space-1);
+  top: -120%;
+  z-index: var(--z-overlay);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition: top var(--dur-fast) var(--ease-out);
+}
+.skip-link:focus { top: var(--space-1); }
+
+/* ----------------------------------------------------------------------
+   Site header + navigation
+   ---------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--color-bg);   /* fallback: solid, readable before color-mix (older engines) */
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+
+.site-nav {
+  max-width: var(--maxw-wide);
+  margin-inline: auto;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.site-nav__brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--step-1);
+  letter-spacing: -0.01em;
+  margin-right: auto;
+}
+.site-nav__brand span { color: var(--color-accent); }
+
+.site-nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+}
+.site-nav__link {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.site-nav__link:hover { color: var(--color-text); }
+.site-nav__link[aria-current="true"] {
+  color: var(--color-text);
+  background: var(--color-accent-soft);
+}
+
+.site-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-border);
+}
+
+/* Icon-only utility buttons (theme toggle, language switch, mobile menu). */
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+.icon-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+.icon-btn:active { transform: scale(0.94); }
+
+/* Language toggle is a text button ("ES"/"EN"), not an icon. Mono font
+   keeps it on-brand (codes), and a min-width stops the button face from
+   jumping a pixel as the label swaps. 2-letter language code centered. */
+.lang-toggle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  min-width: 2.25rem;
+  padding: 0 0.4rem;
+  text-transform: uppercase;
+}
+.lang-toggle > span { line-height: 1; }
+
+/* Mobile nav toggle (Phase 6). Hidden by default; on narrow screens `.js`
+   shows it and hides the inline links, so the drawer takes over. Without
+   `.js` the inline links stay visible — the no-JS fallback. */
+.site-nav__toggle { display: none; }
+/* 47.99em, not 48em, so these mobile rules release exactly where the
+   desktop `min-width: 48em` rules below take over — no 1px window at
+   the breakpoint where the toggle shows but the drawer is display:none. */
+@media (max-width: 47.99em) {
+  .js .site-nav__links { display: none; }
+  .js .site-nav__toggle { display: inline-grid; }
+}
+
+/* The drawer is a duplicate of the inline links rendered after </nav>,
+   anchored to the sticky header (absolute, top:100%). Hidden by default
+   and revealed by body[data-nav-open="true"]; a body::before pseudo
+   provides the dim overlay so no extra element is needed. */
+.nav-drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              visibility 0s linear var(--dur-base);
+}
+.nav-drawer__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.nav-drawer__link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--step-1);
+  font-weight: 500;
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.nav-drawer__link:hover,
+.nav-drawer__link:focus-visible {
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  outline: none;
+}
+.nav-drawer__link[aria-current="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+body[data-nav-open="true"] .nav-drawer {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              visibility 0s;
+}
+/* Dim overlay behind the drawer, above page content, below the sticky
+   header. On <body>::before so the header's backdrop-filter doesn't
+   become its containing block. */
+body[data-nav-open="true"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;            /* above content (z-base), below header (z-sticky) */
+  background: var(--color-overlay);
+  opacity: 0;
+  animation: nav-drawer-fade var(--dur-base) var(--ease-out) forwards;
+}
+@keyframes nav-drawer-fade { to { opacity: 1; } }
+/* Lock background scroll while the drawer is open. */
+body[data-nav-open="true"] { overflow: hidden; }
+/* Hamburger/close icon swap on the toggle — mirrors the theme toggle. */
+.site-nav__toggle .icon--close { display: none; }
+.site-nav__toggle[aria-expanded="true"] .icon--menu { display: none; }
+.site-nav__toggle[aria-expanded="true"] .icon--close { display: inline-block; }
+/* Don't paint the drawer on wide screens. */
+@media (min-width: 48em) {
+  .nav-drawer { display: none; }
+}
+
+/* ----------------------------------------------------------------------
+   Hero
+   ---------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  min-height: 92svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-3);
+  background-image: var(--grad-hero);
+  background-repeat: no-repeat;
+}
+.hero__inner {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+}
+.hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--step-0);
+  color: var(--color-accent);
+  letter-spacing: 0.06em;
+}
+.hero__title {
+  font-size: var(--step-5);
+  line-height: 1.05;
+}
+.hero__subtitle {
+  font-size: var(--step-2);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* ----------------------------------------------------------------------
+   Buttons
+   ---------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 0.7rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  transition: transform var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-sm);
+}
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.btn--secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+.btn--ghost:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.btn--lg { padding: 0.9rem 1.6rem; font-size: var(--step-1); }
+.btn--sm { padding: 0.45rem 0.85rem; font-size: var(--step--1); }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ----------------------------------------------------------------------
+   Links + inline icon
+   ---------------------------------------------------------------------- */
+.link {
+  color: var(--color-link);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--color-link);   /* fallback before color-mix (older engines) */
+  text-decoration-color: color-mix(in srgb, var(--color-link) 35%, transparent);
+  text-underline-offset: 0.18em;
+  transition: color var(--dur-fast) var(--ease-out),
+              text-decoration-color var(--dur-fast) var(--ease-out);
+}
+.link:hover {
+  color: var(--color-link-hover);
+  text-decoration-color: currentColor;
+}
+
+/* Inline SVG sizing — icons inherit currentColor and sit on the text baseline. */
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.icon--lead { margin-right: 0.4em; }
+
+/* Theme-toggle: show the icon for the action it offers (sun in dark → go light;
+   moon in light → go dark). Default theme is dark, so the moon is hidden first. */
+.icon--moon { display: none; }
+[data-theme="light"] .icon--sun { display: none; }
+[data-theme="light"] .icon--moon { display: block; }
+
+/* ----------------------------------------------------------------------
+   Tags / chips (skills, stack labels)
+   ---------------------------------------------------------------------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.3rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.tag:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+.tag__dot { width: 0.45rem; height: 0.45rem; border-radius: var(--radius-pill); background: var(--color-accent); }
+.tag-list { display: flex; flex-wrap: wrap; gap: var(--space-1); list-style: none; padding: 0; }
+
+/* ----------------------------------------------------------------------
+   Card
+   ---------------------------------------------------------------------- */
+.card {
+  background: var(--color-surface);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-surface) 92%, var(--color-accent) 8%), var(--color-surface));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: transform var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  box-shadow: var(--shadow-md), 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+.card--interactive { cursor: pointer; }
+.card--interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+}
+.card__title {
+  font-size: var(--step-2);
+  margin-bottom: var(--space-1);
+}
+.card__body { color: var(--color-text-muted); }
+.card__footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ----------------------------------------------------------------------
+   Stat (big number + label; used for the ICV "80% reduction" figure)
+   ---------------------------------------------------------------------- */
+.stat { display: grid; gap: 0.25rem; }
+.stat__value {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text);
+}
+.stat__value em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+.stat__label {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------------------
+   Badge (award)
+   ---------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.35rem 0.8rem;
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+}
+.badge__icon { width: 1em; height: 1em; }
+
+/* ----------------------------------------------------------------------
+   Timeline (experience)
+   ---------------------------------------------------------------------- */
+.timeline {
+  position: relative;
+  display: grid;
+  gap: var(--space-5);
+  padding-left: var(--space-5);
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: var(--color-border);
+}
+.timeline__item { position: relative; }
+.timeline__node {
+  position: absolute;
+  left: calc(-1 * var(--space-5) + 0.1rem);
+  top: 0.45rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-bg);
+}
+.timeline__meta {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-bottom: 0.25rem;
+}
+.timeline__title { font-size: var(--step-2); margin-bottom: 0.25rem; }
+.timeline__org { color: var(--color-accent); font-weight: 500; margin-bottom: var(--space-2); }
+.timeline__body { color: var(--color-text-muted); }
+.timeline__body > * + * { margin-top: var(--space-2); }
+
+/* ----------------------------------------------------------------------
+   Form fields
+   ---------------------------------------------------------------------- */
+.field { display: grid; gap: 0.4rem; }
+.field__label {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--color-text);
+}
+.field__label .req { color: var(--color-accent); }
+.field__input,
+.field__textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: var(--step-0);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+.field__textarea { min-height: 8rem; resize: vertical; }
+.field__input::placeholder,
+.field__textarea::placeholder { color: var(--color-text-subtle); }
+.field__input:focus,
+.field__textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+.field__help { font-size: var(--step--2); color: var(--color-text-subtle); }
+.field__error { font-size: var(--step--2); color: #ff7a7a; display: none; }
+
+/* Toggle the error on when the field is invalid. */
+.field--error .field__error { display: block; }
+.field--error .field__input,
+.field--error .field__textarea {
+  border-color: #ff7a7a;
+  box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.18);
+}
+
+/* ----------------------------------------------------------------------
+   Footer
+   ---------------------------------------------------------------------- */
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-5);
+  padding-inline: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--step--1);
+}
+.site-footer__inner {
+  max-width: var(--maxw-wide);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.site-footer__links { display: flex; gap: var(--space-3); list-style: none; padding: 0; }
+.site-footer__links a { color: var(--color-text-muted); }
+.site-footer__links a:hover { color: var(--color-text); }
+
+/* ----------------------------------------------------------------------
+   Back-to-top (Phase 6)
+   ---------------------------------------------------------------------- */
+.to-top {
+  position: fixed;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: var(--z-sticky);
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              visibility 0s linear var(--dur-base);
+}
+.to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              visibility 0s;
+}
+.to-top:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.to-top:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.to-top .icon { width: 1.4em; height: 1.4em; stroke-width: 2.4; }
+@media (min-width: 48em) {
+  /* a touch more padding from the edge on desktop */
+  .to-top { right: var(--space-4); bottom: var(--space-4); }
+}

@@ -1,0 +1,2 @@
+timestamp,ip,name,email,message,sent
+2026-07-05T09:42:42+00:00,::1,"Local Test",test@example.com,"Smoke test from local deploy. Please ignore.",0

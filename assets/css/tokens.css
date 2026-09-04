@@ -1,0 +1,162 @@
+/* =====================================================================
+   tokens.css — Design tokens (CSS custom properties)
+   ---------------------------------------------------------------------
+   THE single source of truth for visual decisions. Components consume
+   tokens, never raw hex/rem values, so the whole system can be re-themed
+   by editing this file. Dark theme is the default (:root); light theme is
+   applied by setting [data-theme="light"] on <html> (the nav toggle does
+   this and the choice is persisted via localStorage by main.js).
+
+   Contrast targets: WCAG 2.2 AA — body text ≥ 4.5:1, large/non-text ≥ 3:1.
+   Ratios are chosen to clear AA in both themes; a full contrast audit is
+   scheduled in Phase 8. Accent is used for emphasis and UI, not body text.
+   ===================================================================== */
+
+:root {
+  /* --- Type families ------------------------------------------------- */
+  --font-sans:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* --- Fluid type scale (min, preferred-vw, max) --------------------
+     Grows with viewport without media-query jumps. Anchor at 1rem body. */
+  --step--2: clamp(0.72rem, 0.68rem + 0.18vw, 0.80rem); /* labels        */
+  --step--1: clamp(0.83rem, 0.79rem + 0.22vw, 0.92rem); /* small text    */
+  --step-0:  clamp(1.00rem, 0.96rem + 0.20vw, 1.08rem); /* body          */
+  --step-1:  clamp(1.20rem, 1.12rem + 0.40vw, 1.45rem); /* h4 / lead     */
+  --step-2:  clamp(1.44rem, 1.32rem + 0.60vw, 1.83rem); /* h3            */
+  --step-3:  clamp(1.73rem, 1.54rem + 0.95vw, 2.40rem); /* h2            */
+  --step-4:  clamp(2.07rem, 1.74rem + 1.65vw, 3.10rem); /* h1 section    */
+  --step-5:  clamp(2.49rem, 1.96rem + 2.65vw, 4.40rem); /* hero          */
+
+  /* --- Spacing (8px base: 0.5,1,1.5,2,3,4,6,8rem) ------------------- */
+  --space-0: 0;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --space-6: 4rem;
+  --space-7: 6rem;   /* section gutters       */
+  --space-8: 8rem;   /* large section gaps    */
+
+  /* --- Radius -------------------------------------------------------- */
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-pill: 999px;
+
+  /* --- Motion -------------------------------------------------------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 450ms;
+
+  /* --- Layout -------------------------------------------------------- */
+  --maxw-content: 72rem; /* long-form text measure */
+  --maxw-wide:    80rem; /* portfolio grid / bands  */
+  --maxw-prose:   68rem; /* about / narrative       */
+
+  /* --- Z-index scale (one place; avoids ad-hoc clouds) -------------- */
+  --z-base:    1;
+  --z-sticky:  50;
+  --z-overlay: 100;
+  --z-modal:   1000;
+}
+
+/* ----------------------------------------------------------------------
+   Dark theme — DEFAULT surface palette.
+   Near-black with a faint cool cast; raised surfaces lift a notch.
+   ---------------------------------------------------------------------- */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg:           #06080c;
+  --color-surface:      #0d1118;
+  --color-surface-2:    #131826;
+  --color-surface-3:    #1a2133;   /* hover lift / glass raise   */
+  --color-overlay:      rgba(4, 6, 10, 0.72);
+
+  --color-text:         #eef2f7;
+  --color-text-muted:   #a8b2c0;
+  --color-text-subtle:  #7e8a98;
+
+  --color-accent:       #36e8a0;
+  --color-accent-hover: #6df6bd;
+  --color-accent-2:     #4aa8ff; /* secondary hue for shader + gradients */
+  --color-accent-soft:  rgba(54, 232, 160, 0.13);
+  --color-accent-contrast: #04241a;
+
+  --color-link:         #36e8a0;
+  --color-link-hover:   #6df6bd;
+
+  --color-border:       #1c2432;
+  --color-border-strong:#2b3749;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.50);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.60);
+  --shadow-glow: 0 0 0 1px rgba(54, 232, 160, 0.22), 0 10px 34px rgba(54, 232, 160, 0.12);
+
+  /* Glass surface used by cards/feature bands; composited over --color-bg. */
+  --glass-bg: rgba(16, 21, 31, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  /* Soft radial auras painted behind content sections via body::after. */
+  --aura:
+    radial-gradient(50rem 30rem at 85% -5%, rgba(74, 168, 255, 0.07), transparent 65%),
+    radial-gradient(46rem 28rem at -10% 40%, rgba(54, 232, 160, 0.05), transparent 60%),
+    radial-gradient(40rem 26rem at 90% 95%, rgba(54, 232, 160, 0.05), transparent 60%);
+
+  --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(54, 232, 160, 0.10), transparent 60%);
+}
+
+/* ----------------------------------------------------------------------
+   Light theme — applied via [data-theme="light"] on <html>.
+   Off-white ground (easier on eyes than pure white), near-black ink.
+   Accent darkened so it keeps contrast on light; a dedicated --color-link
+   gives AA body-weight link text on the light ground.
+   ---------------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg:           #f4f3ef;
+  --color-surface:      #fcfbf8;
+  --color-surface-2:    #eceae3;
+  --color-surface-3:    #e2dfd6;
+  --color-overlay:      rgba(20, 22, 18, 0.45);
+
+  --color-text:         #14181f;
+  --color-text-muted:   #4c5762;
+  --color-text-subtle:  #5d6770;
+
+  --color-accent:       #0a7549;
+  --color-accent-hover: #096a43;
+  --color-accent-2:     #2f6fd6;
+  --color-accent-soft:  rgba(10, 117, 73, 0.12);
+  --color-accent-contrast: #ffffff;
+
+  --color-link:         #0a6d46;
+  --color-link-hover:   #085637;
+
+  --color-border:       #ddd9cf;
+  --color-border-strong:#c4bfb3;
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 31, 0.08);
+  --shadow-md: 0 6px 18px rgba(20, 24, 31, 0.10);
+  --shadow-lg: 0 14px 40px rgba(20, 24, 31, 0.14);
+  --shadow-glow: 0 0 0 1px rgba(10, 117, 73, 0.18), 0 10px 30px rgba(10, 117, 73, 0.10);
+
+  --glass-bg: rgba(252, 251, 248, 0.65);
+  --glass-border: rgba(20, 24, 31, 0.06);
+
+  --aura:
+    radial-gradient(50rem 30rem at 85% -5%, rgba(47, 111, 214, 0.08), transparent 65%),
+    radial-gradient(46rem 28rem at -10% 40%, rgba(10, 117, 73, 0.06), transparent 60%),
+    radial-gradient(40rem 26rem at 90% 95%, rgba(10, 117, 73, 0.05), transparent 60%);
+
+  --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(10, 117, 73, 0.10), transparent 60%);
+}

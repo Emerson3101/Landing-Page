@@ -1,0 +1,46 @@
+# .htaccess — Apache config for the Emerson Plancarte landing page (Phase 10).
+# Optional polish for the common PHP host (Apache + mod_*). On nginx or any
+# host with .htaccess disabled, this file is inert and the equivalent rules
+# belong in the server block (compression + cache headers + the storage/
+# denial that storage/.htaccess already covers for Apache).
+#
+# Safe to delete if Apache is not in the deploy path.
+
+# --- Compression: text-based assets (HTML, CSS, JS, JSON, SVG) ----
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE \
+    text/html text/plain text/css text/xml \
+    application/javascript application/json \
+    image/svg+xml application/xml
+</IfModule>
+
+# --- Long-cache the immutable self-hosted fonts (1 year). --------
+# Font bytes don't change without a filename change (regeneration writes the
+# same family+subset slug), so a long, immutable cache is correct here.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType font/woff2 "access plus 1 year"
+  <FilesMatch "\.woff2$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# --- Modest cache for CSS/JS (1 day, must-revalidate). ------------
+# These are unversioned (no query-string cache-bust), so a short revalidating
+# cache is the safe default — fast on repeat visits, never stale after edits.
+<IfModule mod_expires.c>
+  ExpiresByType text/css "access plus 1 day"
+  ExpiresByType application/javascript "access plus 1 day"
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=86400, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# --- Never cache the contact endpoint (POST is not cached anyway, but
+#     belt-and-suspenders for any intermediate that tries). --------
+<FilesMatch "^contact\.php$">
+  Header set Cache-Control "no-store"
+</FilesMatch>
+
+# --- Don't list directories. --------------------------------------
+Options -Indexes

@@ -1,0 +1,10 @@
+# Agentic coding / local-only files
+.playwright-mcp/
+.claude/
+Development_Plan.md
+CV Emerson Plancarte.txt
+Instructions.txt
+
+# Build artifacts
+test-results/
+node_modules/

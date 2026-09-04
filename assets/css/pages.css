@@ -1,0 +1,618 @@
+/* =====================================================================
+   pages.css — Page-level layout (not shared components)
+   ---------------------------------------------------------------------
+   Component primitives live in components.css. This file arranges them
+   per page. Layouts: styleguide inventory (Phase 2), home (Phase 3);
+   portfolio + project pages added in Phase 5.
+   ===================================================================== */
+
+/* ----------------------------------------------------------------------
+   Styleguide inventory (internal review page, not linked publicly)
+   ---------------------------------------------------------------------- */
+.styleguide { padding-block: var(--space-6); }
+
+.styleguide__bar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.styleguide__bar h1 { font-size: var(--step-3); margin-right: auto; }
+.styleguide__bar .hint { font-size: var(--step--2); color: var(--color-text-subtle); }
+
+.sg-block { margin-block: var(--space-6); }
+.sg-block__title {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Color swatch grid */
+.sg-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-2);
+}
+.sg-swatch {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.sg-swatch__chip { height: 5rem; }
+.sg-swatch__meta { padding: var(--space-2); }
+.sg-swatch__name { font-family: var(--font-mono); font-size: var(--step--2); }
+.sg-swatch__val { font-family: var(--font-mono); font-size: var(--step--2); color: var(--color-text-muted); }
+
+/* Type specimen */
+.sg-type { display: grid; gap: var(--space-2); }
+.sg-row {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: 1px dashed var(--color-border);
+}
+.sg-row__label { font-family: var(--font-mono); font-size: var(--step--2); color: var(--color-text-subtle); }
+
+/* Demo clusters on the inventory page */
+.sg-cluster { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.sg-cluster--stack { flex-direction: column; align-items: stretch; }
+.sg-cluster--stack > * { width: 100%; max-width: 28rem; }
+
+
+/* ----------------------------------------------------------------------
+   Home page — layout (Phase 3)
+   Mobile-first; grids widen at min-width breakpoints. No raw rems/hex —
+   everything resolves through tokens.css.
+   ---------------------------------------------------------------------- */
+
+/* About — lead paragraphs, then a band of headline figures. */
+.about__intro { max-width: var(--maxw-prose); }
+.about__intro p { font-size: var(--step-1); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md);
+}
+/* Stat value scales down on very tight rows so the band never overflows. */
+.stats .stat__value { font-size: var(--step-4); }
+
+/* Skills — four groups as cards, 1 → 2 columns. */
+.skills__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+@media (min-width: 44em) {
+  .skills__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Experience — the timeline lives in components.css; this is the ICV
+   featured callout that sits under it: two columns on wide screens. */
+.feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md),
+    inset 0 0 60px -30px var(--color-accent-soft);
+}
+.feature__title {
+  font-size: var(--step-3);
+  line-height: 1.15;
+  margin-bottom: var(--space-2);
+}
+.feature__body { color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.feature__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+.feature__stat { justify-items: center; text-align: center; }
+.feature__stat .stat__value { font-size: var(--step-5); }
+
+@media (min-width: 48em) {
+  .feature {
+    grid-template-columns: 1.6fr 1fr;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .feature__stat { padding-left: var(--space-5); border-left: 1px solid var(--color-border); }
+}
+@media (max-width: 47.99em) {
+  .feature__stat { padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+}
+
+/* Education + Award — two cards side by side on wide screens. */
+.education__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+@media (min-width: 48em) {
+  .education__grid { grid-template-columns: repeat(2, 1fr); }
+}
+.education__marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Contact — a responsive grid of contact-link cards. Each link lays out
+   as a 2-row grid: icon spanning both rows, label over value on the right. */
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+@media (min-width: 40em) {
+  .contact-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+.contact-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: 0.1rem;
+  padding: var(--space-3) var(--space-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  backdrop-filter: blur(8px);
+  transition: transform var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+.contact-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+.contact-link:focus-visible {
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+.contact-link .icon {
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--color-accent);
+}
+.contact-link__label {
+  grid-row: 1;
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-subtle);
+}
+.contact-link__value {
+  grid-row: 2;
+  grid-column: 2;
+  min-width: 0;
+  font-size: var(--step-0);
+  overflow-wrap: anywhere;
+}
+
+.contact__location {
+  text-align: center;
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--step--1);
+}
+
+/* =====================================================================
+   Portfolio index (Phase 5)
+   ===================================================================== */
+
+/* Subpage hero: shorter than the home hero, no actions. The home hero sits
+   at min-height:70vh / padding --space-8; compact brings it down to a
+   measured band so the grid is the focus. */
+.hero--compact {
+  min-height: auto;
+  padding-block: var(--space-6);
+}
+
+/* --- Filter bar ------------------------------------------------------ */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+  margin: var(--space-2) 0 var(--space-5);
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+.filter {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.04em;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.filter:hover { color: var(--color-text); }
+.filter:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.filter.is-active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-color: var(--color-accent);   /* fallback before color-mix (older engines) */
+  border-color: color-mix(in srgb, var(--color-accent) 32%, transparent);
+}
+
+/* --- Grid + cards ---------------------------------------------------- */
+.portfolio__grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+/* Featured card (ICV) takes a full row on multi-column viewports so the
+   strongest project reads as the lead. Collapses to one column on narrow. */
+.portfolio__item--featured { grid-column: span 2; }
+@media (max-width: 48rem) {
+  .portfolio__item--featured { grid-column: auto; }
+}
+
+.portfolio__card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+.portfolio__card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.portfolio__cat {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+/* Tier badge: real projects get the accent; demos get a quiet outline so the
+   two tiers are visually distinct and the demos are never mistaken for
+   shipped client work. */
+.portfolio__tier {
+  font-size: var(--step--2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.portfolio__tier--real {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.portfolio__tier--demo {
+  background: var(--color-surface-2);
+  color: var(--color-text-subtle);
+  border: 1px solid var(--color-border);
+}
+.portfolio__title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: 1.15;
+  margin-bottom: var(--space-1);
+}
+.portfolio__subtitle {
+  font-size: var(--step-0);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.portfolio__summary {
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+.portfolio__stack { margin-bottom: var(--space-3); }
+.portfolio__cta {
+  margin-top: auto;            /* pin the CTA to the bottom of the card */
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.portfolio__cta-arrow { transition: transform var(--dur-fast) var(--ease-out); }
+.portfolio__card:hover .portfolio__cta-arrow,
+.portfolio__card:focus-visible .portfolio__cta-arrow { transform: translateX(4px); }
+
+.portfolio__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-5);
+}
+
+/* =====================================================================
+   Project detail pages (Phase 5)
+   ===================================================================== */
+.project__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.project__back::before { content: "←"; transition: transform var(--dur-fast) var(--ease-out); }
+.project__back:hover { color: var(--color-accent); }
+.project__back:hover::before { transform: translateX(-3px); }
+
+.project__header { margin-bottom: var(--space-5); }
+.project__header .project__cat {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.project__title {
+  font-family: var(--font-display);
+  font-size: var(--step-4);
+  line-height: 1.08;
+  margin-bottom: var(--space-2);
+}
+.project__subtitle {
+  font-size: var(--step-2);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  max-width: var(--maxw-prose);
+}
+.project__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+}
+.project__meta dt {
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--step--2);
+}
+.project__meta dd { margin: 0; color: var(--color-text); }
+
+.project__stack { margin: var(--space-4) 0; }
+
+/* Notice banner distinguishing real CV work from built-for-portfolio demos. */
+.project__callout {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-accent-soft);
+  margin: var(--space-4) 0 var(--space-5);
+  font-size: var(--step--1);
+  color: var(--color-text);
+}
+.project__callout--demo {
+  border-left-color: var(--color-text-subtle);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+}
+
+/* Long-form body uses .container--prose on the section for measure; inside,
+   .stack handles vertical rhythm. Headings within the case study are h2. */
+.project__body .stack > h2 {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-1);
+}
+.project__body .stack > h2:first-child { margin-top: 0; }
+
+/* Highlight list — accent bullet markers for key outcomes. */
+.project__highlights {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.project__highlights li {
+  position: relative;
+  padding-left: var(--space-4);
+  font-size: var(--step-0);
+}
+.project__highlights li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+/* Code figure — mono on surface-2, with a tiny label row like an editor. */
+.project__code {
+  margin: var(--space-4) 0;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.project__code__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--color-text-subtle);
+}
+.project__code__bar::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-subtle);
+  box-shadow: 1rem 0 0 var(--color-text-subtle), 2rem 0 0 var(--color-text-subtle);
+}
+.project__code pre {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* Inline stack of action links at the end of a case study. */
+.project__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+/* Two-column project media (diagram/screenshot) that drops to one on narrow. */
+.project__media {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+@media (min-width: 48rem) {
+  .project__media--pair { grid-template-columns: 1.4fr 1fr; align-items: start; }
+}
+.project__figure {
+  margin: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.project__figure figcaption {
+  margin-top: var(--space-2);
+  font-size: var(--step--2);
+  color: var(--color-text-subtle);
+  text-align: center;
+}
+
+/* =====================================================================
+   Contact form (Phase 6)
+   ===================================================================== */
+.contact-form {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: var(--space-3);
+}
+.contact-form__row {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 36em) {
+  .contact-form__row { grid-template-columns: 1fr 1fr; }
+}
+.contact-form__status {
+  font-size: var(--step--1);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  display: none;
+}
+.contact-form__status[data-state="sending"],
+.contact-form__status[data-state="success"],
+.contact-form__status[data-state="error"] { display: block; }
+.contact-form__status[data-state="sending"] {
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+}
+.contact-form__status[data-state="success"] {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.contact-form__status[data-state="error"] {
+  color: #ff7a7a;
+  background: rgba(255, 122, 122, 0.10);
+}
+.contact-form__submit { justify-self: start; }
+
+/* Honeypot: moved offscreen so sighted users never see it but bots do.
+   Not display:none — some bots skip hidden fields; offscreen keeps it in
+   the DOM and lightly baited by the "Company" label. */
+.contact-form__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

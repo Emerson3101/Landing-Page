@@ -1,0 +1,14 @@
+# robots.txt — Emerson Plancarte portfolio (Phase 8).
+# Public content is crawlable; the contact endpoint, contact logs, and the
+# internal styleguide are not meant to be indexed.
+#
+# Replace the origin in the Sitemap line with the real deploy URL (it must
+# match the $site_url set in includes/header.php).
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /storage/
+Disallow: /styleguide.php
+
+Sitemap: https://emerson-plancarte.example/sitemap.xml
