@@ -49,10 +49,17 @@ body::after {
 
 /* ----------------------------------------------------------------------
    Per-section ambient tints — each section paints a soft radial wash
-   (token-driven, 4–8% alpha) behind its content so scrolling moves
+   (token-driven, ~5–7% alpha) behind its content so scrolling moves
    through a subtle green/blue hue journey instead of a flat field.
-   Static gradients: they read as ambience even with JS off, and the
-   global reduced-motion guard has nothing to neutralize here.
+
+   SEAMLESS: the tint layer is oversized — 30% taller top and bottom —
+   and the gradient anchors near the section's middle, fading to
+   transparent at 50% of the enlarged pseudo. Adjacent tints overlap at
+   every boundary, so the outgoing and incoming washes blend
+   continuously with no visible cut. (The gradient percentages resolve
+   against the oversized pseudo, which is exactly what spreads the fade
+   across the seam.) Static gradients → zero runtime cost, works with
+   no JS, nothing for the reduced-motion guard to neutralize.
 
    Home page assigns explicit alternating anchors; all other pages
    (.section defaults) get a single quiet green wash so the treatment
@@ -62,10 +69,14 @@ body::after {
 .section::before {
   content: "";
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: -30%;                /* bleed up past the previous section's tail */
+  bottom: -30%;             /* bleed down over the next section's head   */
   z-index: -1;
   pointer-events: none;
-  background-image: var(--tint-green);
+  background-image: var(--section-tint, var(--tint-green));
+  background-repeat: no-repeat;
 }
 
 /* Alternating anchors down the home page. Contact gets the dual-hue
@@ -75,25 +86,12 @@ body::after {
 .page-home #experience { --section-tint: var(--tint-green); }
 .page-home #education  { --section-tint: var(--tint-blue); }
 .page-home #contact    { --section-tint: var(--tint-contact); }
-.page-home .section::before { background-image: var(--section-tint, var(--tint-green)); }
 
 /* ----------------------------------------------------------------------
-   Section hairlines — a gradient rule (transparent → border →
-   transparent) between adjacent sections; pure rhythm, no hard lines.
-   Painted on ::after so ::before stays free for the tints.
+   Footer hairline — the one remaining rule on the page: a gradient
+   (transparent → border → transparent) above the status bar. Sections
+   themselves meet seamlessly; only the footer gets a line.
    ---------------------------------------------------------------------- */
-.section + .section::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: min(72rem, 80%);
-  height: 1px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
-  opacity: 0.7;
-}
 .site-footer {
   position: relative;
 }
@@ -180,14 +178,23 @@ body::after {
    Hero — WebGL canvas + presentation of the hero copy
    ---------------------------------------------------------------------- */
 .hero { overflow: clip; }                 /* canvas glow never scrollbars out */
-/* Bottom fade blends the shader into the page background. */
+/* Bottom fade — a long eased dissolve (bottom 45% of the hero) so the
+   aurora dies out progressively while scrolling toward the next section
+   instead of clipping at the section edge. The fallback line precedes
+   the color-mix variant for older engines. */
 .hero::after {
   content: "";
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 9rem;
+  height: 45%;
   pointer-events: none;
-  background: linear-gradient(transparent, var(--color-bg));
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--color-bg) 20%, transparent) 40%,
+    color-mix(in srgb, var(--color-bg) 60%, transparent) 70%,
+    color-mix(in srgb, var(--color-bg) 90%, transparent) 88%,
+    var(--color-bg) 100%);
 }
 .hero__inner { position: relative; z-index: 1; }
 .hero__canvas {
@@ -217,9 +224,16 @@ body::after {
   text-wrap: balance;
 }
 
-/* Eyebrow — terminal line with a blinking caret. */
+/* Eyebrow — terminal line with a blinking caret. The pill is an inline-
+   flex row [caret][text][ghost caret]; the ghost ::after repeats the same
+   glyph at the same size/margins but invisible, so the caret's advance is
+   mirrored exactly on both sides and the TEXT sits at the pill's optical
+   center — regardless of which font actually renders the glyph (the ●
+   comes from a fallback face, so its metrics can't be predicted in ems). */
 .hero__eyebrow {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   padding: 0.4rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
@@ -233,8 +247,14 @@ body::after {
   margin-right: 0.6em;
   color: var(--color-accent);
   text-shadow: 0 0 8px var(--color-accent);
-  vertical-align: 0.15em;
   animation: heroBlink 2.4s var(--ease-in-out) infinite;
+}
+/* The invisible mirror of the caret (same glyph, same size, same gap). */
+.hero__eyebrow::after {
+  content: "●";
+  font-size: 0.55em;
+  margin-left: 0.6em;
+  visibility: hidden;
 }
 @keyframes heroBlink { 50% { opacity: 0.35; } }
 
@@ -244,11 +264,13 @@ body::after {
   font-family: var(--font-mono);
 }
 
-/* Scroll cue line at the hero bottom. */
+/* Scroll cue line at the hero bottom. left:50% + translateX(-50%) so the
+   cue is truly centered (the 50% alone offsets it half its own width). */
 .hero__cue {
   position: absolute;
   left: 50%;
   bottom: var(--space-4);
+  transform: translateX(-50%);
   z-index: 1;
   display: grid;
   justify-items: center;

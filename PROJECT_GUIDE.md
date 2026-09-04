@@ -110,7 +110,7 @@ assets/
     components.css              Component primitives (buttons, cards, nav, hero, fields, tags, stats, timeline…)
     pages.css                   Page-level LAYOUT using the components (home, portfolio, project, contact form)
     animations.css              Motion layer (reveal, hover, theme cross-fade, ctaPulse, countGlow, reduced-motion safety)
-    fx.css                      "Terminal Noir" effects layer — living aura, per-section tints, section hairlines, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer status bar
+    fx.css                      "Terminal Noir" effects layer — living aura, seamless cross-fading section tints, footer hairline, grain, cursor glow, palette, page wipe, tilt/magnetic bases, footer status bar
     fonts.css                  GENERATED — @font-face for the self-hosted subsets (see §6)
   js/
     main.js                     Theme + lang toggles, mobile nav, back-to-top, contact form (see §11)

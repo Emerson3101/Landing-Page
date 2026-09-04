@@ -120,14 +120,18 @@
     radial-gradient(40rem 26rem at 90% 95%, rgba(54, 232, 160, 0.05), transparent 60%);
 
   /* Per-section ambient tints (consumed by .section::before in fx.css).
-     Alpha stays low (4–8%) so text contrast is untouched; the gradients
-     are fully opaque *shapes* fading to transparent, which the theme
-     cross-fade can transition via background-color on the section. */
-  --tint-green: radial-gradient(48rem 34rem at 12% 0%, rgba(54, 232, 160, 0.07), transparent 62%);
-  --tint-blue:  radial-gradient(48rem 34rem at 88% 8%, rgba(74, 168, 255, 0.06), transparent 62%);
+     Each wash is an ellipse anchored near the MIDDLE of its section and
+     sized against the oversized tint layer (the pseudo bleeds 30% past
+     both section boundaries), fading to transparent at 50% — so every
+     tint is already fading where its section begins and ends, and
+     adjacent sections cross-fade through the overlap instead of
+     switching on at a boundary. Alpha stays low (5–7%) so text
+     contrast is untouched. */
+  --tint-green: radial-gradient(100% 100% at 30% 48%, rgba(54, 232, 160, 0.07), transparent 50%);
+  --tint-blue:  radial-gradient(100% 100% at 70% 52%, rgba(74, 168, 255, 0.06), transparent 50%);
   --tint-contact:
-    radial-gradient(42rem 30rem at 20% 12%, rgba(54, 232, 160, 0.07), transparent 60%),
-    radial-gradient(46rem 32rem at 85% 88%, rgba(74, 168, 255, 0.07), transparent 60%);
+    radial-gradient(100% 100% at 28% 46%, rgba(54, 232, 160, 0.07), transparent 50%),
+    radial-gradient(100% 100% at 72% 54%, rgba(74, 168, 255, 0.07), transparent 50%);
 
   --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(54, 232, 160, 0.10), transparent 60%);
 }
@@ -181,11 +185,11 @@
     radial-gradient(46rem 28rem at -10% 40%, rgba(10, 117, 73, 0.06), transparent 60%),
     radial-gradient(40rem 26rem at 90% 95%, rgba(10, 117, 73, 0.05), transparent 60%);
 
-  --tint-green: radial-gradient(48rem 34rem at 12% 0%, rgba(10, 117, 73, 0.05), transparent 62%);
-  --tint-blue:  radial-gradient(48rem 34rem at 88% 8%, rgba(47, 111, 214, 0.05), transparent 62%);
+  --tint-green: radial-gradient(100% 100% at 30% 48%, rgba(10, 117, 73, 0.05), transparent 50%);
+  --tint-blue:  radial-gradient(100% 100% at 70% 52%, rgba(47, 111, 214, 0.05), transparent 50%);
   --tint-contact:
-    radial-gradient(42rem 30rem at 20% 12%, rgba(10, 117, 73, 0.05), transparent 60%),
-    radial-gradient(46rem 32rem at 85% 88%, rgba(47, 111, 214, 0.05), transparent 60%);
+    radial-gradient(100% 100% at 28% 46%, rgba(10, 117, 73, 0.05), transparent 50%),
+    radial-gradient(100% 100% at 72% 54%, rgba(47, 111, 214, 0.05), transparent 50%);
 
   --grad-hero: radial-gradient(110% 80% at 50% -10%, rgba(10, 117, 73, 0.10), transparent 60%);
 }
