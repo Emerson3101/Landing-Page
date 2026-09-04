@@ -177,35 +177,33 @@ body::after {
 /* ----------------------------------------------------------------------
    Hero — WebGL canvas + presentation of the hero copy
    ---------------------------------------------------------------------- */
-.hero { overflow: clip; }                 /* canvas glow never scrollbars out */
-/* Bottom fade — a long eased dissolve (bottom 45% of the hero) so the
-   aurora dies out progressively while scrolling toward the next section
-   instead of clipping at the section edge. The fallback line precedes
-   the color-mix variant for older engines. */
-.hero::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 45%;
-  pointer-events: none;
-  background: linear-gradient(to bottom, transparent, var(--color-bg));
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    color-mix(in srgb, var(--color-bg) 20%, transparent) 40%,
-    color-mix(in srgb, var(--color-bg) 60%, transparent) 70%,
-    color-mix(in srgb, var(--color-bg) 90%, transparent) 88%,
-    var(--color-bg) 100%);
-}
+/* Horizontal clip only — the canvas deliberately overflows the hero's
+   bottom edge (below), so vertical overflow must stay visible. A
+   downward bleed can't change the page's scroll height: the following
+   section already occupies that space. */
+.hero { overflow-x: clip; overflow-y: visible; }
+/* Seam rule: NO opaque overlay may cover the hero's bottom edge — a
+   solid fade-to-bg always reads as a band against neighbouring tinted
+   sections. Instead the CANVAS keeps painting ~40% past the hero's
+   bottom while an alpha mask dissolves it over its own lower third:
+   the aurora physically drifts down into the next section and dies
+   there, exactly where that section's tint cross-fade rises. Both
+   themes share this (mask is alpha-only). Prefixed + unprefixed per
+   the backdrop-filter precedent. */
 .hero__inner { position: relative; z-index: 1; }
 .hero__canvas {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: -1;
   width: 100%;
-  height: 100%;
+  height: 140%;                  /* bleed: continues past the seam */
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.7) 58%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.15) 84%, transparent 96%);
+          mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.7) 58%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.15) 84%, transparent 96%);
   /* static fallback tone under the shader once WebGL starts, canvas paints over */
   background:
-    radial-gradient(60% 55% at 50% 38%,
+    radial-gradient(60% 39% at 50% 27%,
       color-mix(in srgb, var(--color-accent) 7%, transparent),
       transparent 70%);
 }
