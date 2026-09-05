@@ -20,6 +20,16 @@
 .container--wide { max-width: var(--maxw-wide); }
 .container--prose { max-width: var(--maxw-prose); }
 
+/* Section tint washes (fx.css .section::before) deliberately overshoot their
+   section by 30% top and bottom so neighbours blend — but the LAST section's
+   bleed pours past the footer and inflates the document height by that 30%,
+   producing the dead scroll space at the end of every page. Clipping main
+   keeps the inter-section blending intact while capping the page ends. */
+main {
+  overflow: hidden;  /* fallback for engines without overflow:clip */
+  overflow: clip;
+}
+
 .section {
   padding-block: var(--space-7);
 }
