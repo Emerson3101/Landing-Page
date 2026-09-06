@@ -10,8 +10,10 @@
    Deliberately abstract and calm — no grids, no waveforms, nothing that
    reads as electrical. Fallbacks (in order): reduced-motion → skip
    animation loop & render one still frame; WebGL unavailable → leave the
-   CSS gradient fallback on the canvas element; page hidden / hero
-   scrolled past → loop paused.
+   CSS gradient fallback on the canvas element; first render probes black
+   (some mobile GPUs rasterize garbage despite compiling) → clear buffer
+   and fall back to the CSS gradient too; page hidden / hero scrolled past
+   → loop paused.
 
    Colors are re-read from CSS variables so the theme toggle re-tints the
    shader without rebuilding the program.
@@ -36,15 +38,35 @@
   ].join('\n');
 
   var FRAG = [
+    '/* Mobile GPUs execute mediump at genuinely low precision (unlike',
+    '   desktop, where it is promoted). Request highp when available. */',
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH',
+    'precision highp float;',
+    '#else',
     'precision mediump float;',
+    '#endif',
     'uniform vec2  u_res;',
     'uniform float u_time;',
     'uniform vec2  u_mouse;',   /* normalized -1..1, lerped in JS */
     'uniform vec3  u_colA;',    /* accent            */
     'uniform vec3  u_colB;',    /* secondary accent  */
     '',
-    '/* hash / value-noise / fbm, cheap 4-octave version */',
-    'float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+    '/* hash / value-noise / fbm, cheap 4-octave version.',
+    '   NOTE: no sin()-based hashes — sin() of large arguments is',
+    '   undefined garbage on many mobile GPUs even at highp, which',
+    '   silently flattens the whole field to black. These hashes are',
+    '   pure multiply/fract and stay stable everywhere. */',
+    'float hash(vec2 p){',
+    '  p = fract(p * vec2(234.34, 435.345));',
+    '  p += dot(p, p + 34.23);',
+    '  return fract(p.x * p.y);',
+    '}',
+    'float hash1(float n){',
+    '  float p = fract(n * 0.1031);',
+    '  p *= p + 33.33;',
+    '  p *= p + p;',
+    '  return fract(p);',
+    '}',
     'float noise(vec2 p){',
     '  vec2 i = floor(p), f = fract(p);',
     '  vec2 u = f * f * (3.0 - 2.0 * f);',
@@ -83,12 +105,12 @@
     '    float fi = float(i);',
     '    float seed = fi * 17.23;',
     '    vec2 c = vec2(',
-    '      fract(sin(seed) * 43758.5) * 2.4 - 1.2 + sin(t * (0.3 + fract(seed) * 0.4)) * 0.10,',
-    '      mod(fract(cos(seed) * 24634.6) + t * (0.02 + fract(seed * 0.7) * 0.03) * 2.0, 2.4) - 1.2',
+    '      hash1(seed) * 2.4 - 1.2 + sin(t * (0.3 + hash1(seed + 1.7) * 0.4)) * 0.10,',
+    '      mod(hash1(seed + 3.1) + t * (0.02 + hash1(seed + 5.9) * 0.03) * 2.0, 2.4) - 1.2',
     '    );',
-    '    c += u_mouse * 0.08 * (0.3 + fract(seed * 1.3));  /* parallax depth */',
-    '    float r = 0.012 + fract(seed * 0.37) * 0.05;',
-    '    float tw = 0.55 + 0.45 * sin(t * (1.5 + fract(seed) * 2.0) + seed);',
+    '    c += u_mouse * 0.08 * (0.3 + hash1(seed + 7.3));  /* parallax depth */',
+    '    float r = 0.012 + hash1(seed + 9.1) * 0.05;',
+    '    float tw = 0.55 + 0.45 * sin(t * (1.5 + hash1(seed + 11.7) * 2.0) + seed);',
     '    glow += orb(uv, c, r) * tw;',
     '  }',
     '  vec3 sparks = mix(u_colA, u_colB, 0.5 + 0.5 * sin(t)) * glow * 0.5;',
@@ -178,6 +200,35 @@
     }, { threshold: 0.05 }).observe(canvas);
   }
 
+  /* --- First-frame sanity check ---------------------------------------- */
+  /* Some mobile GPUs compile fine but rasterize garbage (e.g. low-precision
+     trig returning constants), painting a fully black/transparent canvas.
+     After the first draw, probe a grid of pixels; if every sample is ~zero,
+     clear the buffer so the CSS gradient fallback shows through and stop. */
+  var sanityChecked = false;
+  function firstFrameOk() {
+    if (sanityChecked) return true;
+    sanityChecked = true;
+    var px = new Uint8Array(4);
+    var maxC = 0;
+    for (var ix = 1; ix <= 5; ix++) {
+      for (var iy = 1; iy <= 3; iy++) {
+        gl.readPixels(
+          Math.floor(canvas.width * ix / 6),
+          Math.floor(canvas.height * iy / 4),
+          1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px
+        );
+        maxC = Math.max(maxC, px[0], px[1], px[2]);
+      }
+    }
+    return maxC > 1;
+  }
+  function bailToFallback() {
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    running = false;
+  }
+
   var running = !reduceMotion;
   var rafId = null;
   var start = performance.now();
@@ -198,6 +249,7 @@
     gl.uniform1f(uTime, (now - start) / 1000);
     gl.uniform2f(uMouse, mx, my);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!firstFrameOk()) { bailToFallback(); return; }
     schedule();
   }
   function schedule() { if (running && rafId === null) rafId = requestAnimationFrame(frame); }
@@ -208,6 +260,7 @@
     gl.uniform1f(uTime, 3.0);
     gl.uniform2f(uMouse, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!firstFrameOk()) bailToFallback();
   } else {
     schedule();
     document.addEventListener('visibilitychange', function () {
