@@ -181,23 +181,35 @@
 
   /* --- animation loop (skipped entirely off-tab) --------------------- */
   var lastT = 0;
+  var running = true;
+  var rafId = null;
+
   function frame(now) {
-    if (!document.hidden) {
-      var dt = (now - lastT) / 16.666;          /* 60fps-normalized step */
-      dt = dt > 3 ? 3 : (dt < 0.2 ? 0.2 : dt);
-      lastT = now;
+    rafId = null;
+    if (document.hidden) { return; }
 
-      var scrollY = window.pageYOffset;
-      scrollImpulse = Math.max(-1.4, Math.min(1.4, (scrollY - lastScrollY) * 0.02));
-      lastScrollY = scrollY;
+    var dt = (now - lastT) / 16.666;          /* 60fps-normalized step */
+    dt = dt > 3 ? 3 : (dt < 0.2 ? 0.2 : dt);
+    lastT = now;
 
-      var mdy = mouse.cy + scrollY;              /* cursor in doc space */
-      for (var i = 0; i < particles.length; i++) particles[i].update(dt, mouse.cx, mdy);
-      drawViewport(scrollY, now);
-      scrollImpulse *= 0.85;                     /* wake decays fast */
-    }
-    requestAnimationFrame(frame);
+    var scrollY = window.pageYOffset;
+    scrollImpulse = Math.max(-1.4, Math.min(1.4, (scrollY - lastScrollY) * 0.02));
+    lastScrollY = scrollY;
+
+    var mdy = mouse.cy + scrollY;              /* cursor in doc space */
+    for (var i = 0; i < particles.length; i++) particles[i].update(dt, mouse.cx, mdy);
+    drawViewport(scrollY, now);
+    scrollImpulse *= 0.85;                     /* wake decays fast */
+
+    if (running) rafId = requestAnimationFrame(frame);
   }
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && running && rafId === null) {
+      lastT = performance.now();
+      rafId = requestAnimationFrame(frame);
+    }
+  });
 
   /* ------------------------------------------------------------------ */
   function boot() {

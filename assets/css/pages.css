@@ -128,6 +128,14 @@
 /* Stat value scales down on very tight rows so the band never overflows. */
 .stats .stat__value { font-size: var(--step-4); }
 
+@media (max-width: 36rem) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: var(--space-3) var(--space-2);
+    gap: var(--space-2);
+  }
+}
+
 /* Skills — four groups as cards, 1 → 2 columns. */
 .skills__grid {
   display: grid;
@@ -370,18 +378,36 @@
 }
 
 /* --- Grid + cards ---------------------------------------------------- */
+/* Bento-style grid: fixed column counts per breakpoint (never auto-fit,
+   which produced uneven "3 rows + one big row with a tiny column" rhythms).
+   One featured card spans two columns as the lead; dense flow backfills
+   any slot a wide card skips so rows always read full and even. */
 .portfolio__grid {
   list-style: none;
   padding: 0;
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  grid-template-columns: 1fr;
+  grid-auto-flow: dense;
+  align-items: stretch;
 }
-/* Featured card (ICV) takes a full row on multi-column viewports so the
-   strongest project reads as the lead. Collapses to one column on narrow. */
-.portfolio__item--featured { grid-column: span 2; }
-@media (max-width: 48rem) {
-  .portfolio__item--featured { grid-column: auto; }
+/* Medium: 2 columns, featured card takes the full lead row. */
+@media (min-width: 42em) {
+  .portfolio__grid { grid-template-columns: repeat(2, 1fr); }
+  .portfolio__item--featured { grid-column: span 2; }
+}
+/* Wide: 3 columns, featured card spans 2 (lead row reads 2+1, then even
+   rows of 3). Home page shows ONLY featured projects, so there every card
+   stays one column and the 4 cards settle into a balanced 2×2 mosaic. */
+@media (min-width: 64em) {
+  .portfolio__grid { grid-template-columns: repeat(3, 1fr); }
+  .page-home .portfolio__grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* The featured card gets a quiet accent ring so the lead reads as a lead
+   without shouting — consistent with the page's hairline-border language. */
+.portfolio__item--featured .card {
+  border-color: var(--color-border-strong);                  /* fallback */
+  border-color: color-mix(in srgb, var(--color-accent) 26%, var(--color-border));
 }
 
 .portfolio__card {
@@ -599,19 +625,127 @@
 }
 .project__code__bar::before {
   content: "";
+  display: inline-block;
   width: 0.6rem;
   height: 0.6rem;
   border-radius: var(--radius-pill);
   background: var(--color-text-subtle);
   box-shadow: 1rem 0 0 var(--color-text-subtle), 2rem 0 0 var(--color-text-subtle);
+  margin-right: 2.2rem;
+  flex-shrink: 0;
 }
 .project__code pre {
   margin: 0;
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--step--1);
-  line-height: 1.6;
+  line-height: 1.65;
   overflow-x: auto;
+}
+.project__code pre code {
+  display: block;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+.code-kw   { color: #ff7b72; font-weight: 600; }
+.code-fn   { color: #d2a8ff; }
+.code-str  { color: #a5d6ff; }
+.code-cm   { color: #8b949e; font-style: italic; }
+.code-num  { color: #f0883e; }
+.code-type { color: var(--color-accent); font-weight: 500; }
+.code-var  { color: #e6edf3; }
+.code-prop { color: #79c0ff; }
+
+[data-theme="light"] .code-kw   { color: #cf222e; }
+[data-theme="light"] .code-fn   { color: #8250df; }
+[data-theme="light"] .code-str  { color: #0a3069; }
+[data-theme="light"] .code-cm   { color: #57606a; }
+[data-theme="light"] .code-num  { color: #953800; }
+[data-theme="light"] .code-type { color: #116329; }
+[data-theme="light"] .code-var  { color: #24292f; }
+[data-theme="light"] .code-prop { color: #0550ae; }
+
+/* Technical specs table */
+.project__spec-table-wrap {
+  overflow-x: auto;
+  margin: var(--space-4) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.project__spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+  text-align: left;
+}
+.project__spec-table th,
+.project__spec-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.project__spec-table th {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.project__spec-table tr:last-child td {
+  border-bottom: none;
+}
+.project__spec-table code {
+  font-size: var(--step--2);
+  color: var(--color-accent);
+}
+
+/* Architecture pipeline flow */
+.project__pipeline {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+@media (min-width: 48rem) {
+  .project__pipeline {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+}
+.pipeline-step {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  position: relative;
+  transition: border-color var(--dur-base) ease;
+}
+.pipeline-step:hover {
+  border-color: var(--color-accent);
+}
+.pipeline-step__num {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--color-accent);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.pipeline-step__title {
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+.pipeline-step__desc {
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.45;
 }
 
 /* Inline stack of action links at the end of a case study. */

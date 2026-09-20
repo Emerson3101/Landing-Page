@@ -2,30 +2,27 @@
 /**
  * Home page entry point.
  *
- * Full bilingual (EN/ES) single-page site. Both languages are rendered and
- * tagged data-lang="en"/"es"; <html data-active-lang> (set in header.php
- * from localStorage, flipped by #lang-toggle) controls which is visible.
- *
- * Sections (ids match nav.php anchors):
- *   #about      — profile summary + headline figures
- *   #skills     — languages / databases / platforms / frameworks
- *   #experience — CFE ZOTGM timeline + ICV by-the-numbers band
- *   #education  — TecNM degree + TecAssist innovation award
- *   #contact    — CTA + direct contact links (form arrives in Phase 6/7)
- *
- * Content is sourced from "CV Emerson Plancarte.txt" (ICV voltage-quality
- * work at CFE, TecNM degree, innovation-contest award). See Development_Plan.md
- * for the content↔section mapping.
+ * Full bilingual (EN/ES) single-page site with interactive 3D WebGL hero,
+ * featured engineering projects showcase, interactive telemetry & architecture
+ * explorer, skills matrix, experience timeline, education & contact form.
  */
 
 $page_title       = 'Emerson Plancarte — Software & Embedded Systems Engineer';
-$page_description = 'Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer. ICV voltage-quality tooling at CFE, TecNM graduate, innovation award winner.';
-$body_class       = 'page-home';   // scopes home-only CSS (section numbering)
+$page_description = 'Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer. Real-world systems across electrical grid telemetry at CFE, AI desktop RAG assistants, Next.js web platforms, and Android Kotlin Compose apps.';
+$body_class       = 'page-home';
 require __DIR__ . '/includes/header.php';
+
+// Load single source of truth for projects
+$projects_json = json_decode(file_get_contents(__DIR__ . '/assets/data/projects.json'), true);
+$all_projects  = $projects_json['projects'] ?? [];
+$categories    = $projects_json['categories'] ?? [];
+$featured_projects = array_filter($all_projects, function ($p) {
+  return !empty($p['featured']);
+});
 ?>
 
 <!-- =========================================================
-     Hero
+     Hero (with Interactive 3D WebGL Hologram)
      ======================================================= -->
 <section class="hero" id="top" aria-labelledby="hero-title">
   <canvas class="hero__canvas" id="hero-gl" aria-hidden="true"></canvas>
@@ -34,16 +31,21 @@ require __DIR__ . '/includes/header.php';
     <p class="hero__subtitle" data-reveal data-scramble data-typetrick>
       <?= t('Software & Embedded Systems Engineer', 'Ingeniero de Software y Sistemas Embebidos') ?>
     </p>
+
     <div class="hero__actions" data-reveal>
-      <a class="btn btn--primary btn--lg" href="/portfolio/" data-magnetic>
-        <?= t('View my work', 'Ver mi trabajo') ?>
+      <a class="btn btn--primary btn--lg" href="#projects" data-magnetic>
+        <?= t('Featured Work', 'Proyectos Destacados') ?>
       </a>
-      <a class="btn btn--secondary btn--lg" href="#contact" data-magnetic>
-        <?= t('Get in touch', 'Contáctame') ?>
+      <a class="btn btn--secondary btn--lg" href="/portfolio/" data-magnetic>
+        <?= t('Complete Portfolio (7)', 'Portafolio Completo (7)') ?>
+      </a>
+      <a class="btn btn--ghost btn--lg" href="#contact" data-magnetic>
+        <?= t('Contact', 'Contacto') ?>
       </a>
     </div>
+
     <p class="hero__prompt" data-reveal>
-      <?= t('Press', 'Presiona') ?> <span class="kbd" data-key="ctrl">Ctrl</span>+<span class="kbd">K</span> <?= t('to explore', 'para explorar') ?>
+      <?= t('Press', 'Presiona') ?> <span class="kbd" data-key="ctrl">Ctrl</span>+<span class="kbd">K</span> <?= t('for quick commands', 'para comandos rápidos') ?>
     </p>
   </div>
   <div class="hero__cue" aria-hidden="true">
@@ -53,88 +55,157 @@ require __DIR__ . '/includes/header.php';
 </section>
 
 <!-- =========================================================
-     About
+     About & Metrics
      ======================================================= -->
 <section class="section about" id="about" aria-labelledby="about-title">
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('About', 'Acerca de') ?></p>
       <h2 class="section__title" id="about-title" data-typetrick>
-        <?= t('A bit about me', 'Un poco sobre mí') ?>
+        <?= t('Engineering from hardware to cloud', 'Ingeniería desde el hardware hasta la nube') ?>
       </h2>
     </header>
 
     <div class="about__intro stack" data-reveal>
       <?= tb(
-        '<p>I’m an engineer with hands-on experience across electronic development and software. I design and build <strong>embedded systems</strong>, ship <strong>web, mobile, and desktop</strong> applications, and manage databases on-prem and in the cloud — focused on solving technical problems with pragmatic, innovative solutions.</p>',
-        '<p>Soy ingeniero con experiencia práctica en desarrollo electrónico y de software. Diseño y construyo <strong>sistemas embebidos</strong>, desarrollo aplicaciones <strong>web, móviles y de escritorio</strong>, y gestiono bases de datos locales y en la nube — enfocado en resolver problemas técnicos con soluciones pragmáticas e innovadoras.</p>'
+        '<p>I design and build production-grade software spanning <strong>industrial telemetry</strong>, <strong>AI-assisted desktop consultation</strong>, <strong>full-stack event platforms</strong>, and <strong>real-time Android mobile architectures</strong>. My approach prioritizes rock-solid system reliability, pragmatic clean architecture, and responsive, human-centered UI/UX.</p>',
+        '<p>Diseño y construyo software de producción abarcando <strong>telemetría industrial</strong>, <strong>asistentes de escritorio con IA</strong>, <strong>plataformas web full-stack</strong> y <strong>arquitecturas móviles Android en tiempo real</strong>. Mi enfoque prioriza la alta confiabilidad de sistemas, arquitectura limpia pragmática y experiencias de usuario responsivas e intuitivas.</p>'
       ) ?>
     </div>
 
-    <!-- Headline figures pulled from the CV: ICV analysis speed, scope, uptime, GPA -->
+    <!-- Verified figures from Emerson's professional career & projects -->
     <ul class="stats" data-reveal-group <?= lang_attr('Headline figures', 'Cifras destacadas', 'aria-label') ?>>
       <li class="stat" data-reveal>
         <span class="stat__value">><span data-count-to="80">80</span><em>%</em></span>
-        <span class="stat__label"><?= t('Faster voltage-quality analysis', 'Análisis de calidad de voltaje más rápido') ?></span>
+        <span class="stat__label"><?= t('Faster voltage quality analysis at CFE', 'Análisis de calidad de voltaje más rápido en CFE') ?></span>
       </li>
       <li class="stat" data-reveal>
         <span class="stat__value"><span data-count-to="50">50</span><em>+</em></span>
-        <span class="stat__label"><?= t('Localities evaluated by the ICV tool', 'Localidades evaluadas con la herramienta ICV') ?></span>
+        <span class="stat__label"><?= t('Substations monitored in real time', 'Subestaciones monitoreadas en tiempo real') ?></span>
       </li>
       <li class="stat" data-reveal>
-        <span class="stat__value">><span data-count-to="99">99</span><em>%</em></span>
-        <span class="stat__label"><?= t('Critical-system availability', 'Disponibilidad de sistemas críticos') ?></span>
+        <span class="stat__value"><<span data-count-to="50">50</span><em>ms</em></span>
+        <span class="stat__label"><?= t('Peer drawing sync latency in Android', 'Latencia de trazo colaborativo en Android') ?></span>
       </li>
       <li class="stat" data-reveal>
-        <span class="stat__value">3.7</span>
-        <span class="stat__label"><?= t('GPA, Computer Systems Engineering', 'Promedio, Ingeniería en Sistemas') ?></span>
+        <span class="stat__value">1<em>st</em></span>
+        <span class="stat__label"><?= t('Place, Tech Innovation Contest (Smart Cities)', 'Lugar, Concurso Innovación (Ciudades Inteligentes)') ?></span>
       </li>
     </ul>
   </div>
 </section>
 
 <!-- =========================================================
-     Skills
+     Featured Projects Showcase
+     ======================================================= -->
+<section class="section projects" id="projects" aria-labelledby="projects-title">
+  <div class="container">
+    <header class="section__header" data-reveal>
+      <p class="section__eyebrow"><?= t('Featured Work', 'Proyectos Destacados') ?></p>
+      <h2 class="section__title" id="projects-title" data-typetrick>
+        <?= t('Selected engineering projects', 'Proyectos de ingeniería seleccionados') ?>
+      </h2>
+      <p class="section__lead">
+        <?= t(
+          'A selection of verified, full-scale systems spanning industrial energy monitoring, local AI RAG assistants, and collaborative mobile engineering.',
+          'Una selección de sistemas verificados que abarcan monitoreo de energía industrial, asistentes locales con IA y desarrollo móvil colaborativo.'
+        ) ?>
+      </p>
+    </header>
+
+    <ul class="portfolio__grid" data-reveal-group>
+      <?php foreach ($featured_projects as $p):
+        $catKey = $p['category'];
+        $catLabel = $categories[$catKey] ?? ['en' => ucfirst($catKey), 'es' => ucfirst($catKey)];
+        ?>
+        <li class="portfolio__item" data-reveal>
+          <a class="card card--interactive portfolio__card" href="<?= htmlspecialchars($p['links']['detail'], ENT_QUOTES, 'UTF-8') ?>" data-tilt>
+            <div class="portfolio__card-head">
+              <span class="portfolio__cat">
+                <span data-lang="en"><?= htmlspecialchars($catLabel['en'], ENT_QUOTES, 'UTF-8') ?></span>
+                <span data-lang="es"><?= htmlspecialchars($catLabel['es'], ENT_QUOTES, 'UTF-8') ?></span>
+              </span>
+            </div>
+
+            <h3 class="portfolio__title">
+              <span data-lang="en"><?= htmlspecialchars($p['title']['en'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span data-lang="es"><?= htmlspecialchars($p['title']['es'], ENT_QUOTES, 'UTF-8') ?></span>
+            </h3>
+
+            <p class="portfolio__subtitle">
+              <span data-lang="en"><?= htmlspecialchars($p['subtitle']['en'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span data-lang="es"><?= htmlspecialchars($p['subtitle']['es'], ENT_QUOTES, 'UTF-8') ?></span>
+            </p>
+
+            <p class="portfolio__summary">
+              <span data-lang="en"><?= htmlspecialchars($p['summary']['en'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span data-lang="es"><?= htmlspecialchars($p['summary']['es'], ENT_QUOTES, 'UTF-8') ?></span>
+            </p>
+
+            <ul class="tag-list portfolio__stack" <?= lang_attr('Stack', 'Pila tecnológica', 'aria-label') ?>>
+              <?php foreach (array_slice($p['stack'], 0, 6) as $tag): ?>
+                <li><span class="tag"><?= htmlspecialchars($tag, ENT_QUOTES, 'UTF-8') ?></span></li>
+              <?php endforeach; ?>
+            </ul>
+
+            <span class="portfolio__cta" aria-hidden="true">
+              <?= t('Read case study & technical breakdown', 'Ver caso de estudio y desglose técnico') ?>
+              <span class="portfolio__cta-arrow" aria-hidden="true">&rarr;</span>
+            </span>
+          </a>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+
+    <div class="projects__more" data-reveal style="margin-top: var(--space-5); text-align: center;">
+      <a class="btn btn--secondary btn--lg" href="/portfolio/" data-magnetic>
+        <?= t('View all 7 engineering projects in portfolio', 'Ver los 7 proyectos de ingeniería en el portafolio') ?>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: 0.5rem;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     Skills Matrix
      ======================================================= -->
 <section class="section skills" id="skills" aria-labelledby="skills-title">
   <div class="container">
     <header class="section__header" data-reveal>
-      <p class="section__eyebrow"><?= t('Skills', 'Habilidades') ?></p>
+      <p class="section__eyebrow"><?= t('Skills & Stack', 'Habilidades y Tecnologías') ?></p>
       <h2 class="section__title" id="skills-title" data-typetrick>
-        <?= t('Tools I reach for', 'Herramientas que utilizo') ?>
+        <?= t('Core technologies', 'Tecnologías principales') ?>
       </h2>
       <p class="section__lead">
         <?= t(
-          'Grouped by role — from low-level embedded work up to full-stack web and cloud.',
-          'Agrupadas por rol — desde trabajo embebido de bajo nivel hasta web full-stack y nube.'
+          'Technologies battle-tested in industrial deployments, machine learning workflows, and mobile production environments.',
+          'Tecnologías puestas a prueba en despliegues industriales, flujos de machine learning y entornos móviles de producción.'
         ) ?>
       </p>
     </header>
 
     <div class="skills__grid" data-reveal-group>
       <?php
-      // Skill groups. The labels are bilingual; the tag text is proper-noun /
-      // code names so it is NOT translated.
       $skill_groups = [
         [
-          'en'  => 'Programming languages',
-          'es'  => 'Lenguajes de programación',
-          'tags' => ['C#', 'C/C++', 'Python', 'Kotlin', 'PHP', 'Java', 'JavaScript', 'SQL'],
+          'en'  => 'Programming Languages',
+          'es'  => 'Lenguajes de Programación',
+          'tags' => ['Python', 'Kotlin', 'TypeScript', 'JavaScript', 'C#', 'C/C++', 'PHP', 'SQL', 'Java'],
         ],
         [
-          'en'  => 'Databases',
-          'es'  => 'Bases de datos',
-          'tags' => ['SQL Server', 'PostgreSQL', 'MySQL', 'PI System'],
+          'en'  => 'Frameworks & Frontend',
+          'es'  => 'Frameworks y Frontend',
+          'tags' => ['Next.js 16', 'React 19', 'Jetpack Compose', 'PyQt6', 'FastAPI', 'Tailwind CSS v4', '.NET 3.5 / Core', 'Framer Motion', 'Bootstrap', 'GSAP'],
         ],
         [
-          'en'  => 'Platforms & tools',
-          'es'  => 'Plataformas y herramientas',
-          'tags' => ['Visual Studio', 'VS Code', 'Git', 'PyCharm', 'IntelliJ IDEA', 'Azure', 'AWS', 'Arduino IDE', 'Raspberry Pi', 'Arduino', 'ESP32'],
+          'en'  => 'AI, Backend & Cloud',
+          'es'  => 'IA, Backend y Nube',
+          'tags' => ['NVIDIA NIM', 'LM Studio', 'RAG Pipelines', 'Supabase', 'Firebase (RTDB / Firestore)', 'discord.py', 'OSIsoft PI System', 'FFmpeg', 'Azure'],
         ],
         [
-          'en'  => 'Frameworks & libraries',
-          'es'  => 'Frameworks y librerías',
-          'tags' => ['.NET Framework', '.NET Core', 'ASP.NET', 'Laravel', 'Node.js', 'React', 'jQuery', 'AJAX'],
+          'en'  => 'Databases & Tools',
+          'es'  => 'Bases de Datos y Herramientas',
+          'tags' => ['PostgreSQL', 'SQLite', 'Room Database', 'MySQL', 'Android Studio', 'DataStore', 'Glance Widgets', 'Git', 'PyCharm', 'VS Code'],
         ],
       ];
       foreach ($skill_groups as $group): ?>
@@ -152,14 +223,14 @@ require __DIR__ . '/includes/header.php';
 </section>
 
 <!-- =========================================================
-     Experience (timeline + ICV featured callout)
+     Experience Timeline
      ======================================================= -->
 <section class="section experience" id="experience" aria-labelledby="experience-title">
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Experience', 'Experiencia') ?></p>
       <h2 class="section__title" id="experience-title" data-typetrick>
-        <?= t('Where I’ve worked', 'Dónde he trabajado') ?>
+        <?= t('Professional track record', 'Trayectoria profesional') ?>
       </h2>
     </header>
 
@@ -177,108 +248,66 @@ require __DIR__ . '/includes/header.php';
         </p>
         <div class="timeline__body stack">
           <?= tb(
-            '<p>Designed and built an advanced web tool for the automated evaluation of the <strong>Voltage Quality Index (ICV)</strong> under Mexico’s Grid Code, deployed across 50+ localities in the Guerrero and Morelos transmission zones. Integrated historical data from the OSIsoft PI System using .NET Framework 3.5, C#, PHP, JavaScript, jQuery, Bootstrap, and AJAX. The tool cut voltage-quality analysis time by more than 80% and adds manual validation, global and per-voltage-level ICV calculation, results export, and automatic report generation.</p>',
-            '<p>Diseñé e implementé una herramienta web avanzada para la evaluación automatizada del <strong>Índice de Calidad de Voltaje (ICV)</strong> conforme al Código de Red, aplicada en más de 50 localidades de las zonas de transmisión Guerrero y Morelos. Integré datos históricos del sistema PI de OSIsoft usando .NET Framework 3.5, C#, PHP, JavaScript, jQuery, Bootstrap y AJAX. La herramienta redujo el tiempo de análisis de calidad de voltaje en más de un 80%, e incluye validación manual, cálculo de ICV global y por nivel de tensión, exportación de resultados y generación de reportes automáticos.</p>'
+            '<p>Engineered and deployed an automated web platform calculating the <strong>Voltage Quality Index (ICV)</strong> and <strong>Line Load Capacity (Cargabilidad)</strong> under Mexico’s Grid Code across 50+ transmission localities. Integrated historical time-series telemetry from the OSIsoft PI System using .NET Framework 3.5, C#, PHP, JavaScript, jQuery, Bootstrap, and AJAX. Cut manual analysis time by over 80% with automated infraction detection, analyst verification workflows, and audit-ready reporting.</p>',
+            '<p>Diseñé e implementé una plataforma web automatizada para el cálculo del <strong>Índice de Calidad de Voltaje (ICV)</strong> y monitoreo de <strong>Cargabilidad</strong> conforme al Código de Red en más de 50 localidades de transmisión. Integré telemetría histórica del sistema OSIsoft PI usando .NET Framework 3.5, C#, PHP, JavaScript, jQuery, Bootstrap y AJAX. Reduje el tiempo de análisis en más de un 80% con detección automática de infracciones, flujos de validación técnica y generación de reportes auditables.</p>'
           ) ?>
           <?= tb(
-            '<p>Delivered custom software solutions to support operational decision-making — surfacing critical events and compliance analysis. Improved operational efficiency and reduced human error through intuitive interfaces and automation.</p>',
-            '<p>Entregué soluciones de software a la medida para apoyar la toma de decisiones operativas — facilitando la visualización de eventos críticos y el análisis de cumplimiento normativo. Mejoré la eficiencia operativa y reduje errores humanos mediante interfaces intuitivas y automatización.</p>'
-          ) ?>
-          <?= tb(
-            '<p>Performed preventive and corrective maintenance on servers and workstations across the Transmission Zone, ensuring continuity of critical systems — diagnosing and resolving hardware and software faults, updating systems, and backing up key data — sustaining availability above 99% and documenting technical procedures for future interventions.</p>',
-            '<p>Realicé mantenimiento preventivo y correctivo a servidores y estaciones de trabajo de la Zona de Transmisión, garantizando la continuidad operativa de los sistemas críticos — diagnóstico y resolución de fallas de hardware y software, actualización de sistemas y respaldo de información crítica — contribuyendo a una disponibilidad superior al 99% y documentando procedimientos técnicos para futuras intervenciones.</p>'
+            '<p>Performed preventive and corrective maintenance on servers and workstations across the Transmission Zone, diagnosing hardware/software faults and updating systems to sustain critical operations above 99% availability.</p>',
+            '<p>Realicé mantenimiento preventivo y correctivo en servidores y estaciones de trabajo de la Zona de Transmisión, diagnosticando fallas de hardware y software y actualizando sistemas para mantener la continuidad operativa por encima del 99% de disponibilidad.</p>'
           ) ?>
         </div>
       </li>
     </ol>
-
-    <!-- Featured callout: the ICV tool, lifted out so it read as a headline
-         accomplishment and links onward to the portfolio (built in Phase 5). -->
-    <aside class="feature" data-reveal-group aria-labelledby="feature-title">
-      <div class="feature__main" data-reveal>
-        <p class="card__eyebrow"><?= t('Featured work', 'Proyecto destacado') ?></p>
-        <h3 class="feature__title" id="feature-title">
-          <?= t('ICV — Voltage Quality Evaluation Tool', 'ICV — Herramienta de Evaluación de Calidad de Voltaje') ?>
-        </h3>
-        <p class="feature__body">
-          <?= t(
-            'A web platform that screens transmission-line voltage against Mexico’s Grid Code, flags infractions, validates them, and turns months of manual analysis into minutes — with audit-ready exports and reports.',
-            'Una plataforma web que evalúa el voltaje de las líneas de transmisión contra el Código de Red de México, detecta infracciones, las valida y convierte meses de análisis manual en minutos — con exportaciones y reportes listos para auditoría.'
-          ) ?>
-        </p>
-        <p class="feature__stack">
-          <span class="tag">.NET 3.5</span>
-          <span class="tag">C#</span>
-          <span class="tag">PHP</span>
-          <span class="tag">JavaScript</span>
-          <span class="tag">PI System</span>
-        </p>
-        <a class="btn btn--secondary" href="/portfolio/">
-          <?= t('Read the case study', 'Leer el caso de estudio') ?>
-        </a>
-      </div>
-      <div class="feature__stat stat" data-reveal>
-        <!-- Stat value keeps `>` and `%` static; the inner span is the only
-             thing the count-up touches, so it animates 0 -> 80 while the
-             decoration stays put. Static source is "80" so no-JS/reduced-
-             motion users still see the final number. -->
-        <span class="stat__value">><span data-count-to="80">80</span><em>%</em></span>
-        <span class="stat__label">
-          <?= t('Reduction in voltage-quality analysis time', 'Reducción en el tiempo de análisis de calidad de voltaje') ?>
-        </span>
-      </div>
-    </aside>
   </div>
 </section>
 
 <!-- =========================================================
-     Education + Award
+     Education & Recognition
      ======================================================= -->
 <section class="section education" id="education" aria-labelledby="education-title">
   <div class="container">
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Education & Awards', 'Educación y Reconocimientos') ?></p>
       <h2 class="section__title" id="education-title" data-typetrick>
-        <?= t('School & recognition', 'Estudios y reconocimiento') ?>
+        <?= t('Academic degree & contest awards', 'Grado académico y reconocimientos') ?>
       </h2>
     </header>
 
     <div class="education__grid" data-reveal-group>
       <article class="card" data-reveal data-tilt>
-        <h3 class="card__eyebrow"><?= t('Education', 'Educación') ?></h3>
+        <h3 class="card__eyebrow"><?= t('Degree', 'Licenciatura') ?></h3>
         <p class="card__title">
           <?= t('B.Sc. in Computer Systems Engineering', 'Ing. en Sistemas Computacionales') ?>
         </p>
         <p class="card__body">
           <?= t(
-            'Instituto Tecnológico Nacional de México — Campus Acapulco (TecNM).',
-            'Instituto Tecnológico Nacional de México — Campus Acapulco (TecNM).'
+            'Instituto Tecnológico Nacional de México — Campus Acapulco (TecNM). Specialized in software architectures, embedded systems, and industrial databases.',
+            'Instituto Tecnológico Nacional de México — Campus Acapulco (TecNM). Especializado en arquitecturas de software, sistemas embebidos y bases de datos industriales.'
           ) ?>
         </p>
         <p class="card__footer education__marks">
-          <span class="tag"><span class="tag__dot" aria-hidden="true"></span><?= t('GPA 3.7', 'Promedio 3.7') ?></span>
-          <span class="tag"><?= t('Cumulative avg 92.33', 'Promedio acumulado 92.33') ?></span>
-          <span class="tag"><?= t('TOEFL English certified', 'Certificación TOEFL de inglés') ?></span>
+          <span class="tag"><span class="tag__dot" aria-hidden="true"></span><?= t('GPA 3.7 / 4.0', 'Promedio 3.7 / 4.0') ?></span>
+          <span class="tag"><?= t('Cumulative 92.33', 'Promedio 92.33') ?></span>
+          <span class="tag"><?= t('TOEFL Certified', 'Certificación TOEFL') ?></span>
         </p>
       </article>
 
       <article class="card" data-reveal data-tilt>
         <h3 class="card__eyebrow"><?= t('Award', 'Reconocimiento') ?></h3>
         <p class="card__title">
-          <?= t('1st place — Tech Innovation Contest', '1er lugar — Concurso de Innovación Tecnológica') ?>
+          <?= t('1st Place — Technological Innovation Contest', '1er Lugar — Concurso de Innovación Tecnológica') ?>
         </p>
         <p class="card__body">
           <?= t('Smart Cities category, December 2025, for the project', 'Categoría Ciudades Inteligentes, diciembre de 2025, por el proyecto') ?>
           <strong><?= t('“TecAssist: Virtual Assistant”', '“TecAssist: Asistente Virtual”') ?></strong>
-          <?= t(', recognized at the local level.', ', reconocido a nivel local.') ?>
+          <?= t(', recognized for AI-grounded citizen consultation.', ', reconocido por consulta ciudadana orientada a IA.') ?>
         </p>
         <p class="card__footer">
           <span class="badge">
             <svg class="badge__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 14.99l-4.77 2.5.91-5.32L4.27 7.62l5.34-.78L12 2z"/>
-              <path d="M8 15l-1.2 4.5L12 17l5.2 2.5L16 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             </svg>
-            <?= t('Winner', 'Ganador') ?>
+            <?= t('1st Place Winner', 'Ganador 1er Lugar') ?>
           </span>
         </p>
       </article>
@@ -287,19 +316,19 @@ require __DIR__ . '/includes/header.php';
 </section>
 
 <!-- =========================================================
-     Contact CTA
+     Contact Section
      ======================================================= -->
 <section class="section contact" id="contact" aria-labelledby="contact-title">
   <div class="container container--prose">
     <header class="section__header section__header--center" data-reveal>
       <p class="section__eyebrow"><?= t('Contact', 'Contacto') ?></p>
       <h2 class="section__title" id="contact-title" data-typetrick>
-        <?= t('Let’s build something', 'Construyamos algo juntos') ?>
+        <?= t('Let’s build something together', 'Construyamos algo juntos') ?>
       </h2>
       <p class="section__lead">
         <?= t(
-          'Have a project in mind, or just want to say hello? I read every message — the fastest way to reach me is email.',
-          '¿Tienes un proyecto en mente, o solo quieres saludar? Leo cada mensaje — la forma más rápida de contactarme es por correo.'
+          'Interested in building an industrial telemetry tool, AI RAG assistant, or mobile app? I read every message.',
+          '¿Interesado en desarrollar una herramienta de telemetría industrial, asistente RAG con IA o app móvil? Leo cada mensaje.'
         ) ?>
       </p>
     </header>
@@ -385,9 +414,6 @@ require __DIR__ . '/includes/header.php';
         <p class="field__error" id="cf-message-err"></p>
       </div>
 
-      <!-- Honeypot: visually hidden, ignored by real users; a filled value
-           means a bot, and the Phase 7 server drops it. The client also
-           silently aborts submit if it is filled. -->
       <div class="field contact-form__hp" aria-hidden="true">
         <label class="field__label" for="cf-company">Company</label>
         <input class="field__input" id="cf-company" name="company" type="text" tabindex="-1" autocomplete="off">

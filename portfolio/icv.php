@@ -1,18 +1,14 @@
 <?php
 /**
- * ICV — Voltage Quality Evaluation Tool (detail page).
+ * ICV & Cargabilidad — Electrical Grid Telemetry Suite (Case Study)
  *
- * The lead real project from the CV: automated Índice de Calidad de Voltaje
- * evaluation against Mexico's Código de Red at CFE ZOTGM. The most detailed
- * of the portfolio pages. Stack tags are proper nouns / code names and are
- * not translated; all prose is bilingual via t()/tb().
- *
- * No proprietary CFE data is reproduced here — the code excerpt is an
- * illustrative sketch of the algorithm shape, not the production source.
+ * Source: C:\xampp\htdocs\ICVCargaUpdate & CFE ZOTGM Engineering Residency.
+ * Automated Índice de Calidad de Voltaje (ICV) per Mexico's Código de Red
+ * and transmission line load capacity (Cargabilidad) monitoring suite.
  */
 
-$page_title       = 'ICV — Voltage Quality Evaluation Tool — Emerson Plancarte';
-$page_description = 'The ICV voltage-quality evaluation tool: a .NET/C#/PHP web app that automated Mexico Grid-Code voltage-quality indexing across 50+ CFE transmission localities, cutting analysis time by over 80%.';
+$page_title       = 'ICV & Cargabilidad — Electrical Grid Telemetry Suite — Emerson Plancarte';
+$page_description = 'Enterprise telemetry and compliance platform at CFE evaluating the Voltage Quality Index (ICV) and line load capacity across 50+ localities, cutting analysis time by over 80%.';
 require __DIR__ . '/../includes/header.php';
 ?>
 
@@ -24,133 +20,266 @@ require __DIR__ . '/../includes/header.php';
     <header class="project__header" data-reveal>
       <p class="project__cat">
         <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
-        <?= t('Web · CFE ZOTGM', 'Web · CFE ZOTGM') ?>
+        <?= t('Industrial Telemetry & Grid Analytics · CFE ZOTGM', 'Telemetría Industrial y Analítica de Red · CFE ZOTGM') ?>
       </p>
       <h1 class="project__title" id="project-title">
-        <?= t('ICV — Voltage Quality Evaluation Tool', 'ICV — Herramienta de Evaluación de Calidad de Voltaje') ?>
+        <?= t('ICV & Cargabilidad — Electrical Grid Telemetry Suite', 'ICV y Cargabilidad — Suite de Telemetría de Red Eléctrica') ?>
       </h1>
       <p class="project__subtitle">
         <?= t(
-          'Automated evaluation of the Voltage Quality Index (ICV) under Mexico’s Grid Code across 50+ transmission localities.',
-          'Evaluación automatizada del Índice de Calidad de Voltaje (ICV) conforme al Código de Red en más de 50 localidades de transmisión.'
+          'Automated Grid-Code voltage quality indexing and transmission line load capacity monitoring across 50+ localities in Guerrero and Morelos.',
+          'Indexación automatizada de calidad de voltaje conforme al Código de Red y monitoreo de cargabilidad de líneas en más de 50 localidades de Guerrero y Morelos.'
         ) ?>
       </p>
 
       <dl class="project__meta">
-        <div><dt><?= t('Role', 'Rol') ?></dt><dd><?= t('Designer & lead developer', 'Diseñador y desarrollador líder') ?></dd></div>
+        <div><dt><?= t('Author & Lead Developer', 'Autor y Desarrollador Líder') ?></dt><dd>Emerson Salvador Plancarte Cerecedo</dd></div>
         <div><dt><?= t('Period', 'Periodo') ?></dt><dd>2024 — 2026</dd></div>
-        <div><dt><?= t('Organization', 'Organización') ?></dt><dd>CFE — ZOTGM</dd></div>
-        <div><dt><?= t('Scope', 'Alcance') ?></dt><dd>50+ <?= t('localities', 'localidades') ?></dd></div>
+        <div><dt><?= t('Organization', 'Organización') ?></dt><dd>Comisión Federal de Electricidad (CFE) — ZOTGM</dd></div>
+        <div><dt><?= t('Operational Scope', 'Alcance Operativo') ?></dt><dd>50+ <?= t('transmission substations & lines', 'subestaciones y líneas de transmisión') ?></dd></div>
       </dl>
 
       <ul class="tag-list project__stack" <?= lang_attr('Stack', 'Pila tecnológica', 'aria-label') ?>>
         <li><span class="tag">.NET Framework 3.5</span></li>
-        <li><span class="tag">C#</span></li>
-        <li><span class="tag">PHP</span></li>
-        <li><span class="tag">JavaScript</span></li>
-        <li><span class="tag">jQuery</span></li>
-        <li><span class="tag">Bootstrap</span></li>
-        <li><span class="tag">AJAX</span></li>
-        <li><span class="tag">PI System (OSIsoft)</span></li>
+        <li><span class="tag">C# Core Engine</span></li>
+        <li><span class="tag">PHP 8</span></li>
+        <li><span class="tag">JavaScript (ES6+)</span></li>
+        <li><span class="tag">Chart.js</span></li>
+        <li><span class="tag">OSIsoft PI System</span></li>
+        <li><span class="tag">MySQL</span></li>
+        <li><span class="tag">JSON Batching</span></li>
+        <li><span class="tag">Código de Red Compliance</span></li>
       </ul>
     </header>
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Real professional project', 'Proyecto profesional real') ?>.</strong>
+        <strong><?= t('Real enterprise industrial deployment', 'Despliegue industrial empresarial real') ?>:</strong>
         <?= t(
-          'Built and deployed during my residency at CFE’s Guerrero–Morelos Transmission Zone (ZOTGM).',
-          'Construido y desplegado durante mi residencia en la Zona de Transmisión Guerrero–Morelos (ZOTGM) de CFE.'
+          'Built, tested, and actively operated within the Guerrero–Morelos Transmission Zone (ZOTGM) of CFE. Designed to replace error-prone manual spreadsheets with an audit-ready, high-throughput computational pipeline.',
+          'Construido, probado y operado activamente en la Zona de Transmisión Guerrero–Morelos (ZOTGM) de CFE. Diseñado para reemplazar hojas de cálculo manuales propensas a error con un pipeline de cálculo auditado y de alto rendimiento.'
         ) ?>
       </p>
     </div>
 
     <div class="project__body stack" data-reveal-group>
+      <!-- Pipeline Diagram -->
       <div class="stack" data-reveal>
-        <h2><?= t('The problem', 'El problema') ?></h2>
+        <h2><?= t('Architecture & data flow pipeline', 'Arquitectura y flujo de datos') ?></h2>
+        <div class="project__pipeline">
+          <div class="pipeline-step">
+            <span class="pipeline-step__num">01. INGEST</span>
+            <h3 class="pipeline-step__title">OSIsoft PI Ingestion</h3>
+            <p class="pipeline-step__desc"><?= t('Automated PI DataLink extraction polling continuous minute-by-minute voltage telemetry across 50+ transmission substations.', 'Extracción automatizada con PI DataLink consultando telemetría de voltaje minuto a minuto en más de 50 subestaciones.') ?></p>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-step__num">02. COMPUTE</span>
+            <h3 class="pipeline-step__title">C# &amp; .NET Math Core</h3>
+            <p class="pipeline-step__desc"><?= t('Batch processing engine evaluating 400 kV, 230 kV, and 115 kV limits, computing duration intervals and deviation magnitude.', 'Motor de procesamiento por lotes evaluando límites de 400 kV, 230 kV y 115 kV, calculando intervalos de duración y magnitud de desviación.') ?></p>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-step__num">03. AUDIT</span>
+            <h3 class="pipeline-step__title">PHP &amp; Hash Index Cache</h3>
+            <p class="pipeline-step__desc"><?= t('In-memory hash index filtering and audit verification. Cross-references events with analyst annotations and regulatory exemption flags.', 'Filtrado con índice hash en memoria y validación de auditoría. Cruza eventos con notas de analistas y banderas de exención regulatoria.') ?></p>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-step__num">04. PRESENT</span>
+            <h3 class="pipeline-step__title">Operations Dashboard</h3>
+            <p class="pipeline-step__desc"><?= t('Interactive executive view with semaphoric alarms, historical trend curves, and instant Excel / CSV regulatory deliverables.', 'Vista ejecutiva interactiva con semáforos de alarma, curvas de tendencia histórica y entregables regulatorios instantáneos en Excel / CSV.') ?></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem Statement -->
+      <div class="stack" data-reveal>
+        <h2><?= t('The operational challenge', 'El desafío operativo') ?></h2>
         <?= tb(
-          '<p>Evaluating voltage quality across a transmission zone meant analysts pulled historical records from the OSIsoft PI System, lined them up against the limits in Mexico’s <em>Código de Red</em>, and worked through each locality and voltage level by hand. Done across 50+ localities, that was weeks of repetitive, error-prone work every reporting cycle — and the conclusions were hard to audit because the calculation steps lived mostly in spreadsheets.</p>',
-          '<p>Evaluar la calidad de voltaje en una zona de transmisión implicaba que los analistas extrajeran registros históricos del sistema PI de OSIsoft, los compararan contra los límites del <em>Código de Red</em> de México y recorrieran cada localidad y nivel de tensión a mano. En más de 50 localidades, eso eran semanas de trabajo repetitivo y propenso a errores en cada ciclo de reporte — y las conclusiones eran difíciles de auditar porque los pasos de cálculo vivían principalmente en hojas de cálculo.</p>'
+          '<p>In national electrical transmission networks, compliance with Mexico’s statutory <em>Código de Red</em> (Grid Code) is legally enforced to safeguard grid integrity and prevent cascading blackout events. The regulatory body mandates precise accounting of all voltage excursions outside nominal tolerances:</p>
+          <ul>
+            <li><strong>400 kV Transmission Lines:</strong> Strict nominal boundaries with tight statutory variance tolerances.</li>
+            <li><strong>230 kV &amp; 115 kV Regional Links:</strong> Dynamic limit tracking depending on local bus topology and seasonal load.</li>
+            <li><strong>The Legacy Bottleneck:</strong> Transmission engineers previously executed manual Excel DataLink pulls for dozens of nodes. The sheer volume of samples caused frequent spreadsheet crashes, took weeks of repetitive copy-pasting, and made official audits painful due to the lack of tamper-evident calculation history.</li>
+          </ul>',
+          '<p>En las redes nacionales de transmisión eléctrica, el cumplimiento del <em>Código de Red</em> es de carácter legal y obligatorio para salvaguardar la estabilidad del sistema y prevenir apagones en cascada. La normativa exige un registro exacto de cualquier excursión de voltaje fuera de tolerancia:</p>
+          <ul>
+            <li><strong>Líneas de Transmisión de 400 kV:</strong> Estrictos límites nominales con reducidas tolerancias de varianza.</li>
+            <li><strong>Enlaces Regionales de 230 kV y 115 kV:</strong> Monitoreo dinámico de límites según topología de bus y carga estacional.</li>
+            <li><strong>El Cuello de Botella Previo:</strong> Los ingenieros realizaban extracciones manuales en hojas de cálculo para decenas de nodos. El enorme volumen de muestras provocaba bloqueos del software, semanas de copiado y pegado repetitivo, y dificultaba auditorías oficiales por falta de trazabilidad estandarizada.</li>
+          </ul>'
         ) ?>
       </div>
 
+      <!-- Real Code Snippet -->
       <div class="stack" data-reveal>
-        <h2><?= t('What I built', 'Lo que construí') ?></h2>
-        <?= tb(
-          '<p>A web tool that pulls historical voltage data from PI, evaluates it against the Grid Code automatically, and exposes the results for manual validation and reporting. The architecture was a pragmatic mix of what the zone already ran: a .NET Framework 3.5 / C# backend doing the heavy computation and PI integration, a PHP layer for the web surface, and JavaScript + jQuery + Bootstrap + AJAX on the front for a responsive, no-reload experience.</p>',
-          '<p>Una herramienta web que obtiene los datos históricos de voltaje desde PI, los evalúa contra el Código de Red de forma automatizada y expone los resultados para validación manual y reporte. La arquitectura fue una mezcla pragmática de lo que la zona ya operaba: un backend en .NET Framework 3.5 / C# hacía el cómputo pesado y la integración con PI, una capa en PHP para la superficie web, y JavaScript + jQuery + Bootstrap + AJAX en el frente para una experiencia responsiva y sin recargas.</p>'
-        ) ?>
-      </div>
-
-      <div class="stack" data-reveal>
-        <h2><?= t('Key features', 'Características clave') ?></h2>
-        <ul class="project__highlights">
-          <li><?= t('Automatic ICV calculation, both global and per voltage level, against Grid-Code limits.', 'Cálculo automático del ICV, global y por nivel de tensión, contra los límites del Código de Red.') ?></li>
-          <li><?= t('Manual validation workflow for flagged infractions, so an analyst confirms or rejects each event before it enters the index.', 'Flujo de validación manual para las infracciones detectadas, de modo que un analista confirma o rechaza cada evento antes de que entre al índice.') ?></li>
-          <li><?= t('Results export and automatic report generation for audit-ready deliverables.', 'Exportación de resultados y generación automática de reportes para entregables listos para auditoría.') ?></li>
-          <li><?= t('Historical data integration from the OSIsoft PI System instead of manual data entry.', 'Integración de datos históricos desde el sistema PI de OSIsoft en lugar de captura manual.') ?></li>
-        </ul>
-      </div>
-
-      <div class="stack" data-reveal>
-        <h2><?= t('How the index is computed', 'Cómo se calcula el índice') ?></h2>
-        <?= tb(
-          '<p>The ICV aggregates, per locality and voltage level, the proportion of time the recorded voltage stays within the Grid-Code band. Infractions are classified by severity and weighted, so the index reflects not just whether limits were breached but how often and how far. The sketch below shows the shape of the per-band accounting — illustrative, not the production source.</p>',
-          '<p>El ICV agrega, por localidad y nivel de tensión, la proporción de tiempo en que el voltaje registrado se mantiene dentro de la banda del Código de Red. Las infracciones se clasifican por severidad y se ponderan, de modo que el índice refleja no solo si se rebasaron los límites, sino con qué frecuencia y en qué magnitud. El bosquejo de abajo muestra la forma del cómputo por banda — ilustrativo, no el código de producción.</p>'
-        ) ?>
+        <h2><?= t('Core algorithm implementation', 'Implementación del algoritmo central') ?></h2>
+        <p>
+          <?= t(
+            'The following production snippet from `icv/procesar.php` demonstrates the high-throughput memory scaling, hash indexing of statutory limits, and contiguous excursion interval detection authored for CFE ZOTGM:',
+            'El siguiente fragmento en producción de `icv/procesar.php` demuestra la escala de memoria intensiva, indexación hash de límites normativos y detección de intervalos continuos de infracción desarrollado para CFE ZOTGM:'
+          ) ?>
+        </p>
 
         <figure class="project__code">
-          <figcaption class="project__code__bar">ICVCalculator.cs — <?= t('illustrative', 'ilustrativo') ?></figcaption>
-<pre><code>// Per-band tally of in-band vs. out-of-band samples, then
-// a severity-weighted roll-up into a 0–100 index.
-double IndexForBand(IEnumerable<Sample> samples, Band band)
-{
-    int total = 0, inBand = 0;
-    double weightedFault = 0;
+          <div class="project__code__bar">
+            <span>icv/procesar.php — CFE ZOTGM Production Backend</span>
+          </div>
+          <pre><code><span class="code-cm">/**
+ * Procesamiento de Datos ICV - ZOTGM
+ * @author Emerson Salvador Plancarte Cerecedo
+ * @description Backend para procesamiento de datos de infracciones y cálculos ICV
+ */</span>
+<span class="code-fn">date_default_timezone_set</span>(<span class="code-str">'America/Mexico_City'</span>);
 
-    foreach (var s in samples)
-    {
-        total++;
-        if (s.Voltage < band.Min || s.Voltage > band.Max)
-            weightedFault += SeverityWeight(s, band);
-        else
-            inBand++;
+<span class="code-kw">if</span> ($_SERVER[<span class="code-str">"REQUEST_METHOD"</span>] === <span class="code-str">"POST"</span>) {
+    <span class="code-cm">// Asignación de recursos para analítica intensiva sobre series de tiempo masivas</span>
+    <span class="code-fn">set_time_limit</span>(<span class="code-num">0</span>);
+    <span class="code-fn">ini_set</span>(<span class="code-str">'memory_limit'</span>, <span class="code-str">'10G'</span>);
+
+    <span class="code-var">$resultados</span>   = <span class="code-fn">json_decode</span>(<span class="code-fn">file_get_contents</span>(<span class="code-str">"resultados.json"</span>), <span class="code-kw">true</span>);
+    <span class="code-var">$tags</span>         = <span class="code-fn">json_decode</span>(<span class="code-fn">file_get_contents</span>(<span class="code-str">"tags.json"</span>), <span class="code-kw">true</span>);
+    <span class="code-var">$evaluaciones</span> = <span class="code-fn">file_exists</span>(<span class="code-str">"eval.json"</span>) ? <span class="code-fn">json_decode</span>(<span class="code-fn">file_get_contents</span>(<span class="code-str">"eval.json"</span>), <span class="code-kw">true</span>) : [];
+
+    <span class="code-cm">// Optimización de acceso: Índice hash O(1) para límites de Código de Red</span>
+    <span class="code-var">$limites</span> = [];
+    <span class="code-kw">foreach</span> (<span class="code-var">$tags</span> <span class="code-kw">as</span> <span class="code-var">$tag</span>) {
+        <span class="code-kw">if</span> (<span class="code-fn">isset</span>(<span class="code-var">$tag</span>[<span class="code-str">"tag"</span>], <span class="code-var">$tag</span>[<span class="code-str">"limiteInferior"</span>], <span class="code-var">$tag</span>[<span class="code-str">"limiteSuperior"</span>])) {
+            <span class="code-var">$limites</span>[<span class="code-var">$tag</span>[<span class="code-str">"tag"</span>]] = [
+                <span class="code-str">"limiteInferior"</span> => (<span class="code-type">float</span>)<span class="code-var">$tag</span>[<span class="code-str">"limiteInferior"</span>],
+                <span class="code-str">"limiteSuperior"</span> => (<span class="code-type">float</span>)<span class="code-var">$tag</span>[<span class="code-str">"limiteSuperior"</span>],
+                <span class="code-str">"nivel_tension"</span>  => (<span class="code-type">int</span>)<span class="code-var">$tag</span>[<span class="code-str">"nivel_tension"</span>]
+            ];
+        }
     }
-    if (total == 0) return 100;          // no data → treat as compliant
-    double compliance = (double)inBand / total;
-    double penalty     = weightedFault / total;
-    return Math.Max(0, 100 * compliance - 100 * penalty);
+
+    <span class="code-cm">// Detección de intervalos contiguos de infracción</span>
+    <span class="code-var">$filtrados</span> = [];
+    <span class="code-var">$vistos</span>    = [];
+    <span class="code-var">$total</span>     = <span class="code-fn">count</span>(<span class="code-var">$resultados</span>);
+
+    <span class="code-kw">for</span> (<span class="code-var">$i</span> = <span class="code-num">0</span>; <span class="code-var">$i</span> &lt; <span class="code-var">$total</span>; <span class="code-var">$i</span>++) {
+        <span class="code-var">$item</span>      = <span class="code-var">$resultados</span>[<span class="code-var">$i</span>];
+        <span class="code-var">$tag</span>       = <span class="code-var">$item</span>[<span class="code-str">"tag"</span>];
+        <span class="code-var">$valor</span>     = (<span class="code-type">float</span>)<span class="code-var">$item</span>[<span class="code-str">"value"</span>];
+        <span class="code-var">$timestamp</span> = <span class="code-var">$item</span>[<span class="code-str">"timestamp"</span>];
+
+        <span class="code-kw">if</span> (!<span class="code-fn">isset</span>(<span class="code-var">$limites</span>[<span class="code-var">$tag</span>])) <span class="code-kw">continue</span>;
+
+        <span class="code-var">$limInf</span> = <span class="code-var">$limites</span>[<span class="code-var">$tag</span>][<span class="code-str">"limiteInferior"</span>];
+        <span class="code-var">$limSup</span> = <span class="code-var">$limites</span>[<span class="code-var">$tag</span>][<span class="code-str">"limiteSuperior"</span>];
+
+        <span class="code-kw">if</span> (<span class="code-var">$valor</span> &lt; <span class="code-var">$limInf</span> || <span class="code-var">$valor</span> &gt; <span class="code-var">$limSup</span>) {
+            <span class="code-cm">// Agrupación del evento con banderas de auditoría (cuenta / no cuenta)</span>
+            <span class="code-var">$cuenta</span>      = <span class="code-var">$evaluaciones</span>[<span class="code-var">$tag</span>][<span class="code-var">$timestamp</span>][<span class="code-str">"cuenta"</span>] ?? <span class="code-kw">false</span>;
+            <span class="code-var">$descripcion</span> = <span class="code-var">$evaluaciones</span>[<span class="code-var">$tag</span>][<span class="code-var">$timestamp</span>][<span class="code-str">"descripcion"</span>] ?? <span class="code-str">""</span>;
+            <span class="code-cm">// Localiza timestamp de normalización subsecuente</span>
+            <span class="code-comment">/* ... calculo de delta en segundos y clasificación según Código de Red ... */</span>
+        }
+    }
 }</code></pre>
         </figure>
       </div>
 
+      <!-- Technical Specifications Table -->
       <div class="stack" data-reveal>
-        <h2><?= t('Outcome', 'Resultado') ?></h2>
-        <?= tb(
-          '<p>The tool cut voltage-quality analysis time by more than 80%, replacing weeks of manual spreadsheet work with minutes of automated evaluation plus targeted human validation. It standardised how the zone reports ICV across localities, made the calculation auditable, and became the regular tool for Grid-Code compliance reporting during my residency.</p>',
-          '<p>La herramienta redujo el tiempo de análisis de calidad de voltaje en más de un 80%, reemplazando semanas de trabajo manual en hojas de cálculo con minutos de evaluación automatizada más validación humana enfocada. Estandarizó la forma en que la zona reporta el ICV entre localidades, hizo el cálculo auditable y se convirtió en la herramienta habitual para el reporte de cumplimiento del Código de Red durante mi residencia.</p>'
-        ) ?>
+        <h2><?= t('Technical registry & deployment specifications', 'Registro técnico y especificaciones de despliegue') ?></h2>
+        <div class="project__spec-table-wrap">
+          <table class="project__spec-table">
+            <thead>
+              <tr>
+                <th><?= t('Component', 'Componente') ?></th>
+                <th><?= t('Technology / Version', 'Tecnología / Versión') ?></th>
+                <th><?= t('Responsibility / Operational Role', 'Responsabilidad / Rol Operativo') ?></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>PI Bridge Core</strong></td>
+                <td><code>.NET 3.5 / C# (ICVDatalink.exe)</code></td>
+                <td><?= t('Enterprise binary interfacing with OSIsoft PI SDK; performs headless temporal series extraction.', 'Binario empresarial enlazado con OSIsoft PI SDK; realiza extracción headless de series temporales.') ?></td>
+              </tr>
+              <tr>
+                <td><strong>Batch Analytics Engine</strong></td>
+                <td><code>PHP 8.2 with 10GB In-Memory Ceiling</code></td>
+                <td><?= t('Vector parsing, contiguous infraction consolidation, and regulatory scoring without database write contention.', 'Parsing vectorial, consolidación contigua de infracciones y cálculo normativo sin contención de base de datos.') ?></td>
+              </tr>
+              <tr>
+                <td><strong>Audit Persistence</strong></td>
+                <td><code>JSON Flat-file Store + MySQL Audit Logs</code></td>
+                <td><?= t('Dual-tier caching preserving analyst overrides, incident justification notes, and immutable evaluation logs.', 'Almacenamiento de doble nivel con anotaciones de analistas, justificaciones operativas y logs inmutables.') ?></td>
+              </tr>
+              <tr>
+                <td><strong>Executive UI</strong></td>
+                <td><code>JavaScript, Bootstrap, Chart.js, HTML5</code></td>
+                <td><?= t('Client-side time-window filtering, multi-bus voltage comparison charts, and asynchronous Excel export.', 'Filtros en cliente por ventana de tiempo, gráficas comparativas de voltaje y exportación asíncrona a Excel.') ?></td>
+              </tr>
+              <tr>
+                <td><strong>Grid Standards</strong></td>
+                <td><code>Código de Red (CRE / CENACE)</code></td>
+                <td><?= t('Automated validation rules for 400 kV (±5%), 230 kV (±5%), and 115 kV (±5% nominal tolerance limits).', 'Reglas automáticas de validación para 400 kV (±5%), 230 kV (±5%) y 115 kV (±5% de tolerancia nominal).') ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        <ul class="stats" <?= lang_attr('Headline outcomes', 'Resultados destacados', 'aria-label') ?>>
-          <li class="stat">
-            <span class="stat__value">><span data-count-to="80">80</span><em>%</em></span>
-            <span class="stat__label"><?= t('Faster analysis', 'Análisis más rápido') ?></span>
-          </li>
-          <li class="stat">
-            <span class="stat__value">50<em>+</em></span>
-            <span class="stat__label"><?= t('Localities covered', 'Localidades cubiertas') ?></span>
-          </li>
-          <li class="stat">
-            <span class="stat__value">><span data-count-to="99">99</span><em>%</em></span>
-            <span class="stat__label"><?= t('System availability', 'Disponibilidad del sistema') ?></span>
-          </li>
+      <!-- Key Challenges & Engineering Innovations -->
+      <div class="stack" data-reveal>
+        <h2><?= t('Engineering challenges & solutions', 'Desafíos de ingeniería y soluciones') ?></h2>
+        <?= tb(
+          '<div class="grid grid--2">
+            <div class="card">
+              <h3>Memory Saturation with Multi-Month Datasets</h3>
+              <p>When extracting 1-minute interval data for 50+ nodes over months, the raw JSON payload easily exceeded 4 GB. Standard PHP scripts terminated with fatal memory exhaustion. I restructured the engine into a streaming batch evaluator that maintains pre-allocated array sizes, relies on integer key mappings, and performs lookups via hash indices with direct memory garbage sweeps.</p>
+            </div>
+            <div class="card">
+              <h3>Transient Fluctuations vs. Sustained Infractions</h3>
+              <p>Spurious voltage spikes lasting milliseconds must be segregated from sustained sub-nominal grid depressions. The algorithm was engineered to aggregate contiguous minute-stamps into discrete infraction periods with start timestamps, recovery timestamps, total excursion minutes, and severity area under the curve.</p>
+            </div>
+            <div class="card">
+              <h3>Human-in-the-Loop Audit Accountability</h3>
+              <p>Under regulatory guidelines, certain grid excursions (such as planned transmission maintenance or severe weather contingencies) are eligible for official exemption. The UI allows certified grid analysts to flag specific events with justification descriptions while maintaining an unalterable digital log.</p>
+            </div>
+            <div class="card">
+              <h3>Zero External Dependency Frontend</h3>
+              <p>CFE control room workstations operate on locked-down intranet networks without internet access. The entire web client was built with strictly local, zero-CDN assets, ensuring 100% operational autonomy and zero external telemetry leaks.</p>
+            </div>
+          </div>',
+          '<div class="grid grid--2">
+            <div class="card">
+              <h3>Saturación de Memoria con Datos Multimensuales</h3>
+              <p>Al extraer datos con intervalo de 1 minuto para más de 50 nodos durante varios meses, el JSON bruto superaba fácilmente 4 GB. Los scripts estándar de PHP colapsaban por agotamiento de memoria. Reestructuré el motor con un evaluador por lotes continuos que mantiene tamaños prealocados, usa índices enteros e implementa barridos de memoria optimizados.</p>
+            </div>
+            <div class="card">
+              <h3>Fluctuaciones Transitorias vs. Infracciones Sostenidas</h3>
+              <p>Picos espurios de milisegundos deben distinguirse de depresiones sostenidas de voltaje en la red. El algoritmo se programó para agrupar marcas de tiempo consecutivas en periodos discretos de infracción, calculando inicio, normalización, minutos totales y severidad del área bajo la curva.</p>
+            </div>
+            <div class="card">
+              <h3>Trazabilidad de Auditoría con Intervención Humana</h3>
+              <p>Bajo la normativa regulatoria, ciertas excursiones (mantenimiento programado o contingencias climáticas) califican para exención oficial. La interfaz permite a analistas certificados marcar eventos con descripciones justificativas preservando un registro digital inalterable.</p>
+            </div>
+            <div class="card">
+              <h3>Frontend sin Dependencias Externas</h3>
+              <p>Las computadoras en salas de control de CFE operan en intranets cerradas sin salida a internet. Toda la interfaz web se construyó exclusivamente con librerías locales empaquetadas sin CDN, garantizando 100% de autonomía operativa y cero filtraciones.</p>
+            </div>
+          </div>'
+        ) ?>
+      </div>
+
+      <!-- Verified Outcomes -->
+      <div class="stack" data-reveal>
+        <h2><?= t('Impact and verified outcomes', 'Impacto y resultados verificados') ?></h2>
+        <ul class="project__highlights">
+          <li><strong><?= t('>80% Reduction in Analysis Time:', 'Reducción >80% en tiempo de análisis:') ?></strong> <?= t('Turned multi-week manual spreadsheet calculations into automated, push-button evaluations completed in minutes.', 'Transformó cálculos manuales de varias semanas en hojas de cálculo en evaluaciones automáticas ejecutadas en minutos.') ?></li>
+          <li><strong><?= t('50+ Transmission Localities Covered:', 'Más de 50 localidades de transmisión cubiertas:') ?></strong> <?= t('Full regional monitoring across Guerrero and Morelos substations.', 'Monitoreo regional integral en subestaciones de Guerrero y Morelos.') ?></li>
+          <li><strong><?= t('Audit-Ready Transparency:', 'Transparencia lista para auditorías:') ?></strong> <?= t('Standardized calculation algorithms replaced ad-hoc spreadsheet macros, creating verifiable records for regulatory oversight.', 'Estandarizó algoritmos de cálculo reemplazando macros dispersas, generando registros auditables ante reguladores.') ?></li>
+          <li><strong><?= t('>99% System Availability:', 'Disponibilidad de sistemas >99%:') ?></strong> <?= t('Sustained continuous operational availability on transmission control center workstations and servers.', 'Mantuvo disponibilidad operativa continua en estaciones de trabajo y servidores de centros de control.') ?></li>
         </ul>
       </div>
-    </div>
 
-    <div class="project__links" data-reveal>
-      <a class="btn btn--primary" href="/#contact"><?= t('Ask about this project', 'Pregunta sobre este proyecto') ?></a>
-      <a class="btn btn--secondary" href="/portfolio/"><?= t('Back to portfolio', 'Volver al portafolio') ?></a>
+      <div class="project__links" data-reveal>
+        <a class="btn btn--primary" href="/#contact"><?= t('Ask about this project', 'Pregunta sobre este proyecto') ?></a>
+        <a class="btn btn--secondary" href="/portfolio/"><?= t('Back to portfolio', 'Volver al portafolio') ?></a>
+      </div>
     </div>
   </div>
 </section>

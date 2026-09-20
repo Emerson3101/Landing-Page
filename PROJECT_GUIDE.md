@@ -535,10 +535,13 @@ per category + an "All" default) and a grid of cards. **Bilingual JSON
 fields are emitted as dual `data-lang` spans via the local `bi_field()`
 helper** in `portfolio/index.php` (it mirrors the `t()` contract so the
 EN/ES toggle hides the right language without rebuilding the grid). Stack
-tags are rendered as `.tag` chips; tier surfaces as a badge (`.portfolio__tier--real`
-gets accent; `--demo` gets a quiet outline so the two tiers are visually
-honest). `featured: true` makes a card `grid-column: span 2` on wide
-viewports, collapsing to `auto` under 48rem.
+tags are rendered as `.tag` chips. `featured: true` marks the strongest
+projects (they populate the home-page showcase); on the portfolio grid only
+the FIRST featured card takes the double-width lead slot (`grid-column:
+span 2`, released under 42em) — the grid uses fixed column counts
+(1/2/3 by breakpoint) with `grid-auto-flow: dense` so rows always pack
+evenly. The home page renders its featured cards as a uniform 2×2 mosaic
+on wide viewports (no spans).
 
 **`tier` is an honesty signal.** `'real'` = real CV work (ICV, TecAssist);
 `'demo'` = built-for-portfolio showcase. Never blur this — the badge text

@@ -14,12 +14,12 @@
  *                                    narrow screens; JS drives open/close)
  */
 $nav_links = [
-  ['href' => '/#about',      'en' => 'About',       'es' => 'Acerca de'],
-  ['href' => '/#skills',     'en' => 'Skills',      'es' => 'Habilidades'],
-  ['href' => '/#experience', 'en' => 'Experience',  'es' => 'Experiencia'],
-  ['href' => '/#education',  'en' => 'Education',   'es' => 'Educación'],
-  ['href' => '/portfolio/',  'en' => 'Portfolio',   'es' => 'Portafolio'],
-  ['href' => '/#contact',    'en' => 'Contact',     'es' => 'Contacto'],
+  ['href' => '/#about',        'en' => 'About',        'es' => 'Acerca de'],
+  ['href' => '/#projects',     'en' => 'Projects',     'es' => 'Proyectos'],
+  ['href' => '/#skills',       'en' => 'Skills',       'es' => 'Habilidades'],
+  ['href' => '/#experience',   'en' => 'Experience',   'es' => 'Experiencia'],
+  ['href' => '/portfolio/',    'en' => 'Portfolio',    'es' => 'Portafolio'],
+  ['href' => '/#contact',      'en' => 'Contact',      'es' => 'Contacto'],
 ];
 ?>
 <header class="site-header">
