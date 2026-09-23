@@ -23,6 +23,15 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = window.matchMedia('(pointer: fine)').matches;
 
+  /* Phone diet: touch-primary or narrow viewports run a sparser field
+     at ~30fps. The embers keep their character — same sizes, same drift,
+     same twinkle — there are just fewer of them and the canvas repaints
+     half as often, freeing the rAF budget the hero WebGL needs on
+     mobile GPUs. Cores/RAM are NOT part of the signal: desktops keep
+     the full field regardless of CPU count. */
+  var lite = window.matchMedia('(pointer: coarse)').matches
+          || window.matchMedia('(max-width: 48rem)').matches;
+
   var canvas = document.createElement('canvas');
   canvas.className = 'fx-particles';
   canvas.setAttribute('aria-hidden', 'true');
@@ -168,12 +177,13 @@
        how many viewport-heights the document spans — the field lives in
        document space, so the count must cover the whole scroll length.
        Off-screen dots are culled in drawViewport, so the per-frame cost
-       stays bound to what's visible. */
+       stays bound to what's visible. Lite viewports halve the density. */
     var vh = window.innerHeight || 1;
     var perViewport = Math.round((window.innerWidth * vh) / 28000);
-    perViewport = Math.max(24, Math.min(72, perViewport));
+    if (lite) perViewport = Math.round(perViewport * 0.5);
+    perViewport = Math.max(lite ? 12 : 24, Math.min(lite ? 30 : 72, perViewport));
     var screens = Math.max(1, Math.ceil(docH / vh));
-    var count = Math.max(perViewport, Math.min(500, perViewport * screens));
+    var count = Math.max(perViewport, Math.min(lite ? 160 : 500, perViewport * screens));
     for (var i = 0; i < count; i++) {
       particles.push(new Particle(i % 3 === 0));  /* ~⅓ on the far layer */
     }
@@ -181,6 +191,7 @@
 
   /* --- animation loop (skipped entirely off-tab) --------------------- */
   var lastT = 0;
+  var lastMeasure = 0;
   var running = true;
   var rafId = null;
 
@@ -188,9 +199,26 @@
     rafId = null;
     if (document.hidden) { return; }
 
+    /* Lite devices: cap the field at ~30fps. Embers drift slowly, so
+       the lower temporal rate is invisible; dt-scaled physics keeps the
+       motion itself time-correct. */
+    if (lite && lastT && now - lastT < 32) {
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
+
     var dt = (now - lastT) / 16.666;          /* 60fps-normalized step */
     dt = dt > 3 ? 3 : (dt < 0.2 ? 0.2 : dt);
     lastT = now;
+
+    /* Late reflows (font swap, embedded content, image-less layout
+       settling) grow/shrink the document after the field spawned —
+       re-measure lazily (a cheap scrollHeight compare every ~2s) so
+       the embers keep covering the full scroll length. */
+    if (now - lastMeasure > 2000) {
+      lastMeasure = now;
+      measureDocHeight();
+    }
 
     var scrollY = window.pageYOffset;
     scrollImpulse = Math.max(-1.4, Math.min(1.4, (scrollY - lastScrollY) * 0.02));

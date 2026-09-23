@@ -46,6 +46,18 @@
   transition-delay: calc(min(var(--reveal-i, 0), 5) * 90ms);
 }
 
+/* Phones (coarse pointers): the reveal keeps its fade + rise but drops
+   the blur() filter — a paint-heavy filter animation that lands exactly
+   in the window where the phone GPU is busiest (hero shader warm-up).
+   The blur is imperceptible during a 22px rise; the freed GPU time is
+   not. Desktop keeps the full treatment. */
+@media (pointer: coarse) {
+  .js [data-reveal] {
+    filter: none;
+    transition-property: opacity, transform;
+  }
+}
+
 /* --- Hover micro-interactions ---------------------------------------- */
 
 /* Nav link: a hairline accent underline grows from the left on hover.
@@ -129,7 +141,12 @@ body,
 /* --- Typeflow choreography: first-letter fade -> caret typing -> shimmer --
    fx.js splits [data-typetrick] elements into .pc letter spans when their
    entrance begins; these styles animate the letters and the moving caret.
-   Pure opacity transitions — no layout shift while typing. */
+   Pure opacity transitions — no layout shift while typing. The will-change
+   is deliberate: the split happens pre-paint, so the ~60 letter layers are
+   built once before the hero renders and every letter fade then runs on
+   the compositor for free — promoting mid-animation instead would stall
+   the entrance, and unpromoted letter paints starve the sibling reveal
+   transitions on slow devices. */
 .pc {
   opacity: 0;
   transition: opacity 110ms linear;

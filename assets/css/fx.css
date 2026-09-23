@@ -46,6 +46,14 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   body::after { animation: none; }
 }
+/* Phones (coarse pointers): freeze the 90s aura drift too. The loop only
+   ever moves the layer ~2%, so a phone session can't perceive it — but
+   the compositor pays for a perpetually animating 220%-viewport layer
+   every frame the page is open. Auras stay visible; only their per-frame
+   cost goes away. Desktop keeps the drift. */
+@media (pointer: coarse) {
+  body::after { animation: none; }
+}
 
 /* ----------------------------------------------------------------------
    Per-section ambient tints — each section paints a soft radial wash
@@ -120,6 +128,18 @@ body::after {
   opacity: 0.035;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Phones: the grain keeps its texture but drops the blend mode. A
+   full-screen mix-blend overlay forces the phone GPU to re-composite
+   the whole animating hero beneath it every frame; plain opacity grain
+   composites for nearly nothing. Slightly higher opacity compensates
+   for the lost overlay contrast boost. Desktop unchanged. */
+@media (pointer: coarse) {
+  [data-theme="dark"] body::before {
+    mix-blend-mode: normal;
+    opacity: 0.05;
+  }
 }
 
 /* ----------------------------------------------------------------------
