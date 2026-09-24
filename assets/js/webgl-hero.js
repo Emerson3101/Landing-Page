@@ -1,28 +1,52 @@
 /* =====================================================================
-   webgl-hero.js — Lush Aurora Nebula & Interactive 3D Cyber-Polyhedron
+   webgl-hero.js — Fluid Aurora & Physics-Driven Cyber-Polyhedron
    ---------------------------------------------------------------------
    Dual-pass WebGL rendering:
      1. Volumetric dual-tone Aurora Nebula with domain-warped fbm and
-        drifting circular bokeh particles floating upward.
-     2. Interactive 3D Wireframe Cyber-Polyhedron (dual icosahedron cage)
-        with glowing vertices, inner core, and orbiting satellite particles.
-     3. Pointer & Mobile Touch drag-to-rotate with fluid inertia and dampening.
-     4. Responsive camera distance adaptation for mobile viewports.
-     5. Theme-responsive colors (#36e8a0 mint, #4aa8ff cyan).
-     6. Performance guards: pauses when scrolled out of view or the tab is
-        hidden, caps DPR at 2.
+        drifting bokeh particles, COUPLED to a stable-fluids wake:
+        pointer / finger movement splats momentum + accent dye into a
+        velocity field (curl + vorticity confinement, Jacobi pressure
+        solve, semi-Lagrangian advection), and the nebula domain bends
+        around the wake — passing a hand through tinted water.
+     2. Interactive 3D Wireframe Cyber-Polyhedron (dual icosahedron
+        cage) with glowing vertices, inner core and orbiting satellite
+        particles (per-particle orbits computed in the vertex shader).
+     3. Physics-based manipulation, identical for mouse and touch:
+        persistent arcball orientation (no euler tumble), drag with
+        live angular-velocity tracking, flick-to-spin momentum with
+        dt-normalized damping, auto-rotation that blends back in as
+        momentum decays, pinch-zoom, tap pulse (+ a dye drop in the
+        water), double-tap reset.
+     4. Theme-responsive colors (#36e8a0 mint, #4aa8ff cyan).
+     5. Performance guards: pauses when scrolled out of view or the
+        tab is hidden, caps DPR at 2, phone-tier frame gate (~24 ms).
+
+   PHYSICS CORE. Every rate (momentum damping, auto-spin, pulse decay,
+   camera easing) is dt-normalized, so the feel is identical at 30, 60
+   or 120 Hz. Desktop renders at the full rAF cadence; the frame gate
+   is phone-tier only. Fluid sim steps at a fixed cadence (60 Hz
+   desktop / 30 Hz phone) accumulated from real frame time, and goes
+   near-idle (just the two decay passes) once no splat has arrived
+   for ~2.5 s.
+
+   FLUID AURORA ("hand through tinted water"). Requires
+   OES_texture_half_float, EXT_color_buffer_half_float AND
+   OES_texture_half_float_linear — any missing piece quietly skips the
+   subsystem and the nebula keeps its plain pointer parallax (a 1×1
+   zero texture backs the uniforms, so the specialized shader reads
+   no wake). Resolutions: velocity 128 / dye 256 on desktop, 96 / 192
+   on phones, aspect-shaped, reallocated on orientation change.
+   Cursor movement stirs anywhere over the hero band; on touch,
+   window-level touchmove stirs page-wide — scrolling drags the water
+   with it. Reduced motion skips the fluid entirely.
 
    PHONE-FIRST RENDERING TIER (coarse pointers / narrow viewports).
    Same scene, same fidelity — the cost moves, not the pixels:
      - Non-blocking boot at defer time: the aurora initializes right
        away (no late pop-in). Where the driver exposes
-       KHR_parallel_shader_compile the nebula shader compiles on
-       background threads and a completion poll sequences the boot —
-       the main thread never stalls, so the typing choreography stays
-       smooth. Without the extension the compile is synchronous at
-       defer, exactly as the pre-optimization site always was — only
-       much cheaper, because the heavy 40-orb loop no longer sits in
-       the phone-tier nebula shader.
+       KHR_parallel_shader_compile the shaders compile on background
+       threads and a completion poll sequences the boot — the main
+       thread never stalls, so the typing choreography stays smooth.
      - Bokeh orbs as POINT SPRITES: the 40-orb per-pixel loop (~80% of
        the fragment cost) is replaced by 40 full-resolution additive
        point sprites with the identical falloff, drift, twinkle and
@@ -33,8 +57,8 @@
      - Nebula FBO: the soft-focus fbm aurora (all 4 octaves kept)
        renders into an offscreen framebuffer at 60% and is composited
        with linear filtering — visually equivalent on a field that is
-       soft by design — and refreshed every 2nd frame (its evolution
-       runs at 5% time-scale; half-rate sampling is invisible).
+       soft by design — and refreshed every 2nd frame, in step with
+       the half-rate fluid sim.
      - The crisp 3D wireframe, nodes and halo keep full canvas
        resolution every frame.
      - Uniform/attribute locations are cached once after linking.
@@ -43,6 +67,9 @@
      - If the point-sprite or composite programs fail to build, the
        bg shader recompiles WITH its orb loop and the direct
        full-quality path takes over — visual correctness first.
+
+   TEST HOOK: window.__heroDebug (non-enumerable) exposes live spin /
+   camera / fluid state so runtime physics can be asserted in tests.
    ===================================================================== */
 
 'use strict';
@@ -203,23 +230,27 @@
       addEdge(icoIndices[t+2], icoIndices[t], 0.95);
     }
 
-    /* 3D Floating Particle Constellation */
+    /* 3D Orbital Satellite Constellation — per-particle orbit parameters
+       consumed by ORBIT_VERT below: positions are computed on the GPU
+       each frame from u_time, so there is zero per-frame CPU work and
+       the buffer never updates. Keplerian touch: outer satellites
+       sweep slower than inner ones.
+         a_orbit  = (phase0, radius, inclination, angular speed)
+         a_wobble = (node phase, wobble amp, wobble freq, unused)     */
     var PARTICLE_COUNT = 90;
-    var particleVerts = [];
-    var particleVelocities = [];
+    var orbitData = new Float32Array(PARTICLE_COUNT * 8);
     for (var p = 0; p < PARTICLE_COUNT; p++) {
-      var r = 1.7 + Math.random() * 2.8;
-      var theta = Math.random() * Math.PI * 2;
-      var u = Math.random() * 2 - 1;
-      var x = r * Math.sqrt(1 - u * u) * Math.cos(theta);
-      var y = r * Math.sqrt(1 - u * u) * Math.sin(theta);
-      var z = r * u;
-      particleVerts.push(x, y, z);
-      particleVelocities.push(
-        (Math.random() - 0.5) * 0.003,
-        (Math.random() - 0.5) * 0.003,
-        (Math.random() - 0.5) * 0.003
-      );
+      var j = p * 8;
+      var orbR = 1.9 + Math.random() * 2.4;
+      orbitData[j]     = Math.random() * Math.PI * 2;                        /* phase0 */
+      orbitData[j + 1] = orbR;                                               /* radius */
+      orbitData[j + 2] = (Math.random() - 0.5) * 1.2;                        /* inclination */
+      orbitData[j + 3] = (0.22 + Math.random() * 0.45) / orbR
+                       * (Math.random() < 0.5 ? 1 : -1);                     /* omega */
+      orbitData[j + 4] = Math.random() * Math.PI * 2;                        /* node */
+      orbitData[j + 5] = 0.10 + Math.random() * 0.28;                        /* wobble amp */
+      orbitData[j + 6] = 0.4 + Math.random() * 1.2;                          /* wobble freq */
+      orbitData[j + 7] = 0;
     }
 
     /* ------------------------------------------------------------------
@@ -236,7 +267,11 @@
       'void main(){ gl_Position = vec4(a_pos, 0.999, 1.0); }'
     ].join('\n');
 
-    function bgFragSrc(withOrbs) {
+    /* withFluid=true → the nebula samples the fluid velocity field to
+       warp its fbm domain (the aurora bends around the wake) and adds
+       the advected dye as the visible tinted trail before tonemapping.
+       withFluid=false → byte-identical to the pre-fluid source. */
+    function bgFragSrc(withOrbs, withFluid) {
       var src = [
         '#ifdef GL_FRAGMENT_PRECISION_HIGH',
         'precision highp float;',
@@ -248,7 +283,19 @@
         'uniform vec2  u_mouse;',
         'uniform vec3  u_colA;',
         'uniform vec3  u_colB;',
-        '',
+        ''
+      ];
+      if (withFluid) {
+        src.push(
+          '/* FLUID — velocity field (domain warp) + dye field (wake) */',
+          'uniform sampler2D u_vel;',
+          'uniform sampler2D u_dye;',
+          'uniform float u_warp;',
+          'uniform float u_dyeGain;',
+          ''
+        );
+      }
+      src.push(
         '/* Robust multiply/fract hashes stable across mobile and desktop GPUs */',
         'float hash(vec2 p){',
         '  p = fract(p * vec2(234.34, 435.345));',
@@ -282,7 +329,20 @@
         'void main(){',
         '  vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / min(u_res.x, u_res.y);',
         '  float t = u_time * 0.05;',
-        '',
+        ''
+      );
+      if (withFluid) {
+        src.push(
+          '  /* FLUID WARP — the nebula domain bends around the wake. The',
+          '     minus sign makes the pattern trail the pointer, the way',
+          '     water follows a moving hand. */',
+          '  vec2 fuv = gl_FragCoord.xy / u_res;',
+          '  vec2 fvel = clamp(texture2D(u_vel, fuv).xy, vec2(-500.0), vec2(500.0));',
+          '  uv -= fvel * u_warp;',
+          ''
+        );
+      }
+      src.push(
         '  /* gentle pointer parallax of the whole field */',
         '  uv += u_mouse * 0.05;',
         '',
@@ -293,7 +353,7 @@
         '  base += u_colB * smoothstep(0.55, 0.95, fbm(uv * 2.8 - t + q)) * 0.45;',
         '  base *= (1.0 - smoothstep(0.15, 1.1, length(uv)));      /* vignette */',
         ''
-      ];
+      );
       if (withOrbs) {
         src.push(
           '  /* drifting bokeh field — 40 layered twinkling celestial orbs */',
@@ -319,6 +379,11 @@
           '  /* bokeh orbs are drawn as a separate full-resolution additive */',
           '  /* point pass — see ORB_VERT / ORB_FRAG below.               */',
           '  vec3 col = base;'
+        );
+      }
+      if (withFluid) {
+        src.push(
+          '  col += texture2D(u_dye, fuv).rgb * u_dyeGain;   /* tinted wake */'
         );
       }
       src.push(
@@ -403,6 +468,217 @@
       '}'
     ].join('\n');
 
+    /* Orbital satellite vertex shader — per-particle orbit parameters
+       (static buffer) + u_time produce the position on the GPU:
+       a circle in the XZ plane, inclined around X, precessed around Y
+       by a per-orbit node phase, with a gentle vertical wobble. Zero
+       per-frame CPU work, zero buffer uploads. Depth/point-size math
+       mirrors OBJ_3D_VERT exactly. */
+    var ORBIT_VERT = [
+      'attribute vec4 a_orbit;',    /* phase0, radius, inclination, omega  */
+      'attribute vec4 a_wobble;',   /* node, wobbleAmp, wobbleFreq, unused  */
+      'uniform mat4 u_mvp;',
+      'uniform float u_pointSize;',
+      'uniform float u_time;',
+      'varying float v_depth;',
+      'void main(){',
+      '  float th = a_orbit.x + u_time * a_orbit.w;',
+      '  vec3 p = vec3(cos(th), 0.0, sin(th)) * a_orbit.y;',
+      '  float ci = cos(a_orbit.z), si = sin(a_orbit.z);',
+      '  p = vec3(p.x, p.y * ci - p.z * si, p.y * si + p.z * ci);',
+      '  float cn = cos(a_wobble.x), sn = sin(a_wobble.x);',
+      '  p = vec3(p.x * cn + p.z * sn, p.y, -p.x * sn + p.z * cn);',
+      '  p.y += sin(u_time * a_wobble.z + a_orbit.x * 7.0) * a_wobble.y;',
+      '  vec4 pos = u_mvp * vec4(p, 1.0);',
+      '  gl_Position = pos;',
+      '  v_depth = (pos.z / pos.w) * 0.5 + 0.5;',
+      '  gl_PointSize = u_pointSize * clamp(1.6 / (pos.z * 0.2 + 1.2), 0.6, 3.2);',
+      '}'
+    ].join('\n');
+
+    /* ------------------------------------------------------------------
+       FLUID AURORA — stable-fluids simulation shaders (WebGL1)
+       ------------------------------------------------------------------
+       Classic ping-pong Navier-Stokes passes at tiny resolutions (see
+       the runtime pipeline in finish() for the step order). SIM_VERT
+       drives every pass from the shared fullscreen triangle and hands
+       each fragment its texel-space neighbors for the finite-difference
+       stencils. Velocity passes run at velocity-grid resolution, dye
+       at dye resolution; both grids are aspect-shaped to the canvas. */
+    var SIM_VERT = [
+      'attribute vec2 a_pos;',
+      'uniform vec2 u_texel;',
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'void main(){',
+      '  vUv = a_pos * 0.5 + 0.5;',
+      '  vL = vUv - vec2(u_texel.x, 0.0);',
+      '  vR = vUv + vec2(u_texel.x, 0.0);',
+      '  vT = vUv + vec2(0.0, u_texel.y);',
+      '  vB = vUv - vec2(0.0, u_texel.y);',
+      '  gl_Position = vec4(a_pos, 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
+    /* highp where available — velocity magnitudes and texel-precision
+       coordinates need more than mediump's ~10-bit mantissa */
+    var SIM_PRECISION = [
+      '#ifdef GL_FRAGMENT_PRECISION_HIGH',
+      'precision highp float;',
+      '#else',
+      'precision mediump float;',
+      '#endif'
+    ].join('\n');
+
+    var SPLAT_FRAG = [
+      SIM_PRECISION,
+      'varying vec2 vUv;',
+      'uniform sampler2D u_target;',
+      'uniform float u_aspect;',
+      'uniform vec2 u_point;',
+      'uniform vec3 u_value;',
+      'uniform float u_radius;',
+      'void main(){',
+      '  vec2 p = vUv - u_point;',
+      '  p.x *= u_aspect;',
+      '  vec3 splat = exp(-dot(p, p) / u_radius) * u_value;',
+      '  vec3 base = texture2D(u_target, vUv).xyz;',
+      '  gl_FragColor = vec4(base + splat, 1.0);',
+      '}'
+    ].join('\n');
+
+    /* Semi-Lagrangian advection: trace each cell back along the
+       velocity field and sample there. u_decay fades the field so the
+       water calms once the hand has passed. */
+    var ADVECT_FRAG = [
+      SIM_PRECISION,
+      'varying vec2 vUv;',
+      'uniform sampler2D u_velocity;',
+      'uniform sampler2D u_src;',
+      'uniform vec2 u_texel;',   /* velocity grid texel */
+      'uniform float u_dt;',
+      'uniform float u_decay;',
+      'void main(){',
+      '  vec2 coord = vUv - u_dt * texture2D(u_velocity, vUv).xy * u_texel;',
+      '  gl_FragColor = texture2D(u_src, coord) * u_decay;',
+      '}'
+    ].join('\n');
+
+    var CLEAR_FRAG = [
+      'precision mediump float;',
+      'varying vec2 vUv;',
+      'uniform sampler2D u_texture;',
+      'uniform float u_value;',
+      'void main(){ gl_FragColor = u_value * texture2D(u_texture, vUv); }'
+    ].join('\n');
+
+    var DIV_FRAG = [
+      'precision mediump float;',
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'uniform sampler2D u_velocity;',
+      'void main(){',
+      '  float L = texture2D(u_velocity, vL).x;',
+      '  float R = texture2D(u_velocity, vR).x;',
+      '  float T = texture2D(u_velocity, vT).y;',
+      '  float B = texture2D(u_velocity, vB).y;',
+      '  vec2 C = texture2D(u_velocity, vUv).xy;',
+      '  if (vL.x < 0.0) { L = -C.x; }',
+      '  if (vR.x > 1.0) { R = -C.x; }',
+      '  if (vT.y > 1.0) { T = -C.y; }',
+      '  if (vB.y < 0.0) { B = -C.y; }',
+      '  gl_FragColor = vec4(0.5 * (R - L + T - B), 0.0, 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
+    var CURL_FRAG = [
+      'precision mediump float;',
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'uniform sampler2D u_velocity;',
+      'void main(){',
+      '  float L = texture2D(u_velocity, vL).y;',
+      '  float R = texture2D(u_velocity, vR).y;',
+      '  float T = texture2D(u_velocity, vT).x;',
+      '  float B = texture2D(u_velocity, vB).x;',
+      '  gl_FragColor = vec4(0.5 * (R - L - T + B), 0.0, 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
+    var VORT_FRAG = [
+      SIM_PRECISION,
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'uniform sampler2D u_velocity;',
+      'uniform sampler2D u_curl;',
+      'uniform float u_curlStrength;',
+      'uniform float u_dt;',
+      'void main(){',
+      '  float L = texture2D(u_curl, vL).x;',
+      '  float R = texture2D(u_curl, vR).x;',
+      '  float T = texture2D(u_curl, vT).x;',
+      '  float B = texture2D(u_curl, vB).x;',
+      '  float C = texture2D(u_curl, vUv).x;',
+      '  vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));',
+      '  force /= length(force) + 0.0001;',
+      '  force *= u_curlStrength * C;',
+      '  force.y *= -1.0;',
+      '  vec2 velocity = texture2D(u_velocity, vUv).xy + force * u_dt;',
+      '  gl_FragColor = vec4(clamp(velocity, -1000.0, 1000.0), 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
+    var PRESSURE_FRAG = [
+      'precision mediump float;',
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'uniform sampler2D u_pressure;',
+      'uniform sampler2D u_divergence;',
+      'void main(){',
+      '  float L = texture2D(u_pressure, vL).x;',
+      '  float R = texture2D(u_pressure, vR).x;',
+      '  float T = texture2D(u_pressure, vT).x;',
+      '  float B = texture2D(u_pressure, vB).x;',
+      '  float divergence = texture2D(u_divergence, vUv).x;',
+      '  gl_FragColor = vec4((L + R + B + T - divergence) * 0.25, 0.0, 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
+    var GRADIENT_FRAG = [
+      'precision mediump float;',
+      'varying vec2 vUv;',
+      'varying vec2 vL;',
+      'varying vec2 vR;',
+      'varying vec2 vT;',
+      'varying vec2 vB;',
+      'uniform sampler2D u_pressure;',
+      'uniform sampler2D u_velocity;',
+      'void main(){',
+      '  float L = texture2D(u_pressure, vL).x;',
+      '  float R = texture2D(u_pressure, vR).x;',
+      '  float T = texture2D(u_pressure, vT).x;',
+      '  float B = texture2D(u_pressure, vB).x;',
+      '  vec2 velocity = texture2D(u_velocity, vUv).xy;',
+      '  velocity -= 0.5 * vec2(R - L, T - B);',
+      '  gl_FragColor = vec4(velocity, 0.0, 1.0);',
+      '}'
+    ].join('\n');
+
     /* Blit shader — composites the low-res nebula texture onto the
        canvas (phone tier only). Reuses the fullscreen-triangle buffer. */
     var BLIT_VERT = [
@@ -448,8 +724,41 @@
 
     var blitProg = null, blitU = null;
     var orbProg = null, orbU = null;
+    var orbitProg = null, orbitU = null;
     var orbsAsPoints = false;
     var bgProg = null, objProg = null;
+
+    /* FLUID plumbing — all three half-float extensions must exist or
+       the whole subsystem stays dark and the nebula keeps its plain
+       parallax (a zero texture backs the uniforms of a specialized
+       shader, so a late runtime failure also degrades safely). */
+    var halfType = 0;
+    var fluidPossible = false;
+    var fluidReady = false;
+    if (!reduceMotion) {
+      try {
+        var extHalf = gl.getExtension('OES_texture_half_float');
+        var extCB = gl.getExtension('EXT_color_buffer_half_float');
+        var extLinear = gl.getExtension('OES_texture_half_float_linear');
+        fluidPossible = !!(extHalf && extCB && extLinear);
+        if (extHalf) halfType = extHalf.HALF_FLOAT_OES;
+      } catch (e) {}
+    }
+
+    var splatProg = null, advectProg = null, clearProg = null;
+    var divProg = null, curlProg = null, vortProg = null;
+    var pressureProg = null, gradientProg = null;
+    if (fluidPossible) {
+      splatProg    = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, SPLAT_FRAG));
+      advectProg   = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, ADVECT_FRAG));
+      clearProg    = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, CLEAR_FRAG));
+      divProg      = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, DIV_FRAG));
+      curlProg     = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, CURL_FRAG));
+      vortProg     = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, VORT_FRAG));
+      pressureProg = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, PRESSURE_FRAG));
+      gradientProg = link(compile(gl.VERTEX_SHADER, SIM_VERT), compile(gl.FRAGMENT_SHADER, GRADIENT_FRAG));
+    }
+    orbitProg = link(compile(gl.VERTEX_SHADER, ORBIT_VERT), compile(gl.FRAGMENT_SHADER, OBJ_3D_FRAG));
 
     /* KHR_parallel_shader_compile: where the driver supports it,
        compile/link run on background threads; boot is sequenced by
@@ -478,28 +787,36 @@
       })();
     }
 
-    /* Stage 1 — the tiny point-sprite + composite programs first, so
-       the big nebula program can be specialized before it compiles.
-       If either fails, the nebula keeps its orb loop and the direct
-       full-quality path takes over — visuals are never lost. */
+    function linkedOk(p) {
+      return !!(p && gl.getProgramParameter(p, gl.LINK_STATUS));
+    }
+
+    /* Stage 1 — every TINY program first (point sprites, composite,
+       fluid passes, orbits), so the big nebula program can be
+       specialized before it compiles. */
     if (lite) {
       blitProg = link(compile(gl.VERTEX_SHADER, BLIT_VERT), compile(gl.FRAGMENT_SHADER, BLIT_FRAG));
       orbProg = link(compile(gl.VERTEX_SHADER, ORB_VERT), compile(gl.FRAGMENT_SHADER, ORB_FRAG));
     }
 
-    whenLinked([blitProg, orbProg], function stage2() {
-      if (blitProg && !gl.getProgramParameter(blitProg, gl.LINK_STATUS)) blitProg = null;
-      if (orbProg && !gl.getProgramParameter(orbProg, gl.LINK_STATUS)) orbProg = null;
+    whenLinked([blitProg, orbProg, orbitProg,
+                splatProg, advectProg, clearProg, divProg, curlProg,
+                vortProg, pressureProg, gradientProg], function stage2() {
+      if (!linkedOk(blitProg)) blitProg = null;
+      if (!linkedOk(orbProg)) orbProg = null;
+      if (!linkedOk(orbitProg)) orbitProg = null;
       orbsAsPoints = !!(lite && blitProg && orbProg);
+      fluidReady = fluidPossible && linkedOk(splatProg) && linkedOk(advectProg) &&
+                   linkedOk(clearProg) && linkedOk(divProg) && linkedOk(curlProg) &&
+                   linkedOk(vortProg) && linkedOk(pressureProg) && linkedOk(gradientProg);
 
-      /* Stage 2 — the specialized nebula (with/without its orb loop)
-         plus the 3D program. */
-      bgProg = link(compile(gl.VERTEX_SHADER, BG_VERT), compile(gl.FRAGMENT_SHADER, bgFragSrc(!orbsAsPoints)));
+      /* Stage 2 — the specialized nebula (with/without orbs, with/without
+         fluid coupling) plus the 3D program. */
+      bgProg = link(compile(gl.VERTEX_SHADER, BG_VERT), compile(gl.FRAGMENT_SHADER, bgFragSrc(!orbsAsPoints, fluidReady)));
       objProg = link(compile(gl.VERTEX_SHADER, OBJ_3D_VERT), compile(gl.FRAGMENT_SHADER, OBJ_3D_FRAG));
 
       whenLinked([bgProg, objProg], function stage3() {
-        if (!bgProg || !gl.getProgramParameter(bgProg, gl.LINK_STATUS) ||
-            !objProg || !gl.getProgramParameter(objProg, gl.LINK_STATUS)) return;
+        if (!linkedOk(bgProg) || !linkedOk(objProg)) return;
         finish();
       });
     });
@@ -539,6 +856,81 @@
       pointSize: gl.getUniformLocation(objProg, 'u_pointSize'),
       isPoint:   gl.getUniformLocation(objProg, 'u_isPoint')
     };
+    /* Fluid samplers exist only in the fluid-specialized nebula —
+       getUniformLocation returns null otherwise, which makes every
+       fluid binding below naturally null-safe. */
+    bgU.velTex  = gl.getUniformLocation(bgProg, 'u_vel');
+    bgU.dyeTex  = gl.getUniformLocation(bgProg, 'u_dye');
+    bgU.warp    = gl.getUniformLocation(bgProg, 'u_warp');
+    bgU.dyeGain = gl.getUniformLocation(bgProg, 'u_dyeGain');
+
+    if (orbitProg) orbitU = {
+      aOrbit:  gl.getAttribLocation(orbitProg, 'a_orbit'),
+      aWobble: gl.getAttribLocation(orbitProg, 'a_wobble'),
+      mvp:     gl.getUniformLocation(orbitProg, 'u_mvp'),
+      color:   gl.getUniformLocation(orbitProg, 'u_color'),
+      alpha:   gl.getUniformLocation(orbitProg, 'u_alpha'),
+      dimFloor: gl.getUniformLocation(orbitProg, 'u_dimFloor'),
+      pointSize: gl.getUniformLocation(orbitProg, 'u_pointSize'),
+      time:    gl.getUniformLocation(orbitProg, 'u_time')
+    };
+
+    var fluidU = null;
+    if (fluidReady) {
+      fluidU = {
+        splat: {
+          aPos: gl.getAttribLocation(splatProg, 'a_pos'),
+          target: gl.getUniformLocation(splatProg, 'u_target'),
+          aspect: gl.getUniformLocation(splatProg, 'u_aspect'),
+          point: gl.getUniformLocation(splatProg, 'u_point'),
+          value: gl.getUniformLocation(splatProg, 'u_value'),
+          radius: gl.getUniformLocation(splatProg, 'u_radius')
+        },
+        advect: {
+          aPos: gl.getAttribLocation(advectProg, 'a_pos'),
+          velocity: gl.getUniformLocation(advectProg, 'u_velocity'),
+          src: gl.getUniformLocation(advectProg, 'u_src'),
+          texel: gl.getUniformLocation(advectProg, 'u_texel'),
+          dt: gl.getUniformLocation(advectProg, 'u_dt'),
+          decay: gl.getUniformLocation(advectProg, 'u_decay')
+        },
+        clear: {
+          aPos: gl.getAttribLocation(clearProg, 'a_pos'),
+          texture: gl.getUniformLocation(clearProg, 'u_texture'),
+          value: gl.getUniformLocation(clearProg, 'u_value')
+        },
+        div: {
+          aPos: gl.getAttribLocation(divProg, 'a_pos'),
+          velocity: gl.getUniformLocation(divProg, 'u_velocity'),
+          texel: gl.getUniformLocation(divProg, 'u_texel')
+        },
+        curl: {
+          aPos: gl.getAttribLocation(curlProg, 'a_pos'),
+          velocity: gl.getUniformLocation(curlProg, 'u_velocity'),
+          texel: gl.getUniformLocation(curlProg, 'u_texel')
+        },
+        vort: {
+          aPos: gl.getAttribLocation(vortProg, 'a_pos'),
+          velocity: gl.getUniformLocation(vortProg, 'u_velocity'),
+          curl: gl.getUniformLocation(vortProg, 'u_curl'),
+          texel: gl.getUniformLocation(vortProg, 'u_texel'),
+          curlStrength: gl.getUniformLocation(vortProg, 'u_curlStrength'),
+          dt: gl.getUniformLocation(vortProg, 'u_dt')
+        },
+        pressure: {
+          aPos: gl.getAttribLocation(pressureProg, 'a_pos'),
+          pressure: gl.getUniformLocation(pressureProg, 'u_pressure'),
+          divergence: gl.getUniformLocation(pressureProg, 'u_divergence'),
+          texel: gl.getUniformLocation(pressureProg, 'u_texel')
+        },
+        gradient: {
+          aPos: gl.getAttribLocation(gradientProg, 'a_pos'),
+          pressure: gl.getUniformLocation(gradientProg, 'u_pressure'),
+          velocity: gl.getUniformLocation(gradientProg, 'u_velocity'),
+          texel: gl.getUniformLocation(gradientProg, 'u_texel')
+        }
+      };
+    }
 
     /* Tier visibility tuning. On the phone tier the polyhedron renders
        into a narrower frame against a brighter-composited nebula, and
@@ -574,10 +966,11 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, nodeBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertPoints), gl.STATIC_DRAW);
 
-    var particleArray = new Float32Array(particleVerts);
-    var particleBuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, particleBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, particleArray, gl.DYNAMIC_DRAW);
+    /* Static orbit-parameter buffer — the GPU computes positions from
+       u_time every frame; nothing is ever re-uploaded. */
+    var orbitBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, orbitBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, orbitData, gl.STATIC_DRAW);
 
     /* ------------------------------------------------------------------
        Bokeh orb sprites (phone tier). Every constant the shader derived
@@ -698,125 +1091,683 @@
     new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     /* ------------------------------------------------------------------
-       Interaction: unified PointerEvent drag (desktop + touch)
+       FLUID AURORA — runtime pipeline ("hand through tinted water")
+       ------------------------------------------------------------------
+       Fields (aspect-shaped half-float ping-pong pairs):
+         vel      128 / 96   (desktop / phone)   velocity xy
+         dye      256 / 192                      tinted wake rgb
+         pressure 128 / 96                      Jacobi solve scratch
+       Step (fixed dt — 60 Hz desktop, 30 Hz phone, accumulated from
+       real frame time so any refresh rate behaves the same):
+         splats → curl → vorticity confinement → divergence →
+         pressure (Jacobi ×N) → gradient subtract → advect velocity →
+         advect dye. When no splat has arrived for ~2.5 s only the two
+       advection/decay passes run — the water finishes calming at
+       near-zero cost. Targets are built lazily on the first sized
+       frame and rebuilt on orientation change.
+       ------------------------------------------------------------------ */
+    var SIM_DT = lite ? 0.033 : 0.016;
+    var PRESSURE_ITERS = lite ? 12 : 20;
+    var SPLAT_FORCE = 6000;
+    var SPLAT_RADIUS = 0.005;
+    var VEL_DECAY = lite ? 0.982 : 0.987;
+    var DYE_DECAY = lite ? 0.985 : 0.988;
+    var CURL_STRENGTH = 24;
+    var FLUID_WARP = 0.002;
+    var FLUID_DYE_GAIN = 1.5;
+    var splats = [];
+    var splatBudget = 16;
+    var simAccum = 0;
+    var simSteps = 0;
+    var lastSplatT = -10;
+
+    var vel = null, dye = null, pressure = null;
+    var curlT = null, divT = null;
+    var fluidOK = false, fluidBuildFailed = false;
+    var fluidAspect = 0;
+    var zeroTex = null;
+
+    /* Map a pointer/finger delta into the fluid queue. Touch splats
+       come from the window-level touchmove twin in the interaction
+       section (page-wide stirring — scrolling drags the water); the
+       cursor stirs anywhere over the hero band. Far-off inputs are
+       skipped: a splat deep below the band could never reach the
+       visible field. */
+    function queuePointerSplat(x, y, px, py) {
+      if (!fluidOK || !heroVisible) return;
+      var rect = canvas.getBoundingClientRect();
+      var u = (x - rect.left) / Math.max(1, rect.width);
+      var v = 1 - (y - rect.top) / Math.max(1, rect.height);
+      if (u < -0.08 || u > 1.08 || v < -0.06 || v > 1.06) return;
+      var dx = (x - px) / Math.max(1, rect.width);
+      var dy = -(y - py) / Math.max(1, rect.height);
+      if (Math.abs(dx) + Math.abs(dy) < 0.0004) return;
+      if (splats.length >= splatBudget) return;
+      splats.push({ u: u, v: v, vx: dx * SPLAT_FORCE, vy: dy * SPLAT_FORCE, drop: false });
+    }
+
+    /* A tap injects a small dye drop (with a random nudge) — a fingertip
+       touching the water. */
+    function queueDrop(x, y) {
+      if (!fluidOK || !heroVisible) return;
+      var rect = canvas.getBoundingClientRect();
+      var u = (x - rect.left) / Math.max(1, rect.width);
+      var v = 1 - (y - rect.top) / Math.max(1, rect.height);
+      if (u < -0.08 || u > 1.08 || v < -0.06 || v > 1.06) return;
+      if (splats.length >= splatBudget) return;
+      var ang = Math.random() * Math.PI * 2;
+      splats.push({ u: u, v: v, vx: Math.cos(ang) * 60, vy: Math.sin(ang) * 60, drop: true });
+    }
+
+    function makeTarget(w, h) {
+      var tex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, halfType, null);
+      var fbo = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+      var ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      return { tex: tex, fbo: fbo, w: w, h: h, ok: ok };
+    }
+    function makePair(w, h) {
+      var a = makeTarget(w, h);
+      var b = makeTarget(w, h);
+      return {
+        read: a, write: b, ok: a.ok && b.ok,
+        swap: function () { var t = this.read; this.read = this.write; this.write = t; }
+      };
+    }
+    function destroyFluidTargets() {
+      function kill(t) { if (!t) return; gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo); }
+      if (vel) { kill(vel.read); kill(vel.write); vel = null; }
+      if (dye) { kill(dye.read); kill(dye.write); dye = null; }
+      if (pressure) { kill(pressure.read); kill(pressure.write); pressure = null; }
+      kill(curlT); kill(divT); curlT = divT = null;
+    }
+    function buildFluidTargets() {
+      try {
+        destroyFluidTargets();
+        var aspect = canvas.width / Math.max(1, canvas.height);
+        var vRes = lite ? 96 : 128, dRes = lite ? 192 : 256;
+        var vw = aspect >= 1 ? Math.round(vRes * aspect) : vRes;
+        var vh = aspect >= 1 ? vRes : Math.round(vRes / aspect);
+        var dw = aspect >= 1 ? Math.round(dRes * aspect) : dRes;
+        var dh = aspect >= 1 ? dRes : Math.round(dRes / aspect);
+        vel = makePair(vw, vh);
+        dye = makePair(dw, dh);
+        pressure = makePair(vw, vh);
+        var curlTgt = makeTarget(vw, vh);
+        var divTgt = makeTarget(vw, vh);
+        curlT = curlTgt;
+        divT = divTgt;
+        if (!(vel.ok && dye.ok && pressure.ok && curlTgt.ok && divTgt.ok)) {
+          destroyFluidTargets();
+          fluidBuildFailed = true;
+          return;
+        }
+        fluidAspect = aspect;
+        fluidOK = true;
+      } catch (e) {
+        destroyFluidTargets();
+        fluidBuildFailed = true;
+      }
+    }
+
+    /* Draw one sim pass into `target` with the current program. Every
+       pass is a fullscreen triangle; the neighbor varyings come from
+       SIM_VERT via u_texel (velocity-grid texel for stencil passes). */
+    function simDraw(u, target) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, target ? target.fbo : null);
+      gl.viewport(0, 0, target ? target.w : canvas.width, target ? target.h : canvas.height);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bgQuadBuf);
+      gl.enableVertexAttribArray(u.aPos);
+      gl.vertexAttribPointer(u.aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    function stepFluid(time) {
+      if (!fluidOK || !fluidU) return;
+      gl.disable(gl.BLEND);
+      simSteps++;
+      var active = (time - lastSplatT) < 2.5;
+      var vt = [1 / vel.read.w, 1 / vel.read.h];
+
+      /* 0. drain the pointer splat queue into both fields */
+      while (splats.length) {
+        var s = splats.shift();
+        lastSplatT = time;
+        var mixv = Math.random();
+        var dyeScale = s.drop ? 0.55 : 0.42;
+
+        gl.useProgram(splatProg);
+        gl.uniform1f(fluidU.splat.aspect, fluidAspect);
+        gl.uniform1f(fluidU.splat.radius, SPLAT_RADIUS);
+        gl.uniform2f(fluidU.splat.point, s.u, s.v);
+
+        /* velocity splat */
+        gl.uniform3f(fluidU.splat.value, s.vx, s.vy, 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+        gl.uniform1i(fluidU.splat.target, 0);
+        simDraw(fluidU.splat, vel.write);
+        vel.swap();
+
+        /* dye splat — a random blend of the two theme accents, so the
+           wake drifts between mint and cyan like the nebula itself */
+        gl.uniform3f(fluidU.splat.value,
+          (colA[0] + (colB[0] - colA[0]) * mixv) * dyeScale,
+          (colA[1] + (colB[1] - colA[1]) * mixv) * dyeScale,
+          (colA[2] + (colB[2] - colA[2]) * mixv) * dyeScale);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, dye.read.tex);
+        gl.uniform1i(fluidU.splat.target, 0);
+        simDraw(fluidU.splat, dye.write);
+        dye.swap();
+      }
+
+      if (active) {
+        /* 1. curl of the velocity field */
+        gl.useProgram(curlProg);
+        gl.uniform2f(fluidU.curl.texel, vt[0], vt[1]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+        gl.uniform1i(fluidU.curl.velocity, 0);
+        simDraw(fluidU.curl, curlT);
+
+        /* 2. vorticity confinement — the swirls that read as water */
+        gl.useProgram(vortProg);
+        gl.uniform2f(fluidU.vort.texel, vt[0], vt[1]);
+        gl.uniform1f(fluidU.vort.curlStrength, CURL_STRENGTH);
+        gl.uniform1f(fluidU.vort.dt, SIM_DT);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+        gl.uniform1i(fluidU.vort.velocity, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, curlT.tex);
+        gl.uniform1i(fluidU.vort.curl, 1);
+        simDraw(fluidU.vort, vel.write);
+        vel.swap();
+
+        /* 3. divergence */
+        gl.useProgram(divProg);
+        gl.uniform2f(fluidU.div.texel, vt[0], vt[1]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+        gl.uniform1i(fluidU.div.velocity, 0);
+        simDraw(fluidU.div, divT);
+
+        /* 4. pressure warm-start decay */
+        gl.useProgram(clearProg);
+        gl.uniform1f(fluidU.clear.value, 0.8);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, pressure.read.tex);
+        gl.uniform1i(fluidU.clear.texture, 0);
+        simDraw(fluidU.clear, pressure.write);
+        pressure.swap();
+
+        /* 5. Jacobi pressure solve */
+        gl.useProgram(pressureProg);
+        gl.uniform2f(fluidU.pressure.texel, vt[0], vt[1]);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, divT.tex);
+        gl.uniform1i(fluidU.pressure.divergence, 1);
+        for (var i = 0; i < PRESSURE_ITERS; i++) {
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, pressure.read.tex);
+          gl.uniform1i(fluidU.pressure.pressure, 0);
+          simDraw(fluidU.pressure, pressure.write);
+          pressure.swap();
+        }
+
+        /* 6. gradient subtract → divergence-free velocity */
+        gl.useProgram(gradientProg);
+        gl.uniform2f(fluidU.gradient.texel, vt[0], vt[1]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, pressure.read.tex);
+        gl.uniform1i(fluidU.gradient.pressure, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+        gl.uniform1i(fluidU.gradient.velocity, 1);
+        simDraw(fluidU.gradient, vel.write);
+        vel.swap();
+      }
+
+      /* 7. velocity self-advection + decay (always — this is what
+             calms the water once the hand has passed) */
+      gl.useProgram(advectProg);
+      gl.uniform2f(fluidU.advect.texel, vt[0], vt[1]);
+      gl.uniform1f(fluidU.advect.dt, SIM_DT);
+      gl.uniform1f(fluidU.advect.decay, VEL_DECAY);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+      gl.uniform1i(fluidU.advect.velocity, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+      gl.uniform1i(fluidU.advect.src, 1);
+      simDraw(fluidU.advect, vel.write);
+      vel.swap();
+
+      /* 8. dye advection + fade (always) */
+      gl.uniform1f(fluidU.advect.dt, SIM_DT);
+      gl.uniform1f(fluidU.advect.decay, DYE_DECAY);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, vel.read.tex);
+      gl.uniform1i(fluidU.advect.velocity, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, dye.read.tex);
+      gl.uniform1i(fluidU.advect.src, 1);
+      simDraw(fluidU.advect, dye.write);
+      dye.swap();
+    }
+
+    /* 1×1 zero texture — backs the nebula's fluid samplers until the
+       targets exist (or forever, if they never can): a zero field is
+       no warp and no wake, exactly the pre-fluid look. */
+    if (fluidReady) {
+      zeroTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, zeroTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+
+    /* ------------------------------------------------------------------
+       Interaction — physics-based manipulation (desktop + touch)
        ------------------------------------------------------------------
        The canvas carries `touch-action: pan-y` (fx.css): vertical
-       touch pans stay native scrolling, horizontal moves arrive as
-       pointer events — the manual scroll-bypass heuristic is no
-       longer needed on modern engines. When the browser takes a
-       gesture over (vertical pan), pointercancel ends the drag and
-       restores the pre-drag orientation, so a scroll begun on the
-       hero leaves the scene exactly as it found it. The mouse pair +
-       touch triplet below remain ONLY for engines without
-       PointerEvent. */
-    var rotX = 0.35, rotY = 0.45;
-    var targetRotX = rotX, targetRotY = rotY;
+       touch pans stay native scrolling; horizontal drags and pinches
+       arrive as pointer events. Rotation is a PERSISTENT ORIENTATION
+       MATRIX driven by incremental arcball rotations (pre-multiplied
+       view-space spins) — no euler accumulation, no gimbal tumble, and
+       it composes with any prior orientation. Angular velocity is
+       tracked while dragging and becomes momentum on release; the slow
+       auto-rotation blends back in as momentum decays. Tap = cage pulse
+       + a dye drop in the water; double-tap eases the cage back to its
+       resting pose and resets the zoom. pointercancel (the browser
+       taking a scroll) ends input cleanly with zero momentum — the
+       physics eases, nothing snaps. */
     var pointerX = 0, pointerY = 0;
-    var isDragging = false, dragStartX = 0, dragStartY = 0;
-    var baseRotX = rotX, baseRotY = rotY;
-    var dragPointerId = null;
+    var orient = mat4Create(), scratchA = mat4Create(), scratchB = mat4Create();
+    var IDENT = mat4Create();
+    var REST_ORIENT = mat4Create();
+    mat4RotateX(scratchA, IDENT, 0.35);
+    mat4RotateY(REST_ORIENT, scratchA, 0.45);
+    orient.set(REST_ORIENT);
 
-    function onPointerMove(clientX, clientY, dragging) {
-      var nx = (clientX / window.innerWidth) * 2 - 1;
-      var ny = -((clientY / window.innerHeight) * 2 - 1);
-      pointerX = nx;
-      pointerY = ny;
-      if (dragging) {
-        var dx = (clientX - dragStartX) * 0.008;
-        var dy = (clientY - dragStartY) * 0.008;
-        targetRotY = baseRotY + dx;
-        targetRotX = baseRotX + dy;
-      } else if (!coarse) {
-        /* Idle drift follows the mouse on desktop only. On touch,
-           pointermove fires only mid-gesture — letting a scroll nudge
-           the rotation reads as the scene twitching. Parallax
-           (pointerX/Y) still tracks the finger. */
-        targetRotY += nx * 0.008;
-        targetRotX += ny * 0.005;
+    var angVelX = 0, angVelY = 0;       /* momentum: rad/s around view X / Y */
+    var dragVelX = 0, dragVelY = 0;     /* EMA of the same, tracked while dragging */
+    var ROT_PER_PX = 0.006;            /* rad per pixel of drag */
+    var MAX_SPIN = 4.0;                 /* rad/s clamp on release momentum */
+    var AUTO_SPIN = 0.17;               /* rad/s resting rotation */
+    var pulse = 0;                      /* tap pulse; decays exponentially */
+    var resetting = false;              /* easing back to REST_ORIENT */
+    var camZ = 0, camZTarget = 0;       /* smoothed camera distance */
+    var lastPortrait = null;
+    function baseCamZ(aspect) { return aspect < 1.0 ? (lite ? -6.2 : -7.0) : -5.6; }
+
+    var isDragging = false, dragId = null;
+    var isPinching = false;
+    var pointers = {};
+    var downT = 0, downX = 0, downY = 0, dragMoved = false;
+    var lastMoveT = 0, lastMoveX = 0, lastMoveY = 0;
+    var lastTapT = 0, lastTapX = 0, lastTapY = 0;
+    var lastTouchX = null, lastTouchY = null;
+    var hoverX = null, hoverY = null;
+    var pinchBaseDist = 1, pinchBaseZ = 0;
+
+    /* Incremental view-space rotation — pre-multiplying means the spin
+       acts around the CURRENT screen axes: grab the front face, turn
+       it. Small per-event increments make the composite exact enough. */
+    function applySpin(rx, ry) {
+      if (rx === 0 && ry === 0) return;
+      mat4RotateY(scratchA, IDENT, ry);
+      mat4RotateX(scratchB, scratchA, rx);
+      mat4Multiply(orient, scratchB, orient);
+    }
+
+    /* Repeated small-angle multiplies drift the basis; Gram-Schmidt
+       the three columns every frame so `orient` stays a rotation. */
+    function orthonormalize(m) {
+      var c0x = m[0], c0y = m[1], c0z = m[2];
+      var c1x = m[4], c1y = m[5], c1z = m[6];
+      var l = Math.sqrt(c0x * c0x + c0y * c0y + c0z * c0z) || 1;
+      c0x /= l; c0y /= l; c0z /= l;
+      var d = c0x * c1x + c0y * c1y + c0z * c1z;
+      c1x -= d * c0x; c1y -= d * c0y; c1z -= d * c0z;
+      l = Math.sqrt(c1x * c1x + c1y * c1y + c1z * c1z) || 1;
+      c1x /= l; c1y /= l; c1z /= l;
+      var c2x = c0y * c1z - c0z * c1y;
+      var c2y = c0z * c1x - c0x * c1z;
+      var c2z = c0x * c1y - c0y * c1x;
+      m[0] = c0x; m[1] = c0y; m[2] = c0z;
+      m[4] = c1x; m[5] = c1y; m[6] = c1z;
+      m[8] = c2x; m[9] = c2y; m[10] = c2z;
+    }
+
+    /* Quaternion helpers for the double-tap reset. An element-wise
+       matrix lerp toward the rest pose travels through degenerate,
+       non-orthogonal space (and can stall against orthonormalization
+       when the cage was flipped ~180°); slerp takes the shortest arc
+       on the rotation group from ANY orientation. Only used during a
+       reset — a couple dozen microseconds for ~1.5 s, once in a
+       while. Quats are [x, y, z, w], matrices column-major. */
+    function mat4ToQuat(m) {
+      /* Column-major storage: m[col*4+row], so mij (row i, col j) lives
+         at m[j*4+i]. The trace-method signs below are derived against
+         that layout — they are easy to flip by accident and a flipped
+         axis yields the conjugate pose, so don't "simplify" them. */
+      var tr = m[0] + m[5] + m[10];
+      var q = [0, 0, 0, 1];
+      var s;
+      if (tr > 0) {
+        s = Math.sqrt(tr + 1) * 2;
+        q[3] = 0.25 * s;
+        q[0] = (m[6] - m[9]) / s;
+        q[1] = (m[8] - m[2]) / s;
+        q[2] = (m[4] - m[1]) / s;
+      } else if (m[0] > m[5] && m[0] > m[10]) {
+        s = Math.sqrt(1 + m[0] - m[5] - m[10]) * 2;
+        q[3] = (m[6] - m[9]) / s;
+        q[0] = 0.25 * s;
+        q[1] = (m[4] + m[1]) / s;
+        q[2] = (m[8] + m[2]) / s;
+      } else if (m[5] > m[10]) {
+        s = Math.sqrt(1 + m[5] - m[0] - m[10]) * 2;
+        q[3] = (m[8] - m[2]) / s;
+        q[0] = (m[4] + m[1]) / s;
+        q[1] = 0.25 * s;
+        q[2] = (m[9] + m[6]) / s;
+      } else {
+        s = Math.sqrt(1 + m[10] - m[0] - m[5]) * 2;
+        q[3] = (m[4] - m[1]) / s;
+        q[0] = (m[8] + m[2]) / s;
+        q[1] = (m[9] + m[6]) / s;
+        q[2] = 0.25 * s;
+      }
+      return q;
+    }
+    function quatSlerp(a, b, t) {
+      var bx = b[0], by = b[1], bz = b[2], bw = b[3];
+      var dot = a[0] * bx + a[1] * by + a[2] * bz + a[3] * bw;
+      if (dot < 0) { bx = -bx; by = -by; bz = -bz; bw = -bw; dot = -dot; }
+      if (dot > 0.9995) {
+        var lx = a[0] + (bx - a[0]) * t, ly = a[1] + (by - a[1]) * t,
+            lz = a[2] + (bz - a[2]) * t, lw = a[3] + (bw - a[3]) * t;
+        var il = 1 / Math.sqrt(lx * lx + ly * ly + lz * lz + lw * lw);
+        return [lx * il, ly * il, lz * il, lw * il];
+      }
+      var th = Math.acos(Math.min(1, dot));
+      var sTh = Math.sin(th);
+      var wa = Math.sin((1 - t) * th) / sTh;
+      var wb = Math.sin(t * th) / sTh;
+      return [a[0] * wa + bx * wb, a[1] * wa + by * wb, a[2] * wa + bz * wb, a[3] * wa + bw * wb];
+    }
+    function quatToMat4(m, q) {
+      var x = q[0], y = q[1], z = q[2], w = q[3];
+      var x2 = x + x, y2 = y + y, z2 = z + z;
+      var xx = x * x2, xy = x * y2, xz = x * z2;
+      var yy = y * y2, yz = y * z2, zz = z * z2;
+      var wx = w * x2, wy = w * y2, wz = w * z2;
+      m[0] = 1 - (yy + zz); m[1] = xy + wz;        m[2] = xz - wy;
+      m[4] = xy - wz;        m[5] = 1 - (xx + zz); m[6] = yz + wx;
+      m[8] = xz + wy;        m[9] = yz - wx;       m[10] = 1 - (xx + yy);
+      m[3] = 0; m[7] = 0; m[11] = 0;
+      m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+      return m;
+    }
+    var REST_QUAT = mat4ToQuat(REST_ORIENT);
+    var resetQ = null, resetT = 0;
+
+    function spinFromDrag(dx, dy, dtm) {
+      applySpin(dy * ROT_PER_PX, dx * ROT_PER_PX);
+      if (dtm > 0) {
+        var ivx = (dy * ROT_PER_PX) / dtm;
+        var ivy = (dx * ROT_PER_PX) / dtm;
+        dragVelX += (ivx - dragVelX) * 0.4;
+        dragVelY += (ivy - dragVelY) * 0.4;
       }
     }
 
-    function startDrag(x, y, pid) {
-      isDragging = true;
-      dragStartX = x;
-      dragStartY = y;
-      baseRotX = targetRotX;
-      baseRotY = targetRotY;
-      dragPointerId = pid;
+    function onTap(x, y) {
+      pulse = 1;
+      queueDrop(x, y);
+      var nowT = performance.now();
+      if (nowT - lastTapT < 320 && Math.abs(x - lastTapX) + Math.abs(y - lastTapY) < 48) {
+        /* double-tap: shortest-arc ease home (slerp — see the quat
+           helpers above for why not a matrix lerp) */
+        resetting = true;
+        resetQ = mat4ToQuat(orient);
+        resetT = 0;
+        angVelX = 0; angVelY = 0;
+        camZTarget = baseCamZ(canvas.width / Math.max(1, canvas.height));
+        lastTapT = 0;
+      } else {
+        lastTapT = nowT; lastTapX = x; lastTapY = y;
+      }
+    }
+
+    function countPointers() {
+      var n = 0;
+      for (var k in pointers) n++;
+      return n;
+    }
+    function beginDrag(x, y, pid) {
+      isDragging = true; dragId = pid;
+      dragMoved = false;
+      downT = performance.now(); downX = x; downY = y;
+      angVelX = 0; angVelY = 0; dragVelX = 0; dragVelY = 0;
+      lastMoveT = downT; lastMoveX = x; lastMoveY = y;
+      resetting = false;
       canvas.style.cursor = 'grabbing';
     }
-
-    function endDrag(revert) {
+    function endDragGesture(withMomentum) {
       if (!isDragging) return;
-      isDragging = false;
-      dragPointerId = null;
-      if (revert) {
-        targetRotX = baseRotX;
-        targetRotY = baseRotY;
-      }
+      isDragging = false; dragId = null;
       canvas.style.cursor = 'grab';
+      if (withMomentum) {
+        angVelX = Math.max(-MAX_SPIN, Math.min(MAX_SPIN, dragVelX));
+        angVelY = Math.max(-MAX_SPIN, Math.min(MAX_SPIN, dragVelY));
+      } else {
+        angVelX = 0; angVelY = 0;
+      }
+    }
+    function beginPinch() {
+      var ids = Object.keys(pointers);
+      if (ids.length < 2) return;
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      isPinching = true;
+      pinchBaseDist = Math.max(1, Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
+      pinchBaseZ = camZTarget;
+    }
+    function updatePinch() {
+      var ids = Object.keys(pointers);
+      if (ids.length < 2) return;
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      var d = Math.max(1, Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
+      /* fingers apart → closer camera; capped to the framing band */
+      camZTarget = Math.max(-9.5, Math.min(-4.0, pinchBaseZ * pinchBaseDist / d));
     }
 
     if (typeof window.PointerEvent === 'function') {
-      window.addEventListener('pointermove', function (e) {
-        if (isDragging && e.pointerId !== dragPointerId) return;
-        onPointerMove(e.clientX, e.clientY, isDragging);
-      }, { passive: true });
-
       canvas.addEventListener('pointerdown', function (e) {
-        if (dragPointerId !== null) return;   /* second finger ignored */
-        startDrag(e.clientX, e.clientY, e.pointerId);
+        pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        var n = countPointers();
+        if (n === 1) {
+          beginDrag(e.clientX, e.clientY, e.pointerId);
+        } else if (n === 2) {
+          /* second finger → pinch; end the drag without flinging */
+          endDragGesture(false);
+          beginPinch();
+        }
       });
+
+      window.addEventListener('pointermove', function (e) {
+        var nx = (e.clientX / window.innerWidth) * 2 - 1;
+        var ny = -((e.clientY / window.innerHeight) * 2 - 1);
+        pointerX = nx; pointerY = ny;
+
+        var prev = pointers[e.pointerId];
+        if (prev) {
+          /* an active pointer (drag/pinch) — deltas from its own trail */
+          if (!coarse) queuePointerSplat(e.clientX, e.clientY, prev.x, prev.y);
+          prev.x = e.clientX; prev.y = e.clientY;
+        } else if (!coarse) {
+          /* hovering cursor — the hand through the water. Tracked on
+             its own trail so no button is needed to stir. */
+          if (hoverX !== null) queuePointerSplat(e.clientX, e.clientY, hoverX, hoverY);
+          hoverX = e.clientX; hoverY = e.clientY;
+        }
+
+        if (isDragging && e.pointerId === dragId) {
+          var nowT = performance.now();
+          var dtm = Math.max(0.004, (nowT - lastMoveT) / 1000);
+          if (!dragMoved && Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY) > 6) dragMoved = true;
+          spinFromDrag(e.clientX - lastMoveX, e.clientY - lastMoveY, dtm);
+          lastMoveT = nowT; lastMoveX = e.clientX; lastMoveY = e.clientY;
+        } else if (isPinching) {
+          updatePinch();
+        }
+      }, { passive: true });
 
       window.addEventListener('pointerup', function (e) {
-        if (dragPointerId === null || e.pointerId !== dragPointerId) return;
-        endDrag(false);
+        if (!(e.pointerId in pointers)) return;
+        delete pointers[e.pointerId];
+        if (isPinching && countPointers() < 2) isPinching = false;
+        if (isDragging && e.pointerId === dragId) {
+          var dur = performance.now() - downT;
+          if (!dragMoved && dur < 260) {
+            endDragGesture(false);
+            onTap(e.clientX, e.clientY);
+          } else {
+            endDragGesture(true);
+          }
+        }
       });
+
       window.addEventListener('pointercancel', function (e) {
-        if (dragPointerId === null || e.pointerId !== dragPointerId) return;
-        endDrag(true);   /* browser took the gesture (pan) — restore */
+        if (!(e.pointerId in pointers)) return;
+        delete pointers[e.pointerId];
+        if (isPinching && countPointers() < 2) isPinching = false;
+        if (isDragging && e.pointerId === dragId) {
+          /* browser took the gesture (pan) — clean end, no momentum,
+             physics eases; nothing snaps */
+          endDragGesture(false);
+        }
       });
+
+      /* Touch twin for the fluid: touchmove keeps firing during
+         native scrolls (pointer events get canceled instead), so this
+         is what makes scrolling drag the water page-wide. */
+      window.addEventListener('touchmove', function (e) {
+        if (!coarse || !e.touches || !e.touches.length) return;
+        var t = e.touches[0];
+        if (lastTouchX !== null) queuePointerSplat(t.clientX, t.clientY, lastTouchX, lastTouchY);
+        lastTouchX = t.clientX; lastTouchY = t.clientY;
+      }, { passive: true });
+      window.addEventListener('touchend', function () {
+        lastTouchX = null; lastTouchY = null;
+      }, { passive: true });
+      window.addEventListener('touchcancel', function () {
+        lastTouchX = null; lastTouchY = null;
+      }, { passive: true });
     } else {
       /* Legacy fallback (no PointerEvent): mouse pair + touch triplet
-         with the original scroll-bypass heuristic. */
+         with the original scroll-bypass heuristic, driving the same
+         physics core; two-finger touches pinch. */
       canvas.addEventListener('mousedown', function (e) {
-        startDrag(e.clientX, e.clientY, null);
+        beginDrag(e.clientX, e.clientY, null);
       });
       window.addEventListener('mousemove', function (e) {
-        onPointerMove(e.clientX, e.clientY, isDragging);
-      }, { passive: true });
-      window.addEventListener('mouseup', function () { endDrag(false); });
-
-      var touchStartX = 0, touchStartY = 0;
-      var touchScrolling = false;
-
-      canvas.addEventListener('touchstart', function (e) {
-        if (e.touches && e.touches.length === 1) {
-          touchScrolling = false;
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          startDrag(touchStartX, touchStartY, null);
+        var nx = (e.clientX / window.innerWidth) * 2 - 1;
+        var ny = -((e.clientY / window.innerHeight) * 2 - 1);
+        pointerX = nx; pointerY = ny;
+        if (isDragging) {
+          var nowT = performance.now();
+          var dtm = Math.max(0.004, (nowT - lastMoveT) / 1000);
+          if (!dragMoved && Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY) > 6) dragMoved = true;
+          spinFromDrag(e.clientX - lastMoveX, e.clientY - lastMoveY, dtm);
+          lastMoveT = nowT; lastMoveX = e.clientX; lastMoveY = e.clientY;
         }
       }, { passive: true });
+      window.addEventListener('mouseup', function (e) {
+        if (!isDragging) return;
+        var dur = performance.now() - downT;
+        if (!dragMoved && dur < 260) {
+          endDragGesture(false);
+          onTap(e.clientX, e.clientY);
+        } else {
+          endDragGesture(true);
+        }
+      });
 
+      var touchScrolling = false;
+      canvas.addEventListener('touchstart', function (e) {
+        if (!e.touches) return;
+        if (e.touches.length === 1 && !isDragging && !isPinching) {
+          touchScrolling = false;
+          beginDrag(e.touches[0].clientX, e.touches[0].clientY, null);
+        } else if (e.touches.length === 2) {
+          endDragGesture(false);
+          pointers.t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          pointers.t1 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+          beginPinch();
+        }
+      }, { passive: true });
       window.addEventListener('touchmove', function (e) {
-        if (isDragging && e.touches && e.touches.length === 1) {
-          var cx = e.touches[0].clientX;
-          var cy = e.touches[0].clientY;
-          var dx = Math.abs(cx - touchStartX);
-          var dy = Math.abs(cy - touchStartY);
-          if (!touchScrolling && dy > dx * 1.3 && dy > 12) {
+        if (!e.touches) return;
+        if (isPinching && e.touches.length === 2) {
+          pointers.t0.x = e.touches[0].clientX; pointers.t0.y = e.touches[0].clientY;
+          pointers.t1.x = e.touches[1].clientX; pointers.t1.y = e.touches[1].clientY;
+          updatePinch();
+          return;
+        }
+        if (lastTouchX !== null) queuePointerSplat(e.touches[0].clientX, e.touches[0].clientY, lastTouchX, lastTouchY);
+        lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
+        if (isDragging && e.touches.length === 1) {
+          var cx = e.touches[0].clientX, cy = e.touches[0].clientY;
+          var adx = Math.abs(cx - downX), ady = Math.abs(cy - downY);
+          if (!touchScrolling && ady > adx * 1.3 && ady > 12) {
             touchScrolling = true;
-            endDrag(true);
+            endDragGesture(false);
             return;
           }
-          onPointerMove(cx, cy, true);
+          var nowT = performance.now();
+          var dtm = Math.max(0.004, (nowT - lastMoveT) / 1000);
+          if (!dragMoved && adx + ady > 6) dragMoved = true;
+          spinFromDrag(cx - lastMoveX, cy - lastMoveY, dtm);
+          lastMoveT = nowT; lastMoveX = cx; lastMoveY = cy;
         }
       }, { passive: true });
-
-      window.addEventListener('touchend', function () {
+      window.addEventListener('touchend', function (e) {
+        lastTouchX = null; lastTouchY = null;
+        if (isPinching && (!e.touches || e.touches.length < 2)) {
+          isPinching = false;
+          delete pointers.t0; delete pointers.t1;
+        }
+        if (isDragging && (!e.touches || e.touches.length === 0)) {
+          touchScrolling = false;
+          var dur = performance.now() - downT;
+          if (!dragMoved && dur < 260) {
+            endDragGesture(false);
+            onTap(lastMoveX, lastMoveY);
+          } else {
+            endDragGesture(true);
+          }
+        }
+      }, { passive: true });
+      window.addEventListener('touchcancel', function () {
+        lastTouchX = null; lastTouchY = null;
         touchScrolling = false;
-        endDrag(false);
+        if (isPinching) { isPinching = false; delete pointers.t0; delete pointers.t1; }
+        endDragGesture(false);
       }, { passive: true });
     }
 
@@ -839,6 +1790,58 @@
     }
 
     /* ------------------------------------------------------------------
+       Physics driver — momentum, auto-spin blend, hover torque, pulse
+       decay, reset easing, camera easing. Every rate is dt-normalized
+       so 30 / 60 / 120 Hz displays all feel identical.
+       ------------------------------------------------------------------ */
+    function stepOrientation(dt) {
+      /* momentum from released drags */
+      if (!isDragging && (angVelX !== 0 || angVelY !== 0)) {
+        applySpin(angVelX * dt, angVelY * dt);
+        var damp = Math.exp(-1.9 * dt);
+        angVelX *= damp; angVelY *= damp;
+        if (angVelX * angVelX + angVelY * angVelY < 6e-7) { angVelX = 0; angVelY = 0; }
+      }
+      /* resting rotation blends in as momentum fades; on desktop the
+         mouse offset adds a faint steering torque (fine pointers only).
+         Suppressed while resetting so the double-tap slerp converges
+         monotonically and snaps home without fighting the spin. */
+      if (!isDragging && !isPinching && !resetting) {
+        var sp2 = angVelX * angVelX + angVelY * angVelY;
+        var autoW = AUTO_SPIN / (1 + sp2 * 14.0);
+        var hover = coarse ? 0 : pointerX * 0.05;
+        applySpin(0, (autoW + hover) * dt);
+      }
+      /* double-tap reset: shortest-arc slerp home with a deterministic
+         exponential ease; slerp output is orthonormal by construction,
+         and the snap lands at a fixed duration from ANY start pose */
+      if (resetting) {
+        resetT += dt;
+        var p = 1 - Math.exp(-4.0 * resetT);
+        if (p > 0.995) {
+          orient.set(REST_ORIENT);
+          resetting = false;
+          resetQ = null;
+        } else {
+          quatToMat4(orient, quatSlerp(resetQ, REST_QUAT, p));
+        }
+      } else {
+        orthonormalize(orient);
+      }
+      pulse *= Math.exp(-4.5 * dt);
+      /* camera: an aspect flip re-inits the target (orientation
+         change), pinches scale it, easing follows at ~6/s */
+      var portrait = canvas.width < canvas.height;
+      if (portrait !== lastPortrait) {
+        lastPortrait = portrait;
+        camZTarget = baseCamZ(canvas.width / Math.max(1, canvas.height));
+      }
+      if (camZ === 0) camZ = camZTarget;
+      camZ += (camZTarget - camZ) * (1 - Math.exp(-6 * dt));
+      camMat[14] = camZ;
+    }
+
+    /* ------------------------------------------------------------------
        Render Loop
        ------------------------------------------------------------------ */
     var running = !reduceMotion;
@@ -849,13 +1852,19 @@
 
     var projMat = mat4Create();
     var mvpMat = mat4Create();
-    var rotMat = mat4Create();
+    var worldMat = mat4Create();
     var camMat = mat4Create();   /* persistent identity — only Z changes */
 
     function render(now) {
       rafId = null;
       if (!heroVisible || document.hidden) { schedule(); return; }
-      if (now - lastTime < 24) { schedule(); return; }
+      /* phone tier keeps the ~24 ms battery gate; desktop runs at the
+         full rAF cadence — dt-scaled physics keep the feel identical.
+         The first frame (lastTime still 0) always passes: dtRaw 0.016
+         would otherwise trip the gate and starve the loop forever. */
+      var dtRaw = lastTime ? (now - lastTime) / 1000 : 1;
+      if (lite && dtRaw < 0.024) { schedule(); return; }
+      var dt = lastTime ? Math.min(0.05, Math.max(0.001, dtRaw)) : 0.016;
       lastTime = now;
       frameIdx++;
 
@@ -863,20 +1872,30 @@
       resize();
       if (canvas.width === 0 || canvas.height === 0) { schedule(); return; }
 
-      rotX += (targetRotX - rotX) * 0.08;
-      rotY += (targetRotY - rotY) * 0.08;
-      if (!isDragging) {
-        targetRotY += 0.0028;
+      stepOrientation(dt);
+
+      /* fluid: lazy target build on the first sized frame, rebuild on
+         aspect drift (orientation change), fixed-step sim accumulated
+         from real frame time */
+      if (fluidReady && !fluidOK && !fluidBuildFailed) buildFluidTargets();
+      if (fluidOK) {
+        var fasp = canvas.width / Math.max(1, canvas.height);
+        if (Math.abs(fasp - fluidAspect) > Math.max(0.12, fluidAspect * 0.12)) buildFluidTargets();
+        simAccum += dt;
+        var steps = 0;
+        while (simAccum >= SIM_DT && steps < 2) { stepFluid(time); simAccum -= SIM_DT; steps++; }
+        if (steps === 2) simAccum = 0;
       }
 
       gl.disable(gl.BLEND);
       gl.clearColor(0, 0, 0, 0);
 
-      /* 1. Lush Aurora Nebula Background.
-            Desktop: full-res direct render, orbs included in the shader.
-            Phone: nebula-only into a low-res offscreen FBO (refreshed
-            every 2nd frame), composited each frame with linear
-            filtering; orbs are separate full-res sprites (step 1b). */
+      /* 1. Lush Aurora Nebula Background — fluid-coupled.
+             Desktop: full-res direct render, orbs included in the shader.
+             Phone: nebula-only into a low-res offscreen FBO (refreshed
+             every 2nd frame, in step with the half-rate fluid sim),
+             composited each frame with linear filtering; orbs are
+             separate full-res sprites (step 1b). */
       var useFbo = !!(lite && blitU && bgFbo);
       if (lite && blitU) ensureBgTarget(canvas.width, canvas.height);
       var drawNebula = !useFbo || (frameIdx % 2) === 1;
@@ -891,6 +1910,18 @@
         gl.uniform2f(bgU.mouse, pointerX, pointerY);
         gl.uniform3fv(bgU.colA, colA);
         gl.uniform3fv(bgU.colB, colB);
+        if (bgU.velTex) {
+          /* zero texture until the targets exist (or forever if they
+             can't) — a zero field is exactly the pre-fluid look */
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, fluidOK ? vel.read.tex : zeroTex);
+          gl.uniform1i(bgU.velTex, 0);
+          gl.activeTexture(gl.TEXTURE1);
+          gl.bindTexture(gl.TEXTURE_2D, fluidOK ? dye.read.tex : zeroTex);
+          gl.uniform1i(bgU.dyeTex, 1);
+          gl.uniform1f(bgU.warp, FLUID_WARP);
+          gl.uniform1f(bgU.dyeGain, FLUID_DYE_GAIN);
+        }
         gl.enableVertexAttribArray(bgU.aPos);
         gl.bindBuffer(gl.ARRAY_BUFFER, bgQuadBuf);
         gl.vertexAttribPointer(bgU.aPos, 2, gl.FLOAT, false, 0, 0);
@@ -913,7 +1944,7 @@
       }
 
       /* 1b. Bokeh orb sprites (phone tier) — full resolution, every
-             frame, blended tonemap-correct into the nebula. */
+              frame, blended tonemap-correct into the nebula. */
       if (orbsAsPoints) {
         updateOrbData(time);
         gl.enable(gl.BLEND);
@@ -931,17 +1962,11 @@
         gl.drawArrays(gl.POINTS, 0, ORB_COUNT);
       }
 
-      /* 2. Responsive 3D Camera Setup */
+      /* 2. Camera + persistent arcball orientation (pinch-eased Z) */
       var aspect = canvas.width / Math.max(1, canvas.height);
       mat4Perspective(projMat, Math.PI / 4, aspect, 0.1, 100.0);
-
-      /* On mobile (portrait aspect < 1.0), pull the camera back to frame
-         gracefully — but less far on the phone tier, where the cage needs
-         the extra screen presence (was -7.0 flat; lite frames ~12% larger). */
-      camMat[14] = aspect < 1.0 ? (lite ? -6.2 : -7.0) : -5.6;
-      mat4RotateX(rotMat, camMat, rotX);
-      mat4RotateY(rotMat, rotMat, rotY);
-      mat4Multiply(mvpMat, projMat, rotMat);
+      mat4Multiply(worldMat, orient, camMat);
+      mat4Multiply(mvpMat, projMat, worldMat);
 
       /* Setup 3D Program */
       gl.enable(gl.BLEND);
@@ -952,8 +1977,9 @@
       gl.uniform1f(objU.dimFloor, dimFloor);
 
       /* 3. 3D Wireframe Cage — the lite tier paints a hotter wire color
-             (per-frame boost of the theme accent) so the cage reads
-             against the nebula on small screens. */
+              (per-frame boost of the theme accent) so the cage reads
+              against the nebula on small screens. A tap pulse breathes
+              extra glow through the additive blend. */
       var wcol = colA;
       if (lite) {
         wcol = wireCol;
@@ -964,40 +1990,36 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, wireBuf);
       gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
       gl.uniform3fv(objU.color, wcol);
-      gl.uniform1f(objU.alpha, wireAlpha);
+      gl.uniform1f(objU.alpha, Math.min(1, wireAlpha * (1 + 0.6 * pulse)));
       gl.uniform1i(objU.isPoint, 0);
       gl.drawArrays(gl.LINES, 0, wireLineVerts.length / 3);
 
-      /* 4. 3D Vertices (Nodes) */
+      /* 4. 3D Vertices (Nodes) — the tap pulse swells them */
       gl.bindBuffer(gl.ARRAY_BUFFER, nodeBuf);
       gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
       gl.uniform3fv(objU.color, colB);
-      gl.uniform1f(objU.alpha, nodeAlpha);
-      gl.uniform1f(objU.pointSize, nodeSize * dpr);
+      gl.uniform1f(objU.alpha, Math.min(1, nodeAlpha * (1 + 0.3 * pulse)));
+      gl.uniform1f(objU.pointSize, nodeSize * dpr * (1 + 0.55 * pulse));
       gl.uniform1i(objU.isPoint, 1);
       gl.drawArrays(gl.POINTS, 0, vertPoints.length / 3);
 
-      /* 5. 3D Orbiting Particle Halo */
-      for (var k = 0; k < PARTICLE_COUNT; k++) {
-        var idx = k * 3;
-        particleArray[idx] += particleVelocities[idx];
-        particleArray[idx+1] += particleVelocities[idx+1];
-        particleArray[idx+2] += particleVelocities[idx+2];
-        var distSq = particleArray[idx]*particleArray[idx] + particleArray[idx+1]*particleArray[idx+1] + particleArray[idx+2]*particleArray[idx+2];
-        if (distSq > 26.0 || distSq < 1.4) {
-          particleVelocities[idx] = -particleVelocities[idx];
-          particleVelocities[idx+1] = -particleVelocities[idx+1];
-          particleVelocities[idx+2] = -particleVelocities[idx+2];
-        }
+      /* 5. Orbital satellite halo — positions computed on the GPU from
+              u_time; the buffer never updates */
+      if (orbitProg) {
+        gl.useProgram(orbitProg);
+        gl.uniformMatrix4fv(orbitU.mvp, false, mvpMat);
+        gl.uniform1f(orbitU.dimFloor, dimFloor);
+        gl.uniform1f(orbitU.time, time);
+        gl.uniform3fv(orbitU.color, colA);
+        gl.uniform1f(orbitU.alpha, Math.min(1, partAlpha * (1 + 0.25 * pulse)));
+        gl.uniform1f(orbitU.pointSize, 3.5 * dpr);
+        gl.bindBuffer(gl.ARRAY_BUFFER, orbitBuf);
+        gl.enableVertexAttribArray(orbitU.aOrbit);
+        gl.enableVertexAttribArray(orbitU.aWobble);
+        gl.vertexAttribPointer(orbitU.aOrbit, 4, gl.FLOAT, false, 32, 0);
+        gl.vertexAttribPointer(orbitU.aWobble, 4, gl.FLOAT, false, 32, 16);
+        gl.drawArrays(gl.POINTS, 0, PARTICLE_COUNT);
       }
-      gl.bindBuffer(gl.ARRAY_BUFFER, particleBuf);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, particleArray);
-      gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
-      gl.uniform3fv(objU.color, colA);
-      gl.uniform1f(objU.alpha, partAlpha);
-      gl.uniform1f(objU.pointSize, 3.5 * dpr);
-      gl.uniform1i(objU.isPoint, 1);
-      gl.drawArrays(gl.POINTS, 0, PARTICLE_COUNT);
 
       schedule();
     }
@@ -1021,6 +2043,30 @@
         schedule();
       });
     }
+
+    /* Test hook — non-enumerable, exposes live physics state so the
+       runtime behavior can be asserted from the console or tests. */
+    try {
+      Object.defineProperty(window, '__heroDebug', {
+        enumerable: false,
+        configurable: true,
+        get: function () {
+          return {
+            spin: Math.sqrt(angVelX * angVelX + angVelY * angVelY),
+            dragging: isDragging,
+            pinching: isPinching,
+            camZ: camZ,
+            pulse: pulse,
+            resetting: resetting,
+            resetP: resetting ? 1 - Math.exp(-4 * resetT) : 0,
+            fluid: fluidOK,
+            queuedSplats: splats.length,
+            simSteps: simSteps,
+            orient: [orient[0], orient[1], orient[2], orient[4], orient[5], orient[6], orient[8], orient[9], orient[10]]
+          };
+        }
+      });
+    } catch (e) {}
     }
 
     /* boot() returns here on the parallel-compile path — the poll

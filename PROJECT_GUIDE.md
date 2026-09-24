@@ -121,7 +121,7 @@ assets/
     animations.js               Reveal (blur+rise), countUp (+count-done glow), scrollSpy (see §10)
     fx.js                       Scroll progress, cursor glow (mouse + touch twin), magnetic buttons, tilt cards (hover tilt + touch sheen), text scramble, timeline rail draw, Ctrl+K command palette (nav trigger visible on phones too), page wipe, footer clock, platform-aware ⌘/Ctrl labels
     fx-particles.js             Ambient ember field across the whole document; pointer repulsion (mouse) + touch repulsion (finger)
-    webgl-hero.js               Vanilla-WebGL aurora nebula + interactive wireframe polyhedron behind the HOME and PORTFOLIO heroes (no electrical motifs; graceful fallbacks; phone tier + unified pointer drag)
+    webgl-hero.js               Vanilla-WebGL fluid-coupled aurora (stable-fluids wake: "hand through tinted water") + physics-driven wireframe polyhedron (arcball, momentum, pinch-zoom, tap pulse) behind the HOME and PORTFOLIO heroes; graceful fallbacks at every tier; window.__heroDebug test hook
     portfolio.js                Portfolio grid filtering (no-ops off the portfolio page)
   fonts/
     space-grotesk-latin.woff2, space-grotesk-latin-ext.woff2
@@ -465,12 +465,31 @@ don't "tidy" it to the top):
   is the hidden `#cf-company` field — a non-empty value silently drops.
 - **`animations.js`** — `initReveal`, `initCountUp`, `initScrollSpy` (§8).
 - **`webgl-hero.js`** — self-boots wherever a `#hero-gl` canvas exists
-  (home + portfolio index). Aurora nebula background + interactive
-  wireframe polyhedron; drag-to-rotate via unified PointerEvents with
-  `touch-action: pan-y` on the canvas (vertical pans scroll the page,
-  horizontal drags rotate; `pointercancel` restores the pre-drag pose).
-  Mouse+touch triplet fallback only where `PointerEvent` is absent.
-  Phone tier: orb point-sprites + low-res nebula FBO (see the file header).
+  (home + portfolio index). Two coupled systems:
+  *AURORA FLUID* — a stable-fluids layer (velocity + dye ping-pong
+  half-float FBOs, splat → curl/vorticity → Jacobi pressure →
+  gradient subtract → semi-Lagrangian advection). Cursor movement over
+  the hero band and touch drags page-wide (window touchmove keeps
+  firing during native scrolls) splat momentum + accent dye; the
+  nebula shader warps its fbm domain around the velocity field and
+  adds the advected dye before tonemapping. Requires the three
+  half-float extensions — any missing piece (or reduced motion)
+  skips the subsystem and the nebula keeps plain parallax.
+  Desktop 128/256 grids at a 60 Hz fixed-dt sim; phones 96/192 at
+  30 Hz; near-idle (two decay passes) once no splat arrives ~2.5 s.
+  *POLYHEDRON PHYSICS* — persistent arcball orientation matrix
+  (incremental view-space spins, Gram-Schmidt re-orthonormalized; no
+  euler tumble). Drag tracks angular velocity → flick-to-spin
+  momentum with dt-normalized damping; auto-rotation blends back in
+  as it decays. Pinch-zoom (two pointers, clamped, eased); tap =
+  cage pulse + dye drop; double-tap = quaternion-slerp ease home
+  (matrix lerp stalls through degenerate space — see the file
+  header). `touch-action: pan-y` keeps vertical pans native;
+  pointercancel ends input with zero momentum. Satellite halo orbits
+  are computed in the vertex shader (static buffer + u_time). All
+  rates are dt-normalized; the ~24 ms frame gate is phone-tier
+  only. `window.__heroDebug` (non-enumerable) exposes spin/camZ/
+  pulse/reset/fluid/simSteps state for runtime assertions.
 - **`fx.js`** — "Terminal Noir" interaction layer. Desktop (fine
   pointer): cursor spotlight, magnetic buttons, card tilt+sheen.
   Touch twins (coarse pointer): the spotlight follows the finger while
