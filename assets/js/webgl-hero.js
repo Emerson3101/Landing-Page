@@ -698,86 +698,127 @@
     new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     /* ------------------------------------------------------------------
-       Interaction: Pointer & Touch Controls (Desktop & Mobile)
-       ------------------------------------------------------------------ */
+       Interaction: unified PointerEvent drag (desktop + touch)
+       ------------------------------------------------------------------
+       The canvas carries `touch-action: pan-y` (fx.css): vertical
+       touch pans stay native scrolling, horizontal moves arrive as
+       pointer events — the manual scroll-bypass heuristic is no
+       longer needed on modern engines. When the browser takes a
+       gesture over (vertical pan), pointercancel ends the drag and
+       restores the pre-drag orientation, so a scroll begun on the
+       hero leaves the scene exactly as it found it. The mouse pair +
+       touch triplet below remain ONLY for engines without
+       PointerEvent. */
     var rotX = 0.35, rotY = 0.45;
     var targetRotX = rotX, targetRotY = rotY;
     var pointerX = 0, pointerY = 0;
     var isDragging = false, dragStartX = 0, dragStartY = 0;
     var baseRotX = rotX, baseRotY = rotY;
+    var dragPointerId = null;
 
-    function onPointerMove(clientX, clientY) {
+    function onPointerMove(clientX, clientY, dragging) {
       var nx = (clientX / window.innerWidth) * 2 - 1;
       var ny = -((clientY / window.innerHeight) * 2 - 1);
       pointerX = nx;
       pointerY = ny;
-      if (!isDragging) {
-        targetRotY += nx * 0.008;
-        targetRotX += ny * 0.005;
-      } else {
+      if (dragging) {
         var dx = (clientX - dragStartX) * 0.008;
         var dy = (clientY - dragStartY) * 0.008;
         targetRotY = baseRotY + dx;
         targetRotX = baseRotX + dy;
+      } else if (!coarse) {
+        /* Idle drift follows the mouse on desktop only. On touch,
+           pointermove fires only mid-gesture — letting a scroll nudge
+           the rotation reads as the scene twitching. Parallax
+           (pointerX/Y) still tracks the finger. */
+        targetRotY += nx * 0.008;
+        targetRotX += ny * 0.005;
       }
     }
 
-    window.addEventListener('pointermove', function (e) {
-      onPointerMove(e.clientX, e.clientY);
-    }, { passive: true });
-
-    canvas.addEventListener('pointerdown', function (e) {
+    function startDrag(x, y, pid) {
       isDragging = true;
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
+      dragStartX = x;
+      dragStartY = y;
       baseRotX = targetRotX;
       baseRotY = targetRotY;
+      dragPointerId = pid;
       canvas.style.cursor = 'grabbing';
-    });
+    }
 
-    window.addEventListener('pointerup', function () {
-      if (isDragging) {
-        isDragging = false;
-        canvas.style.cursor = 'grab';
-      }
-    });
-
-    /* Touch Support for Mobile Drag with intelligent scroll bypass */
-    var touchStartX = 0, touchStartY = 0;
-    var touchScrolling = false;
-
-    canvas.addEventListener('touchstart', function (e) {
-      if (e.touches && e.touches.length === 1) {
-        isDragging = true;
-        touchScrolling = false;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        dragStartX = touchStartX;
-        dragStartY = touchStartY;
-        baseRotX = targetRotX;
-        baseRotY = targetRotY;
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchmove', function (e) {
-      if (isDragging && e.touches && e.touches.length === 1) {
-        var cx = e.touches[0].clientX;
-        var cy = e.touches[0].clientY;
-        var dx = Math.abs(cx - touchStartX);
-        var dy = Math.abs(cy - touchStartY);
-        if (!touchScrolling && dy > dx * 1.3 && dy > 12) {
-          touchScrolling = true;
-          isDragging = false;
-          return;
-        }
-        onPointerMove(cx, cy);
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchend', function () {
+    function endDrag(revert) {
+      if (!isDragging) return;
       isDragging = false;
-      touchScrolling = false;
-    }, { passive: true });
+      dragPointerId = null;
+      if (revert) {
+        targetRotX = baseRotX;
+        targetRotY = baseRotY;
+      }
+      canvas.style.cursor = 'grab';
+    }
+
+    if (typeof window.PointerEvent === 'function') {
+      window.addEventListener('pointermove', function (e) {
+        if (isDragging && e.pointerId !== dragPointerId) return;
+        onPointerMove(e.clientX, e.clientY, isDragging);
+      }, { passive: true });
+
+      canvas.addEventListener('pointerdown', function (e) {
+        if (dragPointerId !== null) return;   /* second finger ignored */
+        startDrag(e.clientX, e.clientY, e.pointerId);
+      });
+
+      window.addEventListener('pointerup', function (e) {
+        if (dragPointerId === null || e.pointerId !== dragPointerId) return;
+        endDrag(false);
+      });
+      window.addEventListener('pointercancel', function (e) {
+        if (dragPointerId === null || e.pointerId !== dragPointerId) return;
+        endDrag(true);   /* browser took the gesture (pan) — restore */
+      });
+    } else {
+      /* Legacy fallback (no PointerEvent): mouse pair + touch triplet
+         with the original scroll-bypass heuristic. */
+      canvas.addEventListener('mousedown', function (e) {
+        startDrag(e.clientX, e.clientY, null);
+      });
+      window.addEventListener('mousemove', function (e) {
+        onPointerMove(e.clientX, e.clientY, isDragging);
+      }, { passive: true });
+      window.addEventListener('mouseup', function () { endDrag(false); });
+
+      var touchStartX = 0, touchStartY = 0;
+      var touchScrolling = false;
+
+      canvas.addEventListener('touchstart', function (e) {
+        if (e.touches && e.touches.length === 1) {
+          touchScrolling = false;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          startDrag(touchStartX, touchStartY, null);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', function (e) {
+        if (isDragging && e.touches && e.touches.length === 1) {
+          var cx = e.touches[0].clientX;
+          var cy = e.touches[0].clientY;
+          var dx = Math.abs(cx - touchStartX);
+          var dy = Math.abs(cy - touchStartY);
+          if (!touchScrolling && dy > dx * 1.3 && dy > 12) {
+            touchScrolling = true;
+            endDrag(true);
+            return;
+          }
+          onPointerMove(cx, cy, true);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', function () {
+        touchScrolling = false;
+        endDrag(false);
+      }, { passive: true });
+    }
 
     /* Sizing & DPR */
     var dpr = Math.min(window.devicePixelRatio || 1, 2);

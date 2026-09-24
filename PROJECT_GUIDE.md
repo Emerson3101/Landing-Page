@@ -101,7 +101,7 @@ portfolio/
   _README.md                    Notes for this folder
 includes/
   header.php                    <head>, fonts, SEO/OG/JSON-LD, anti-FOUC script, opens <main>
-  footer.php                    Closes <main>, footer, back-to-top button, loads the 3 JS files
+  footer.php                    Closes <main>, footer, back-to-top button, loads the 6 JS files
   nav.php                       Site header + nav links + theme/lang/mobile-toggle buttons + drawer
   i18n.php                      t(), tb(), lang_attr() — the bilingual helpers (see §4)
 api/
@@ -119,8 +119,9 @@ assets/
   js/
     main.js                     Theme + lang toggles, mobile nav, back-to-top, contact form (see §11)
     animations.js               Reveal (blur+rise), countUp (+count-done glow), scrollSpy (see §10)
-    webgl-hero.js               Vanilla-WebGL abstract aurora/particle shader behind the home hero (no electrical motifs; graceful fallbacks)
-    fx.js                       Scroll progress, cursor glow, magnetic buttons, tilt cards, text scramble, timeline rail draw, Ctrl+K command palette (+ `sudo hire me` easter egg), page wipe, footer clock, platform-aware ⌘/Ctrl labels
+    fx.js                       Scroll progress, cursor glow (mouse + touch twin), magnetic buttons, tilt cards (hover tilt + touch sheen), text scramble, timeline rail draw, Ctrl+K command palette (nav trigger visible on phones too), page wipe, footer clock, platform-aware ⌘/Ctrl labels
+    fx-particles.js             Ambient ember field across the whole document; pointer repulsion (mouse) + touch repulsion (finger)
+    webgl-hero.js               Vanilla-WebGL aurora nebula + interactive wireframe polyhedron behind the HOME and PORTFOLIO heroes (no electrical motifs; graceful fallbacks; phone tier + unified pointer drag)
     portfolio.js                Portfolio grid filtering (no-ops off the portfolio page)
   fonts/
     space-grotesk-latin.woff2, space-grotesk-latin-ext.woff2
@@ -436,11 +437,12 @@ before first paint (anti-FOUC). `main.js`:
 
 ---
 
-## 10. JS module map (3 files, all `defer`-loaded at end of `<body>`)
+## 10. JS module map (6 files, all `defer`-loaded at end of `<body>`)
 
-All three are IIFEs with `'use strict'`, loaded in `footer.php` in this
-order: `animations.js`, `portfolio.js`, `main.js`. They're independent. All
-use the **bottom-of-IIFE dispatch** pattern (see §17 — this is load-bearing,
+All are IIFEs with `'use strict'`, loaded in `footer.php` in this
+order: `animations.js`, `webgl-hero.js`, `fx.js`, `fx-particles.js`,
+`portfolio.js`, `main.js`. They're independent. All use the
+**bottom-of-IIFE dispatch** pattern (see §17 — this is load-bearing,
 don't "tidy" it to the top):
 
 ```js
@@ -462,6 +464,25 @@ don't "tidy" it to the top):
   to `mailto:`** (`submitViaMailto`) if the endpoint is unreachable. Honeypot
   is the hidden `#cf-company` field — a non-empty value silently drops.
 - **`animations.js`** — `initReveal`, `initCountUp`, `initScrollSpy` (§8).
+- **`webgl-hero.js`** — self-boots wherever a `#hero-gl` canvas exists
+  (home + portfolio index). Aurora nebula background + interactive
+  wireframe polyhedron; drag-to-rotate via unified PointerEvents with
+  `touch-action: pan-y` on the canvas (vertical pans scroll the page,
+  horizontal drags rotate; `pointercancel` restores the pre-drag pose).
+  Mouse+touch triplet fallback only where `PointerEvent` is absent.
+  Phone tier: orb point-sprites + low-res nebula FBO (see the file header).
+- **`fx.js`** — "Terminal Noir" interaction layer. Desktop (fine
+  pointer): cursor spotlight, magnetic buttons, card tilt+sheen.
+  Touch twins (coarse pointer): the spotlight follows the finger while
+  touching; the card sheen follows the finger while pressed (no 3D
+  rotation — scrolling is never fought). Palette is tappable on phones
+  via `#palette-open` (visible at all widths, hidden without `.js`),
+  with a pointer-aware bilingual hint line. Cosmetic `:hover` rules live
+  behind `@media (hover: hover)` in the CSS; `@media (hover: none)`
+  blocks carry the `:active` press feedback — no sticky tap-hover.
+- **`fx-particles.js`** — ambient ember field in document space; the
+  repulsion follows the mouse (fine) or the finger while touching
+  (coarse). Reduced-motion renders a static constellation.
 - **`portfolio.js`** — `filters()` IIFE. Bails if no `.filters` or
   `.portfolio__grid` on the page (so it's safe site-wide). Click delegation
   on the bar; `applyFilter(filter)` toggles `is-active` + `aria-pressed`

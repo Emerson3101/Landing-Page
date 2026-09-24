@@ -4,10 +4,12 @@
 /**
  * Shared site footer. Closes <main> (opened in header.php) and the
  * document. Loads the JS bundle with `defer` so each runs after the DOM
- * parses: main.js (theme + language toggles, mobile nav
- * drawer, back-to-top, contact-form), animations.js (motion pass),
- * portfolio.js (grid filtering — no-ops off the portfolio page).
- * Real footer content (links, contact CTA) is added in a later phase.
+ * parses: animations.js (reveal/count-up/scrollspy), webgl-hero.js
+ * (aurora + polyhedron scene — self-boots where a #hero-gl canvas
+ * exists), fx.js (interaction layer), fx-particles.js (ambient ember
+ * field), portfolio.js (grid filtering — no-ops off the portfolio
+ * page), main.js (theme + language toggles, mobile nav drawer,
+ * back-to-top, contact form). All independent IIFEs.
  */
 ?>
   <footer class="site-footer">
@@ -31,10 +33,11 @@
     </svg>
   </button>
 
-  <!-- main.js = theme + language toggles, mobile nav drawer, back-to-top,
-       contact-form (Phases 2/3/6); animations.js = motion pass (Phase 4);
-       portfolio.js = grid filtering (Phase 5) — no-ops off the portfolio
-       page. All deferred so the DOM parses first; independent. -->
+  <!-- animations.js = motion pass; webgl-hero.js = hero scene (boots where
+       #hero-gl exists); fx.js = interaction layer (desktop effects + touch
+       twins); fx-particles.js = ambient ember field; portfolio.js = grid
+       filtering — no-ops off the portfolio page; main.js = theme/lang/nav/
+       contact. All deferred so the DOM parses first; independent. -->
   <script src="/assets/js/animations.js" defer></script>
   <script src="/assets/js/webgl-hero.js" defer></script>
   <script src="/assets/js/fx.js" defer></script>

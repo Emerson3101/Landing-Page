@@ -4,8 +4,9 @@
     A fixed-viewport canvas whose particle field lives in DOCUMENT
     coordinates: scrolling moves the page through the field, so new
     embers come into view as you descend instead of one static band
-    pinned to the viewport. Soft cursor repulsion (a parting, not a
-    chase), slow upward drift, sine wander.
+    pinned to the viewport. Soft repulsion around the pointer (a
+    parting, not a chase) — the mouse on desktop, the finger on
+    touch — slow upward drift, sine wander.
 
     Physics model (frame-rate independent):
       - base drift velocity  : permanent, upward-ish, never damped
@@ -22,6 +23,7 @@
 (function fxParticles() {
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = window.matchMedia('(pointer: fine)').matches;
+  var coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
   /* Phone diet: touch-primary or narrow viewports run a sparser field
      at ~30fps. The embers keep their character — same sizes, same drift,
@@ -281,6 +283,27 @@
         mouse.cx = -1e4;
         mouse.cy = -1e4;
       });
+    }
+
+    /* Touch twin: embers part around the finger while it's down —
+       the same soft radial push, parked off on lift. The physics
+       loop already runs every frame, so this costs two listener
+       callbacks and nothing else. */
+    if (coarsePointer) {
+      function onTouch(e) {
+        var t = e.touches && e.touches[0];
+        if (!t) return;
+        mouse.cx = t.clientX;
+        mouse.cy = t.clientY;
+      }
+      function offTouch() {
+        mouse.cx = -1e4;
+        mouse.cy = -1e4;
+      }
+      window.addEventListener('touchstart', onTouch, { passive: true });
+      window.addEventListener('touchmove', onTouch, { passive: true });
+      window.addEventListener('touchend', offTouch, { passive: true });
+      window.addEventListener('touchcancel', offTouch, { passive: true });
     }
 
     requestAnimationFrame(function (t0) {

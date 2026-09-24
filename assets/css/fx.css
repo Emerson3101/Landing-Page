@@ -175,8 +175,9 @@ html[data-theme="dark"]::before {
 }
 
 /* ----------------------------------------------------------------------
-   Cursor glow — soft radial spotlight that trails the pointer. fx.js
-   only renders the element on fine-pointer devices w/o reduced motion.
+   Cursor glow — soft radial spotlight. fx.js renders it on fine
+   pointers (trailing the mouse) AND coarse pointers (following the
+   finger while touching); reduced-motion skips it entirely.
    ---------------------------------------------------------------------- */
 .cursor-glow {
   position: fixed;
@@ -184,7 +185,7 @@ html[data-theme="dark"]::before {
   top: 0;
   width: 34rem;
   height: 34rem;
-  margin: -17rem 0 0 -17rem;            /* centered on the cursor */
+  margin: -17rem 0 0 -17rem;            /* centered on the pointer */
   z-index: 1;                              /* above bg auras, below cards lift */
   pointer-events: none;
   border-radius: 50%;
@@ -199,7 +200,12 @@ html[data-theme="dark"]::before {
   will-change: transform;
 }
 .cursor-glow.is-on { opacity: 1; }
-@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+/* Phones: a 34rem pool would swallow a 23rem viewport — shrink it so the
+   touch spotlight keeps the same relative presence under the finger. */
+@media (max-width: 48rem) {
+  .cursor-glow { width: 20rem; height: 20rem; margin: -10rem 0 0 -10rem; }
+}
+@media (prefers-reduced-motion: reduce) {
   .cursor-glow { display: none; }
 }
 
@@ -245,6 +251,10 @@ html[data-theme="dark"]::before {
   z-index: -1;
   width: 100%;
   height: 140%;                  /* bleed: continues past the seam */
+  /* Touch drag-to-rotate: vertical panning stays native (scrolling the
+     page from the hero never fights the scene); horizontal moves are
+     delivered to webgl-hero.js as pointer events for rotation. */
+  touch-action: pan-y;
   -webkit-mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.7) 58%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.15) 84%, transparent 96%);
           mask-image: linear-gradient(to bottom, #000 40%, rgba(0, 0, 0, 0.7) 58%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.15) 84%, transparent 96%);
   /* static fallback tone under the shader once WebGL starts, canvas paints over */
@@ -253,7 +263,6 @@ html[data-theme="dark"]::before {
       color-mix(in srgb, var(--color-accent) 7%, transparent),
       transparent 70%);
 }
-.hero--compact .hero__canvas { display: none; } /* portfolio page keeps it cheap */
 
 /* Name rendered huge, with a soft two-tone fill (white → accent tint). */
 .hero__title {
@@ -336,8 +345,9 @@ html[data-theme="dark"]::before {
 }
 
 /* ----------------------------------------------------------------------
-   Tilt cards — fx.js adds .is-tilting and drives --rx/--ry/--gx. The
-   sheen pseudo-element follows --gx/--gy for a specular sweep.
+   Tilt cards — fx.js drives the 3D transform + --gx/--gy sheen sweep on
+   fine pointers; on touch it adds .is-touching while the finger is down
+   so the sheen follows the touch (no sticky emulated hover).
    ---------------------------------------------------------------------- */
 .js [data-tilt] {
   transform-style: preserve-3d;
@@ -357,7 +367,11 @@ html[data-theme="dark"]::before {
     transparent 70%
   );
 }
-.js [data-tilt]:hover::after { opacity: 1; }
+@media (hover: hover) {
+  .js [data-tilt]:hover::after { opacity: 1; }
+}
+/* Touch twin — fx.js adds .is-touching from touchstart/touchmove. */
+.js [data-tilt].is-touching::after { opacity: 1; }
 /* cards already need positioning context for the sheen */
 .js .card { position: relative; overflow: hidden; }
 
@@ -445,7 +459,9 @@ html[data-theme="dark"]::before {
   color: var(--color-text-subtle);
 }
 
-/* A tiny nav hint that the palette exists. */
+/* A tiny nav hint that the palette exists — reachable on phones too
+   now (fx.js wires the same open()); without JS it would be a dead
+   button, so it hides until the pre-paint .js gate lands. */
 .nav-kbd-hint {
   font-family: var(--font-mono);
   font-size: var(--step--2);
@@ -458,8 +474,18 @@ html[data-theme="dark"]::before {
   transition: color var(--dur-fast) var(--ease-out),
               border-color var(--dur-fast) var(--ease-out);
 }
-.nav-kbd-hint:hover { color: var(--color-text); border-color: var(--color-border-strong); }
-@media (max-width: 47.99em) { .nav-kbd-hint { display: none; } }
+html:not(.js) .nav-kbd-hint { display: none; }
+@media (hover: hover) {
+  .nav-kbd-hint:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+}
+@media (hover: none) {
+  .nav-kbd-hint:active { color: var(--color-text); border-color: var(--color-border-strong); }
+}
+/* Phones: keep the trigger but shrink the pill so the header row keeps
+   its breathing room next to the toggles and menu button. */
+@media (max-width: 47.99em) {
+  .nav-kbd-hint { padding: 0.1rem 0.35rem; }
+}
 
 /* ----------------------------------------------------------------------
    Page transition — terminal wipe strip shown on same-origin navigations
@@ -553,7 +579,8 @@ html[data-theme="dark"]::before {
   position: relative;
   overflow: hidden;
 }
-/* Moving shine across primary buttons on hover. */
+/* Moving shine across primary buttons on hover (fine pointers only —
+   a sweep needs a hover; touch gets the :active press instead). */
 .btn--primary::before {
   content: "";
   position: absolute;
@@ -563,7 +590,9 @@ html[data-theme="dark"]::before {
   transition: transform 0.6s var(--ease-out);
   pointer-events: none;
 }
-.btn--primary:hover::before { transform: translateX(120%); }
+@media (hover: hover) {
+  .btn--primary:hover::before { transform: translateX(120%); }
+}
 
 /* ----------------------------------------------------------------------
    Footer — row treatment (copyright left, mono clock right)
@@ -591,6 +620,11 @@ html[data-theme="dark"]::before {
   font-family: var(--font-mono);
   font-size: var(--step--1);
   color: var(--color-text-subtle);
+}
+/* Phones: "Press Ctrl+K" is a keyboard affordance — the palette is
+   tappable via the nav trigger there, so the prompt steps aside. */
+@media (pointer: coarse) {
+  .hero__prompt { display: none; }
 }
 .hero__prompt b { color: var(--color-accent); font-weight: 600; }
 .hero__prompt .kbd {

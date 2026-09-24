@@ -4,17 +4,25 @@
    Small independent modules, each gated and degradable:
 
      1. scrollProgress  top hairline fill (--sp) on scroll
-     2. cursorGlow      soft accent spotlight trailing the pointer
+     2. cursorGlow      accent spotlight — trails the mouse (desktop),
+                        follows the finger while touching (mobile twin)
      3. magnetic        [data-magnetic] elements gently follow the cursor
-     4. tilt            [data-tilt] 3D card tilt + sheen (-gx/-gy)
+                        (fine pointers only — touch gets press feedback
+                        from the CSS :active states instead)
+     4. tilt            [data-tilt] 3D card tilt + sheen on hover; on
+                        touch, the sheen follows the finger while pressed
      5. scramble        [data-scramble] decode-in text effect
      6. timelineRail    draws the experience rail with scroll (--rail)
-     7. palette         Ctrl+K command palette (nav, toggles, easter egg)
+     7. palette         Ctrl+K command palette — also tappable on phones
+                        via the nav hint button; touch-aware hint line
      8. pageWipe        accent wipe on same-origin navigation
      9. clock           live mono clock in the footer
 
-   Nothing here is load-bearing: fine-pointer checks, reduced-motion,
-   and try/catch fences keep the base experience intact everywhere.
+   Pointer tiers: fine-pointer effects stay as they were; every one of
+   them that makes sense on a touchscreen has a touch twin wired from
+   the same module. Reduced-motion still gates everything it did.
+   Nothing here is load-bearing: try/catch fences keep the base
+   experience intact everywhere.
    ===================================================================== */
 
 'use strict';
@@ -22,6 +30,7 @@
 (function fx() {
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = window.matchMedia('(pointer: fine)').matches;
+  var coarsePointer = window.matchMedia('(pointer: coarse)').matches;
   var isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
   var isEs = function () {
     return document.documentElement.getAttribute('data-active-lang') === 'es';
@@ -55,29 +64,64 @@
     update();
   }
 
-  /* --- 2. Cursor glow ---------------------------------------------------- */
+  /* --- 2. Pointer glow (desktop mouse + touch twin) ----------------------
+     Desktop: soft accent spotlight trailing the cursor, as always.
+     Touch: the same spotlight follows the finger while it's down and
+     fades on lift — the page answers every touch. Hybrid devices wire
+     both paths. The rAF loop drains to idle when hidden & converged
+     (phones don't pay a perpetual per-frame cost). */
   function initCursorGlow() {
-    if (!finePointer || reduceMotion) return;
+    if (reduceMotion) return;
+    if (!finePointer && !coarsePointer) return;
     var glow = document.createElement('div');
     glow.className = 'cursor-glow';
     glow.setAttribute('aria-hidden', 'true');
     document.body.appendChild(glow);
 
-    var x = -1e3, y = -1e3, tx = x, ty = y, shown = false;
-    window.addEventListener('pointermove', function (e) {
-      tx = e.clientX; ty = e.clientY;
-      if (!shown) { shown = true; glow.classList.add('is-on'); x = tx; y = ty; }
-    }, { passive: true });
-    document.documentElement.addEventListener('pointerleave', function () {
-      shown = false; glow.classList.remove('is-on');
-    });
+    var x = -1e3, y = -1e3, tx = x, ty = y, shown = false, rafOn = false;
 
-    (function tick() {
+    function show() {
+      if (!shown) {
+        shown = true;
+        glow.classList.add('is-on');
+        x = tx; y = ty;   /* first sighting: appear under the pointer */
+      }
+      schedule();
+    }
+    function hide() {
+      if (shown) { shown = false; glow.classList.remove('is-on'); }
+    }
+    function schedule() {
+      if (!rafOn) { rafOn = true; requestAnimationFrame(tick); }
+    }
+    function tick() {
+      rafOn = false;
       x += (tx - x) * 0.12;
       y += (ty - y) * 0.12;
       glow.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
-      requestAnimationFrame(tick);
-    })();
+      /* keep chasing while visible, or while settling after a hide */
+      if (shown || Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5) schedule();
+    }
+
+    if (finePointer) {
+      window.addEventListener('pointermove', function (e) {
+        tx = e.clientX; ty = e.clientY;
+        show();
+      }, { passive: true });
+      document.documentElement.addEventListener('pointerleave', hide);
+    }
+    if (coarsePointer) {
+      function onTouch(e) {
+        var t = e.touches && e.touches[0];
+        if (!t) return;
+        tx = t.clientX; ty = t.clientY;
+        show();
+      }
+      window.addEventListener('touchstart', onTouch, { passive: true });
+      window.addEventListener('touchmove', onTouch, { passive: true });
+      window.addEventListener('touchend', hide, { passive: true });
+      window.addEventListener('touchcancel', hide, { passive: true });
+    }
   }
 
   /* --- 3. Magnetic elements ---------------------------------------------- */
@@ -116,26 +160,54 @@
     });
   }
 
-  /* --- 4. Tilt cards ------------------------------------------------------ */
+  /* --- 4. Tilt cards (desktop hover tilt + touch sheen) --------------------
+     Fine pointer: 3D tilt + specular sweep, unchanged.
+     Touch twin: while the finger is down on a card the sheen follows
+     it (--gx/--gy drive the ::after) — deliberately NO 3D rotation so
+     scrolling is never fought. The card still navigates on lift. */
   function initTilt() {
-    if (!finePointer || reduceMotion) return;
+    if (reduceMotion) return;
     var MAX = 6; /* degrees */
 
-    Array.prototype.forEach.call(document.querySelectorAll('[data-tilt]'), function (el) {
-      el.addEventListener('pointermove', function (e) {
-        var r = el.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width;
-        var py = (e.clientY - r.top) / r.height;
-        el.style.transform =
-          'perspective(800px) rotateX(' + ((0.5 - py) * MAX).toFixed(2) + 'deg)' +
-          ' rotateY(' + ((px - 0.5) * MAX).toFixed(2) + 'deg) translateY(-3px)';
-        el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
-        el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+    var cards = document.querySelectorAll('[data-tilt]');
+
+    if (finePointer) {
+      Array.prototype.forEach.call(cards, function (el) {
+        el.addEventListener('pointermove', function (e) {
+          var r = el.getBoundingClientRect();
+          var px = (e.clientX - r.left) / r.width;
+          var py = (e.clientY - r.top) / r.height;
+          el.style.transform =
+            'perspective(800px) rotateX(' + ((0.5 - py) * MAX).toFixed(2) + 'deg)' +
+            ' rotateY(' + ((px - 0.5) * MAX).toFixed(2) + 'deg) translateY(-3px)';
+          el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+          el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+        });
+        el.addEventListener('pointerleave', function () {
+          el.style.transform = '';
+        });
       });
-      el.addEventListener('pointerleave', function () {
-        el.style.transform = '';
+    }
+
+    if (coarsePointer) {
+      Array.prototype.forEach.call(cards, function (el) {
+        function fromTouch(e) {
+          var t = e.touches && e.touches[0];
+          if (!t) return;
+          var r = el.getBoundingClientRect();
+          var px = Math.max(0, Math.min(1, (t.clientX - r.left) / r.width));
+          var py = Math.max(0, Math.min(1, (t.clientY - r.top) / r.height));
+          el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+          el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+          el.classList.add('is-touching');
+        }
+        function end() { el.classList.remove('is-touching'); }
+        el.addEventListener('touchstart', fromTouch, { passive: true });
+        el.addEventListener('touchmove', fromTouch, { passive: true });
+        el.addEventListener('touchend', end, { passive: true });
+        el.addEventListener('touchcancel', end, { passive: true });
       });
-    });
+    }
   }
 
   /* --- 5. Text choreography: first-letter fade → caret typing → decode -----
@@ -280,6 +352,11 @@
     }
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-typetrick]'), function (el) {
+      /* Reduced motion: never split. The letters start hidden and are
+         revealed by typing; with typing disabled they would stay
+         invisible forever — the whole title must simply render as
+         normal text (the reveal net handles its entrance). */
+      if (reduceMotion) return;
       splitFor(el);   /* boot-time split — nothing ever prints whole */
       if (!('IntersectionObserver' in window)) {
         enqueue(el);
@@ -489,6 +566,7 @@
 
     var input = root.querySelector('#palette-input');
     var list = root.querySelector('#palette-list');
+    var hint = root.querySelector('.palette__hint');
     var active = 0, visible = [];
 
     function commands() {
@@ -545,6 +623,12 @@
       input.value = '';
       input.placeholder = isEs() ? 'Escribe un comando o busca…' : 'Type a command or search…';
       input.setAttribute('aria-label', isEs() ? 'Escribe un comando o busca' : 'Type a command or search');
+      /* Pointer-aware, bilingual hint — phones get the tap affordance
+         instead of keyboard glyphs. Refreshed at every open so a
+         language toggle is always honored. */
+      hint.textContent = coarsePointer
+        ? (isEs() ? 'Toca un comando para ejecutarlo' : 'Tap a command to run')
+        : (isEs() ? '↑↓ navegar · ⏎ seleccionar · esc cerrar' : '↑↓ navigate · ⏎ select · esc close');
       root.classList.add('is-open');
       document.body.style.overflow = 'hidden';
       setTimeout(function () { input.focus(); }, 50);

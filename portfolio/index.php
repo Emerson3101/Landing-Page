@@ -23,9 +23,13 @@ function bi_field(array $field) {
 ?>
 
 <!-- =========================================================
-     Portfolio hero
+     Portfolio hero — same WebGL aurora/polyhedron scene as home
+     (webgl-hero.js boots wherever #hero-gl exists; phone tier,
+     theme sync, reduced-motion static frame and the scroll-out
+     pause all carry over unchanged).
      ======================================================= -->
 <section class="hero hero--compact" aria-labelledby="portfolio-title">
+  <canvas class="hero__canvas" id="hero-gl" aria-hidden="true"></canvas>
   <div class="hero__inner" data-reveal-group>
     <h1 class="hero__title" id="portfolio-title" data-reveal data-typetrick>
       <?= t('Engineering Portfolio', 'Portafolio de Ingeniería') ?>

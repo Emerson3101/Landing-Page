@@ -161,7 +161,9 @@ main > .section:last-child {
   transition: color var(--dur-fast) var(--ease-out),
               background var(--dur-fast) var(--ease-out);
 }
-.site-nav__link:hover { color: var(--color-text); }
+@media (hover: hover) {
+  .site-nav__link:hover { color: var(--color-text); }
+}
 .site-nav__link[aria-current="true"] {
   color: var(--color-text);
   background: var(--color-accent-soft);
@@ -189,9 +191,11 @@ main > .section:last-child {
               background var(--dur-fast) var(--ease-out),
               transform var(--dur-fast) var(--ease-out);
 }
-.icon-btn:hover {
-  color: var(--color-text);
-  background: var(--color-surface-2);
+@media (hover: hover) {
+  .icon-btn:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
 }
 .icon-btn:active { transform: scale(0.94); }
 
@@ -260,11 +264,24 @@ main > .section:last-child {
   transition: background var(--dur-fast) var(--ease-out),
               color var(--dur-fast) var(--ease-out);
 }
-.nav-drawer__link:hover,
 .nav-drawer__link:focus-visible {
   background: var(--color-surface-2);
   color: var(--color-accent);
   outline: none;
+}
+@media (hover: hover) {
+  .nav-drawer__link:hover {
+    background: var(--color-surface-2);
+    color: var(--color-accent);
+    outline: none;
+  }
+}
+/* Touch twin: pressed drawer links highlight like the hover state. */
+@media (hover: none) {
+  .nav-drawer__link:active {
+    background: var(--color-surface-2);
+    color: var(--color-accent);
+  }
 }
 .nav-drawer__link[aria-current="true"] {
   background: var(--color-accent-soft);
@@ -381,17 +398,31 @@ body[data-nav-open="true"] { overflow: hidden; }
               border-color var(--dur-fast) var(--ease-out),
               box-shadow var(--dur-fast) var(--ease-out);
 }
-.btn:hover { transform: translateY(-2px); }
+@media (hover: hover) {
+  .btn:hover { transform: translateY(-2px); }
+}
 .btn:active { transform: translateY(0); }
+/* Touch twin: no hover lift on phones — the press itself dips the button. */
+@media (hover: none) {
+  .btn:active { transform: translateY(1px); }
+}
 
 .btn--primary {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
   box-shadow: var(--shadow-sm);
 }
-.btn--primary:hover {
-  background: var(--color-accent-hover);
-  box-shadow: var(--shadow-glow);
+@media (hover: hover) {
+  .btn--primary:hover {
+    background: var(--color-accent-hover);
+    box-shadow: var(--shadow-glow);
+  }
+}
+@media (hover: none) {
+  .btn--primary:active {
+    background: var(--color-accent-hover);
+    box-shadow: var(--shadow-glow);
+  }
 }
 
 .btn--secondary {
@@ -399,19 +430,35 @@ body[data-nav-open="true"] { overflow: hidden; }
   color: var(--color-text);
   border-color: var(--color-border-strong);
 }
-.btn--secondary:hover {
-  border-color: var(--color-accent);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
+@media (hover: hover) {
+  .btn--secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+  }
+}
+@media (hover: none) {
+  .btn--secondary:active {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .btn--ghost {
   background: transparent;
   color: var(--color-text-muted);
 }
-.btn--ghost:hover {
-  color: var(--color-text);
-  background: var(--color-surface-2);
+@media (hover: hover) {
+  .btn--ghost:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
+}
+@media (hover: none) {
+  .btn--ghost:active {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
 }
 
 .btn--lg { padding: 0.9rem 1.6rem; font-size: var(--step-1); }
@@ -437,9 +484,11 @@ body[data-nav-open="true"] { overflow: hidden; }
   transition: color var(--dur-fast) var(--ease-out),
               text-decoration-color var(--dur-fast) var(--ease-out);
 }
-.link:hover {
-  color: var(--color-link-hover);
-  text-decoration-color: currentColor;
+@media (hover: hover) {
+  .link:hover {
+    color: var(--color-link-hover);
+    text-decoration-color: currentColor;
+  }
 }
 
 /* Inline SVG sizing — icons inherit currentColor and sit on the text baseline. */
@@ -478,10 +527,12 @@ body[data-nav-open="true"] { overflow: hidden; }
   transition: color var(--dur-fast) var(--ease-out),
               border-color var(--dur-fast) var(--ease-out);
 }
-.tag:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+@media (hover: hover) {
+  .tag:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
 }
 .tag__dot { width: 0.45rem; height: 0.45rem; border-radius: var(--radius-pill); background: var(--color-accent); }
 .tag-list { display: flex; flex-wrap: wrap; gap: var(--space-1); list-style: none; padding: 0; }
@@ -517,20 +568,29 @@ body[data-nav-open="true"] { overflow: hidden; }
               transform var(--dur-base) var(--ease-out);
   pointer-events: none;
 }
-.card:hover::before,
 .card:focus-visible::before,
 .card:focus-within::before {
   opacity: 1;
   transform: scaleX(1);
 }
-.card:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-  box-shadow: var(--shadow-md), 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+@media (hover: hover) {
+  .card:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+    box-shadow: var(--shadow-md), 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
 }
 .card--interactive { cursor: pointer; }
-.card--interactive:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+@media (hover: hover) {
+  .card--interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
 }
 .card__eyebrow {
   font-family: var(--font-mono);
@@ -695,7 +755,9 @@ body[data-nav-open="true"] { overflow: hidden; }
 }
 .site-footer__links { display: flex; gap: var(--space-3); list-style: none; padding: 0; }
 .site-footer__links a { color: var(--color-text-muted); }
-.site-footer__links a:hover { color: var(--color-text); }
+@media (hover: hover) {
+  .site-footer__links a:hover { color: var(--color-text); }
+}
 
 /* ----------------------------------------------------------------------
    Back-to-top (Phase 6)
@@ -732,10 +794,20 @@ body[data-nav-open="true"] { overflow: hidden; }
               transform var(--dur-base) var(--ease-out),
               visibility 0s;
 }
-.to-top:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
+@media (hover: hover) {
+  .to-top:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+}
+/* Touch twin: pressed back-to-top flashes the accent + dips in place. */
+@media (hover: none) {
+  .to-top:active {
+    background: var(--color-accent-hover);
+    transform: scale(0.94);
+    box-shadow: var(--shadow-glow);
+  }
 }
 .to-top:focus-visible {
   outline: 2px solid var(--color-accent);
@@ -794,9 +866,11 @@ body[data-nav-open="true"] { overflow: hidden; }
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out);
 }
-.telemetry-tab:hover {
-  color: var(--color-text);
-  background: var(--color-surface-2);
+@media (hover: hover) {
+  .telemetry-tab:hover {
+    color: var(--color-text);
+    background: var(--color-surface-2);
+  }
 }
 .telemetry-tab.is-active {
   color: var(--color-accent);
@@ -820,10 +894,12 @@ body[data-nav-open="true"] { overflow: hidden; }
   transition: all var(--dur-base) var(--ease-out);
   position: relative;
 }
-.telemetry-node:hover {
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+@media (hover: hover) {
+  .telemetry-node:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
 }
 .telemetry-node.is-active {
   border-color: var(--color-accent);
