@@ -1,13 +1,15 @@
 /* =====================================================================
    webgl-hero.js — Fluid Aurora & Physics-Driven Cyber-Polyhedron
    ---------------------------------------------------------------------
-   Dual-pass WebGL rendering:
-     1. Volumetric dual-tone Aurora Nebula with domain-warped fbm and
-        drifting bokeh particles, COUPLED to a stable-fluids wake:
-        pointer / finger movement splats momentum + accent dye into a
-        velocity field (curl + vorticity confinement, Jacobi pressure
-        solve, semi-Lagrangian advection), and the nebula domain bends
-        around the wake — passing a hand through tinted water.
+    Dual-pass WebGL rendering:
+      1. Volumetric dual-tone Aurora Nebula with domain-warped fbm and
+         drifting bokeh particles, COUPLED to a stable-fluids wake:
+         pointer / finger movement splats momentum into a velocity
+         field (curl + vorticity confinement, Jacobi pressure solve,
+         semi-Lagrangian advection); the nebula domain bends around
+         the wake — passing a hand through tinted water. The wake never
+         introduces new color: it only lifts the light of the nebula
+         already on screen, so the aurora stays in the page palette.
      2. Interactive 3D Wireframe Cyber-Polyhedron (dual icosahedron
         cage) with glowing vertices, inner core and orbiting satellite
         particles (per-particle orbits computed in the vertex shader).
@@ -268,9 +270,11 @@
     ].join('\n');
 
     /* withFluid=true → the nebula samples the fluid velocity field to
-       warp its fbm domain (the aurora bends around the wake) and adds
-       the advected dye as the visible tinted trail before tonemapping.
-       withFluid=false → byte-identical to the pre-fluid source. */
+        warp its fbm domain (the aurora bends around the wake — this is
+        the visible interaction) and uses the advected dye purely as a
+        disturbance mask that lifts the light already in the scene. No
+        new color is ever added; the wake stays inside the palette.
+        withFluid=false → byte-identical to the pre-fluid source. */
     function bgFragSrc(withOrbs, withFluid) {
       var src = [
         '#ifdef GL_FRAGMENT_PRECISION_HIGH',
@@ -383,7 +387,12 @@
       }
       if (withFluid) {
         src.push(
-          '  col += texture2D(u_dye, fuv).rgb * u_dyeGain;   /* tinted wake */'
+          '  /* FLUID WAKE — the dye field is a map of how disturbed the',
+          '     water is. It never adds new color: it lifts the light of',
+          '     the nebula already sitting there, the way stirred water',
+          '     catches whatever glow is passing through it. */',
+          '  float wake = dot(texture2D(u_dye, fuv).rgb, vec3(0.3333));',
+          '  col *= 1.0 + wake * u_dyeGain;'
         );
       }
       src.push(
@@ -1113,8 +1122,13 @@
     var VEL_DECAY = lite ? 0.982 : 0.987;
     var DYE_DECAY = lite ? 0.985 : 0.988;
     var CURL_STRENGTH = 24;
-    var FLUID_WARP = 0.002;
-    var FLUID_DYE_GAIN = 1.5;
+    /* The interaction the visitor sees is the DOMAIN WARP — stirring
+       drags and bends the nebula structures that already exist on
+       screen. The dye field only lifts the existing light a touch in
+       the wake (never a new hue), so the water stays inside the
+       page's palette no matter how it is stirred. */
+    var FLUID_WARP = 0.005;
+    var FLUID_DYE_GAIN = 0.35;
     var splats = [];
     var splatBudget = 16;
     var simAccum = 0;
@@ -1789,11 +1803,11 @@
       }, { threshold: 0.05 }).observe(canvas);
     }
 
-    /* ------------------------------------------------------------------
-       Physics driver — momentum, auto-spin blend, hover torque, pulse
-       decay, reset easing, camera easing. Every rate is dt-normalized
-       so 30 / 60 / 120 Hz displays all feel identical.
-       ------------------------------------------------------------------ */
+     /* ------------------------------------------------------------------
+        Physics driver — momentum, auto-spin blend, pulse decay, reset
+        easing, camera easing. Every rate is dt-normalized
+        so 30 / 60 / 120 Hz displays all feel identical.
+        ------------------------------------------------------------------ */
     function stepOrientation(dt) {
       /* momentum from released drags */
       if (!isDragging && (angVelX !== 0 || angVelY !== 0)) {
@@ -1802,15 +1816,16 @@
         angVelX *= damp; angVelY *= damp;
         if (angVelX * angVelX + angVelY * angVelY < 6e-7) { angVelX = 0; angVelY = 0; }
       }
-      /* resting rotation blends in as momentum fades; on desktop the
-         mouse offset adds a faint steering torque (fine pointers only).
-         Suppressed while resetting so the double-tap slerp converges
-         monotonically and snaps home without fighting the spin. */
+      /* Resting rotation blends in as momentum fades — one clean,
+         steady turn around the screen vertical. Nothing else may
+         push the cage: no cursor-following torque, no ambient drift.
+         It stays centered and predictable, and only a pointer drag
+         changes its motion. Suppressed while resetting so the
+         double-tap slerp converges monotonically and snaps home
+         without fighting the spin. */
       if (!isDragging && !isPinching && !resetting) {
         var sp2 = angVelX * angVelX + angVelY * angVelY;
-        var autoW = AUTO_SPIN / (1 + sp2 * 14.0);
-        var hover = coarse ? 0 : pointerX * 0.05;
-        applySpin(0, (autoW + hover) * dt);
+        applySpin(0, (AUTO_SPIN / (1 + sp2 * 14.0)) * dt);
       }
       /* double-tap reset: shortest-arc slerp home with a deterministic
          exponential ease; slerp output is orthonormal by construction,

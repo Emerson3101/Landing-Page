@@ -470,9 +470,13 @@ don't "tidy" it to the top):
   half-float FBOs, splat → curl/vorticity → Jacobi pressure →
   gradient subtract → semi-Lagrangian advection). Cursor movement over
   the hero band and touch drags page-wide (window touchmove keeps
-  firing during native scrolls) splat momentum + accent dye; the
-  nebula shader warps its fbm domain around the velocity field and
-  adds the advected dye before tonemapping. Requires the three
+  firing during native scrolls) splat momentum into the field; the
+  nebula shader warps its fbm domain around the velocity — the
+  aurora structures already on screen bend and swirl where stirred.
+  The dye field is only a disturbance mask that lifts the existing
+  nebula light; it never injects new color, so the wake stays inside
+  the page palette (subtle by design: band luminance moves a few
+  percent, the warp does the talking). Requires the three
   half-float extensions — any missing piece (or reduced motion)
   skips the subsystem and the nebula keeps plain parallax.
   Desktop 128/256 grids at a 60 Hz fixed-dt sim; phones 96/192 at
@@ -481,8 +485,11 @@ don't "tidy" it to the top):
   (incremental view-space spins, Gram-Schmidt re-orthonormalized; no
   euler tumble). Drag tracks angular velocity → flick-to-spin
   momentum with dt-normalized damping; auto-rotation blends back in
-  as it decays. Pinch-zoom (two pointers, clamped, eased); tap =
-  cage pulse + dye drop; double-tap = quaternion-slerp ease home
+  as it decays — one clean steady turn around the screen vertical,
+  and NOTHING else may push the cage (no cursor-following torque:
+  it rests centered and predictable, only a drag changes its motion).
+  Pinch-zoom (two pointers, clamped, eased); tap =
+  cage pulse + light drop; double-tap = quaternion-slerp ease home
   (matrix lerp stalls through degenerate space — see the file
   header). `touch-action: pan-y` keeps vertical pans native;
   pointercancel ends input with zero momentum. Satellite halo orbits
