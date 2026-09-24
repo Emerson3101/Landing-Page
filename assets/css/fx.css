@@ -118,8 +118,17 @@ body::after {
 
 /* Film grain — a tiny repeating noise SVG at very low opacity. Purely
    texture; disabled in light mode where it reads as dirt.
-   (data URL keeps it self-contained — no extra request) */
-[data-theme="dark"] body::before {
+   (data URL keeps it self-contained — no extra request)
+
+   Painted on <html>::before, deliberately NOT body::before:
+   body::before is the mobile nav drawer's dim overlay
+   (components.css, body[data-nav-open="true"]::before). Sharing one
+   pseudo let the drawer's fade animation drive the grain's noise
+   image to opacity 1 at z-index 199 — a full-screen "TV static" over
+   the drawer on phones. <html> owns its own pseudo, so the two layers
+   can never collide; paint order is unchanged (fixed, inset 0, top of
+   the root stacking context). */
+html[data-theme="dark"]::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -136,7 +145,7 @@ body::after {
    composites for nearly nothing. Slightly higher opacity compensates
    for the lost overlay contrast boost. Desktop unchanged. */
 @media (pointer: coarse) {
-  [data-theme="dark"] body::before {
+  html[data-theme="dark"]::before {
     mix-blend-mode: normal;
     opacity: 0.05;
   }

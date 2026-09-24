@@ -159,6 +159,16 @@ body,
   transition-timing-function: var(--ease-out);
 }
 .pc--in { opacity: 1; }
+/* Word boxes (fx.js groups the .pc letters into these). Inline-block +
+   nowrap so the only line-break opportunities are the bare space
+   letters between boxes — exactly like words in normal prose. fx.js
+   then pins each box at its measured width (freezeWordWidths), which
+   is what keeps the decode pass's mono glyph swaps from re-flowing a
+   heading on narrow viewports. */
+.pc-word {
+  display: inline-block;
+  white-space: nowrap;
+}
 /* Caret: a thin accent block hanging off the right edge of the current
    letter. Absolutely positioned so it takes no layout space and moving
    it letter-to-letter never shifts the line. */

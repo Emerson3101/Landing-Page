@@ -338,6 +338,17 @@
 }
 
 /* --- Filter bar ------------------------------------------------------ */
+/* Controls row: search + filters share a band on wide screens. Declared
+   here as a class rule — the markup used to carry it as an inline
+   style, which the phone breakpoint below could never override. */
+.portfolio__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -375,6 +386,24 @@
   color: var(--color-accent);
   border-color: var(--color-accent);   /* fallback before color-mix (older engines) */
   border-color: color-mix(in srgb, var(--color-accent) 32%, transparent);
+}
+
+/* Phones: the six bilingual chips can't sit beside the search bar, and
+   they wrap to 3–4 rows inside the pill — a 999px radius on a
+   multi-row box degenerates to a stadium whose rounded ends clip past
+   the corner chips (measured: 5 of 6 spilled at 390px). Stack the
+   controls and give the wrapped group a real container. Desktop
+   (≥48em) keeps the single-row pill unchanged. */
+@media (max-width: 47.99em) {
+  .portfolio__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters {
+    width: 100%;
+    border-radius: var(--radius-md);
+  }
+  .filter { flex: none; }
 }
 
 /* --- Grid + cards ---------------------------------------------------- */
@@ -430,28 +459,6 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-accent);
-}
-/* Tier badge: real projects get the accent; demos get a quiet outline so the
-   two tiers are visually distinct and the demos are never mistaken for
-   shipped client work. */
-.portfolio__tier {
-  font-size: var(--step--2);
-  font-family: var(--font-mono);
-  font-weight: 600;
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-pill);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.portfolio__tier--real {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-}
-.portfolio__tier--demo {
-  background: var(--color-surface-2);
-  color: var(--color-text-subtle);
-  border: 1px solid var(--color-border);
 }
 .portfolio__title {
   font-family: var(--font-display);
@@ -552,7 +559,7 @@
 
 .project__stack { margin: var(--space-4) 0; }
 
-/* Notice banner distinguishing real CV work from built-for-portfolio demos. */
+/* Key-facts callout banner for project detail pages. */
 .project__callout {
   display: flex;
   gap: var(--space-2);
@@ -564,11 +571,6 @@
   margin: var(--space-4) 0 var(--space-5);
   font-size: var(--step--1);
   color: var(--color-text);
-}
-.project__callout--demo {
-  border-left-color: var(--color-text-subtle);
-  background: var(--color-surface-2);
-  color: var(--color-text-muted);
 }
 
 /* Long-form body uses .container--prose on the section for measure; inside,

@@ -139,7 +139,10 @@ main > .section:last-child {
   letter-spacing: -0.01em;
   margin-right: auto;
 }
-.site-nav__brand span { color: var(--color-accent); }
+/* Accent dot after the brand word ("Home." / "Inicio."). Scoped to the
+   .brand-dot class — the brand text arrives as t() <span>s (data-lang)
+   and must keep the normal text color. */
+.site-nav__brand .brand-dot { color: var(--color-accent); }
 
 .site-nav__links {
   display: flex;

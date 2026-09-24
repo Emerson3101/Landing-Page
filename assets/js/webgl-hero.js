@@ -387,6 +387,7 @@
       'precision mediump float;',
       'uniform vec3 u_color;',
       'uniform float u_alpha;',
+      'uniform float u_dimFloor;',   /* depth-dim floor: lite raises it so the cage's far side stays legible */
       'uniform int u_isPoint;',
       'varying float v_depth;',
       'void main(){',
@@ -397,7 +398,7 @@
       '    if (d > 0.5) discard;',
       '    a *= (1.0 - smoothstep(0.08, 0.5, d));',
       '  }',
-      '  float depthDim = mix(1.0, 0.35, clamp(v_depth, 0.0, 1.0));',
+      '  float depthDim = mix(1.0, u_dimFloor, clamp(v_depth, 0.0, 1.0));',
       '  gl_FragColor = vec4(u_color * depthDim, a * depthDim);',
       '}'
     ].join('\n');
@@ -534,9 +535,27 @@
       mvp:   gl.getUniformLocation(objProg, 'u_mvp'),
       color: gl.getUniformLocation(objProg, 'u_color'),
       alpha: gl.getUniformLocation(objProg, 'u_alpha'),
+      dimFloor: gl.getUniformLocation(objProg, 'u_dimFloor'),
       pointSize: gl.getUniformLocation(objProg, 'u_pointSize'),
       isPoint:   gl.getUniformLocation(objProg, 'u_isPoint')
     };
+
+    /* Tier visibility tuning. On the phone tier the polyhedron renders
+       into a narrower frame against a brighter-composited nebula, and
+       the desktop alphas read as noise there — users reported the
+       cage as "indistinguishable" on phones. Lite runs hotter: higher
+       line/node alphas (the additive SRC_ALPHA,ONE blend turns the
+       extra alpha into a natural glow, no bloom pass needed), a
+       brighter wire color computed per frame from the theme accent,
+       larger vertex nodes, and a shallower depth-dim floor so the far
+       side of the cage keeps its detail. Desktop values are the
+       originals — wide screens keep the delicate look. */
+    var wireAlpha = lite ? 0.50 : 0.28;
+    var nodeAlpha = lite ? 0.95 : 0.75;
+    var nodeSize  = lite ? 7.0 : 5.0;
+    var partAlpha = lite ? 0.60 : 0.45;
+    var dimFloor  = lite ? 0.55 : 0.35;
+    var wireCol   = [0, 0, 0];   /* scratch: lite wire color, refilled per frame */
 
     var bgQuadBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bgQuadBuf);
@@ -875,8 +894,10 @@
       var aspect = canvas.width / Math.max(1, canvas.height);
       mat4Perspective(projMat, Math.PI / 4, aspect, 0.1, 100.0);
 
-      /* On mobile (portrait aspect < 1.0), move camera back slightly to frame gracefully */
-      camMat[14] = aspect < 1.0 ? -7.0 : -5.6;
+      /* On mobile (portrait aspect < 1.0), pull the camera back to frame
+         gracefully — but less far on the phone tier, where the cage needs
+         the extra screen presence (was -7.0 flat; lite frames ~12% larger). */
+      camMat[14] = aspect < 1.0 ? (lite ? -6.2 : -7.0) : -5.6;
       mat4RotateX(rotMat, camMat, rotX);
       mat4RotateY(rotMat, rotMat, rotY);
       mat4Multiply(mvpMat, projMat, rotMat);
@@ -887,12 +908,22 @@
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
       gl.uniformMatrix4fv(objU.mvp, false, mvpMat);
+      gl.uniform1f(objU.dimFloor, dimFloor);
 
-      /* 3. 3D Wireframe Cage */
+      /* 3. 3D Wireframe Cage — the lite tier paints a hotter wire color
+             (per-frame boost of the theme accent) so the cage reads
+             against the nebula on small screens. */
+      var wcol = colA;
+      if (lite) {
+        wcol = wireCol;
+        wcol[0] = Math.min(1, colA[0] * 1.25 + 0.08);
+        wcol[1] = Math.min(1, colA[1] * 1.12 + 0.05);
+        wcol[2] = Math.min(1, colA[2] * 1.20 + 0.10);
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER, wireBuf);
       gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
-      gl.uniform3fv(objU.color, colA);
-      gl.uniform1f(objU.alpha, 0.28);
+      gl.uniform3fv(objU.color, wcol);
+      gl.uniform1f(objU.alpha, wireAlpha);
       gl.uniform1i(objU.isPoint, 0);
       gl.drawArrays(gl.LINES, 0, wireLineVerts.length / 3);
 
@@ -900,8 +931,8 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, nodeBuf);
       gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
       gl.uniform3fv(objU.color, colB);
-      gl.uniform1f(objU.alpha, 0.75);
-      gl.uniform1f(objU.pointSize, 5.0 * dpr);
+      gl.uniform1f(objU.alpha, nodeAlpha);
+      gl.uniform1f(objU.pointSize, nodeSize * dpr);
       gl.uniform1i(objU.isPoint, 1);
       gl.drawArrays(gl.POINTS, 0, vertPoints.length / 3);
 
@@ -922,7 +953,7 @@
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, particleArray);
       gl.vertexAttribPointer(objU.aPos, 3, gl.FLOAT, false, 0, 0);
       gl.uniform3fv(objU.color, colA);
-      gl.uniform1f(objU.alpha, 0.45);
+      gl.uniform1f(objU.alpha, partAlpha);
       gl.uniform1f(objU.pointSize, 3.5 * dpr);
       gl.uniform1i(objU.isPoint, 1);
       gl.drawArrays(gl.POINTS, 0, PARTICLE_COUNT);

@@ -176,12 +176,33 @@
       target.setAttribute('aria-label', text);
       target.textContent = '';
       var frag = document.createDocumentFragment();
+      /* Letters are grouped into .pc-word word boxes: consecutive
+         non-space letters share one inline-block, spaces stay bare.
+         Line breaks can then only occur where they would in normal
+         prose — between words — and freezeWordWidths() below pins each
+         box at its measured width, so the decode pass can swap glyph
+         text and fonts inside a word without ever moving a line break
+         (the phone-hero "two lines for a moment" jitter). Kerning
+         inside a word is preserved: its letters stay inline. */
+      var word = null;
       for (var i = 0; i < text.length; i++) {
+        var ch = text.charAt(i);
         var s = document.createElement('span');
         s.className = 'pc';
         s.setAttribute('aria-hidden', 'true');
-        s.textContent = text.charAt(i);
-        frag.appendChild(s);
+        s.textContent = ch;
+        if (ch === ' ') {
+          word = null;
+          frag.appendChild(s);
+        } else {
+          if (!word) {
+            word = document.createElement('span');
+            word.className = 'pc-word';
+            word.setAttribute('aria-hidden', 'true');
+            frag.appendChild(word);
+          }
+          word.appendChild(s);
+        }
       }
       target.appendChild(frag);
       /* when the element used background-clip:text for a gradient fill
@@ -274,6 +295,39 @@
       }, { rootMargin: '0px 0px -12% 0px', threshold: 0.2 });
       obs.observe(el);
     });
+
+    /* Freeze each word box at its measured width once the real fonts
+       have loaded (the woff2s are preloaded, so this lands well before
+       any element's decode pass begins). The decode swaps letters to
+       mono glyphs — different advances — so without the freeze a line
+       near its wrap threshold (the hero title on phones) wraps for the
+       duration of the scramble and snaps back. Frozen boxes make the
+       shimmer a pure texture: glyphs may bleed a pixel or two outside
+       their word, but no line break ever moves. Re-measured on resize
+       because the fluid type scale tracks letter widths to the
+       viewport. Engines without the Font Loading API keep the old
+       behavior — no freeze, no harm. */
+    function freezeWordWidths() {
+      var words = document.querySelectorAll('.pc-word');
+      if (!words.length) return;
+      /* clear all → one reflow → measure all → apply all, so no word
+         is ever measured through a sibling's already-applied width */
+      Array.prototype.forEach.call(words, function (w) { w.style.width = ''; });
+      var widths = Array.prototype.map.call(words, function (w) {
+        return w.getBoundingClientRect().width;
+      });
+      Array.prototype.forEach.call(words, function (w, i) {
+        if (widths[i] > 0) w.style.width = widths[i] + 'px';
+      });
+    }
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(freezeWordWidths);
+      var freezeRt = null;
+      window.addEventListener('resize', function () {
+        clearTimeout(freezeRt);
+        freezeRt = setTimeout(freezeWordWidths, 150);
+      }, { passive: true });
+    }
   }
 
   /* --- 6. Scramble / decode-in -----------------------------------------
@@ -447,7 +501,7 @@
         { kind: es ? 'sección' : 'section', label: es ? 'Experiencia' : 'Experience', run: function () { location.href = '/#experience'; } },
         { kind: es ? 'sección' : 'section', label: es ? 'Educación' : 'Education', run: function () { location.href = '/#education'; } },
         { kind: es ? 'sección' : 'section', label: es ? 'Contacto' : 'Contact', run: function () { location.href = '/#contact'; } },
-        { kind: es ? 'página' : 'page', label: es ? 'Portafolio Completo' : 'Complete Portfolio', run: function () { location.href = '/portfolio/'; } },
+        { kind: es ? 'página' : 'page', label: es ? 'Portafolio completo' : 'Full Portfolio', run: function () { location.href = '/portfolio/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'ICV & Cargabilidad (CFE Telemetría)', run: function () { location.href = '/portfolio/icv/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'TecAssist Revisited (RAG Desktop AI)', run: function () { location.href = '/portfolio/teassist/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'Wedding Platform & Seating Planner (Next.js 16)', run: function () { location.href = '/portfolio/wedproject/'; } },

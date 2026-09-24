@@ -4,7 +4,9 @@
  *
  * Anchor links target home sections (#about, #skills, #experience,
  * #education, #contact) plus the portfolio index. Labels are bilingual
- * via t(); the active language is <html data-active-lang>.
+ * via t(); the active language is <html data-active-lang>. The brand
+ * is bilingual too: "Home." / "Inicio." via t(), with the accent dot
+ * on .brand-dot (components.css scopes the accent to that class).
  *
  * Controls in .site-nav__actions (left→right):
  *   - Language toggle (EN/ES)     — behavior in main.js (wire-on in this phase)
@@ -24,7 +26,7 @@ $nav_links = [
 ?>
 <header class="site-header">
   <nav class="site-nav" aria-label="Primary">
-    <a class="site-nav__brand" href="/">Emerson<span>.</span></a>
+    <a class="site-nav__brand" href="/"><?= t('Home', 'Inicio') ?><span class="brand-dot">.</span></a>
 
     <ul class="site-nav__links">
       <?php foreach ($nav_links as $link): ?>

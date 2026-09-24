@@ -4,11 +4,11 @@
  *
  * Cards are driven by assets/data/projects.json (single source of truth).
  * Each card links to a hand-written bilingual detail page at
- * portfolio/<slug>.php. All projects represent real, verified engineering work.
+ * portfolio/<slug>.php.
  */
 
 $page_title       = 'Portfolio — Emerson Plancarte';
-$page_description = 'Selected engineering systems by Emerson Plancarte — software and embedded systems engineer. Industrial electrical grid telemetry, AI RAG consultation assistants, Next.js event platforms, and real-time Android applications.';
+$page_description = 'Selected projects by Emerson Plancarte — software and embedded systems engineer. Industrial electrical grid telemetry, desktop AI assistants, Next.js event platforms, and real-time Android applications.';
 require __DIR__ . '/../includes/header.php';
 
 $data     = json_decode(file_get_contents(__DIR__ . '/../assets/data/projects.json'), true);
@@ -32,8 +32,8 @@ function bi_field(array $field) {
     </h1>
     <p class="hero__subtitle" data-reveal data-typetrick>
       <?= t(
-        'Verified, production-grade systems spanning industrial telemetry, AI desktop applications, modern web platforms, and mobile engineering.',
-        'Sistemas verificados de nivel de producción que abarcan telemetría industrial, aplicaciones de escritorio con IA, plataformas web modernas y desarrollo móvil.'
+        'Selected work spanning industrial telemetry, AI desktop applications, modern web platforms, and mobile engineering.',
+        'Trabajo seleccionado que abarca telemetría industrial, aplicaciones de escritorio con IA, plataformas web modernas y desarrollo móvil.'
       ) ?>
     </p>
   </div>
@@ -48,7 +48,9 @@ function bi_field(array $field) {
       <?= t('All projects', 'Todos los proyectos') ?>
     </h2>
 
-    <div class="portfolio__controls" data-reveal style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+    <!-- Layout lives in pages.css (.portfolio__controls) so the phone
+         breakpoint can restack it — inline styles would win the cascade. -->
+    <div class="portfolio__controls" data-reveal>
       <div class="search-bar" style="margin-bottom: 0;">
         <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
           <circle cx="11" cy="11" r="8"/>
@@ -102,7 +104,7 @@ function bi_field(array $field) {
             <?php endif; ?>
 
             <span class="portfolio__cta" aria-hidden="true">
-              <?= t('Read the case study & technical breakdown', 'Leer el caso de estudio y desglose técnico') ?>
+              <?= t('Read the case study', 'Leer el caso de estudio') ?>
               <span class="portfolio__cta-arrow" aria-hidden="true">&rarr;</span>
             </span>
           </a>
