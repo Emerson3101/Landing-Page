@@ -478,12 +478,16 @@ don't "tidy" it to the top):
   the page palette (subtle by design: band luminance moves a few
   percent, the warp does the talking). Requires the three
   half-float extensions — any missing piece (or reduced motion)
-  skips the subsystem and the nebula keeps plain parallax.
-  Desktop 128/256 grids at a 60 Hz fixed-dt sim; phones 96/192 at
+  skips the subsystem and the nebula keeps its calm drifting look.
+  Desktop 192/512 grids at a 60 Hz fixed-dt sim; phones 96/192 at
   30 Hz; near-idle (two decay passes) once no splat arrives ~2.5 s.
   *POLYHEDRON PHYSICS* — persistent arcball orientation matrix
   (incremental view-space spins, Gram-Schmidt re-orthonormalized; no
-  euler tumble). Drag tracks angular velocity → flick-to-spin
+  euler tumble). The mvp composes proj * camMat * orient — the cage
+  rotates around its own center before the camera push, so it stays
+  screen-centered forever; flipping the multiply to orient * camMat
+  rotates the eye space instead and sends the cage orbiting offscreen
+  (don't). Drag tracks angular velocity → flick-to-spin
   momentum with dt-normalized damping; auto-rotation blends back in
   as it decays — one clean steady turn around the screen vertical,
   and NOTHING else may push the cage (no cursor-following torque:

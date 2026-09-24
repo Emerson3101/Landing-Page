@@ -34,9 +34,9 @@
    FLUID AURORA ("hand through tinted water"). Requires
    OES_texture_half_float, EXT_color_buffer_half_float AND
    OES_texture_half_float_linear — any missing piece quietly skips the
-   subsystem and the nebula keeps its plain pointer parallax (a 1×1
-   zero texture backs the uniforms, so the specialized shader reads
-   no wake). Resolutions: velocity 128 / dye 256 on desktop, 96 / 192
+    subsystem and the nebula keeps its calm drifting look (a 1×1
+    zero texture backs the uniforms, so the specialized shader reads
+    no wake). Resolutions: velocity 192 / dye 512 on desktop, 96 / 192
    on phones, aspect-shaped, reallocated on orientation change.
    Cursor movement stirs anywhere over the hero band; on touch,
    window-level touchmove stirs page-wide — scrolling drags the water
@@ -49,11 +49,11 @@
        KHR_parallel_shader_compile the shaders compile on background
        threads and a completion poll sequences the boot — the main
        thread never stalls, so the typing choreography stays smooth.
-     - Bokeh orbs as POINT SPRITES: the 40-orb per-pixel loop (~80% of
-       the fragment cost) is replaced by 40 full-resolution additive
-       point sprites with the identical falloff, drift, twinkle and
-       parallax math — computed per frame on the CPU (40 orbs is
-       nothing) and drawn with a blend that reproduces the shader's
+      - Bokeh orbs as POINT SPRITES: the 40-orb per-pixel loop (~80% of
+        the fragment cost) is replaced by 40 full-resolution additive
+        point sprites with the identical falloff, drift and twinkle —
+        computed per frame on the CPU (40 orbs is
+        nothing) and drawn with a blend that reproduces the shader's
        pre-tonemap accumulation. The orbs actually render at FULL
        resolution, so the sparkle is indistinguishable from desktop.
      - Nebula FBO: the soft-focus fbm aurora (all 4 octaves kept)
@@ -284,7 +284,6 @@
         '#endif',
         'uniform vec2  u_res;',
         'uniform float u_time;',
-        'uniform vec2  u_mouse;',
         'uniform vec3  u_colA;',
         'uniform vec3  u_colB;',
         ''
@@ -347,9 +346,6 @@
         );
       }
       src.push(
-        '  /* gentle pointer parallax of the whole field */',
-        '  uv += u_mouse * 0.05;',
-        '',
         '  /* domain-warped celestial nebula */',
         '  vec2 q = vec2(fbm(uv * 1.6 + t), fbm(uv * 1.6 - t * 0.7));',
         '  float n = fbm(uv * 2.2 + q * 1.4);',
@@ -367,9 +363,8 @@
           '    float seed = fi * 17.23;',
           '    vec2 c = vec2(',
           '      hash1(seed) * 2.4 - 1.2 + sin(t * (0.3 + hash1(seed + 1.7) * 0.4)) * 0.10,',
-          '      mod(hash1(seed + 3.1) + t * (0.02 + hash1(seed + 5.9) * 0.03) * 2.0, 2.4) - 1.2',
-          '    );',
-          '    c += u_mouse * 0.08 * (0.3 + hash1(seed + 7.3));  /* parallax depth */',
+          '    mod(hash1(seed + 3.1) + t * (0.02 + hash1(seed + 5.9) * 0.03) * 2.0, 2.4) - 1.2',
+          '  );',
           '    float r = 0.012 + hash1(seed + 9.1) * 0.05;',
           '    float tw = 0.55 + 0.45 * sin(t * (1.5 + hash1(seed + 11.7) * 2.0) + seed);',
           '    glow += orb(uv, c, r) * tw;',
@@ -738,8 +733,8 @@
     var bgProg = null, objProg = null;
 
     /* FLUID plumbing — all three half-float extensions must exist or
-       the whole subsystem stays dark and the nebula keeps its plain
-       parallax (a zero texture backs the uniforms of a specialized
+       the whole subsystem stays dark and the nebula keeps its calm
+       drifting look (a zero texture backs the uniforms of a specialized
        shader, so a late runtime failure also degrades safely). */
     var halfType = 0;
     var fluidPossible = false;
@@ -852,7 +847,6 @@
       aPos:  gl.getAttribLocation(bgProg, 'a_pos'),
       res:   gl.getUniformLocation(bgProg, 'u_res'),
       time:  gl.getUniformLocation(bgProg, 'u_time'),
-      mouse: gl.getUniformLocation(bgProg, 'u_mouse'),
       colA:  gl.getUniformLocation(bgProg, 'u_colA'),
       colB:  gl.getUniformLocation(bgProg, 'u_colB')
     };
@@ -1013,7 +1007,6 @@
           swayF:  0.3 + hash1js(seed + 1.7) * 0.4,
           y0:     hash1js(seed + 3.1),
           riseF:  0.02 + hash1js(seed + 5.9) * 0.03,
-          parF:   0.08 * (0.3 + hash1js(seed + 7.3)),
           radius: 0.012 + hash1js(seed + 9.1) * 0.05,
           twF:    1.5 + hash1js(seed + 11.7) * 2.0
         });
@@ -1035,8 +1028,8 @@
       for (var k = 0; k < ORB_COUNT; k++) {
         var o = orbConsts[k];
         var j = k * 4;
-        orbData[j]     = o.x0 + Math.sin(tt * o.swayF) * 0.10 + pointerX * o.parF;
-        orbData[j + 1] = (((o.y0 + tt * o.riseF * 2.0) % 2.4) + 2.4) % 2.4 - 1.2 + pointerY * o.parF;
+        orbData[j]     = o.x0 + Math.sin(tt * o.swayF) * 0.10;
+        orbData[j + 1] = (((o.y0 + tt * o.riseF * 2.0) % 2.4) + 2.4) % 2.4 - 1.2;
         orbData[j + 2] = Math.min(o.radius, maxRuv);
         orbData[j + 3] = 0.55 + 0.45 * Math.sin(tt * o.twF + o.seed);
       }
@@ -1102,10 +1095,10 @@
     /* ------------------------------------------------------------------
        FLUID AURORA — runtime pipeline ("hand through tinted water")
        ------------------------------------------------------------------
-       Fields (aspect-shaped half-float ping-pong pairs):
-         vel      128 / 96   (desktop / phone)   velocity xy
-         dye      256 / 192                      tinted wake rgb
-         pressure 128 / 96                      Jacobi solve scratch
+        Fields (aspect-shaped half-float ping-pong pairs):
+          vel      192 / 96   (desktop / phone)   velocity xy
+          dye      512 / 192                      wake mask rgb
+          pressure 192 / 96                      Jacobi solve scratch
        Step (fixed dt — 60 Hz desktop, 30 Hz phone, accumulated from
        real frame time so any refresh rate behaves the same):
          splats → curl → vorticity confinement → divergence →
@@ -1208,7 +1201,13 @@
       try {
         destroyFluidTargets();
         var aspect = canvas.width / Math.max(1, canvas.height);
-        var vRes = lite ? 96 : 128, dRes = lite ? 192 : 256;
+        /* Desktop grids were 128/256 — the wake then read as a grainy,
+           mottled halftone: dye texels upscaled ~4x against the smooth
+           fbm, velocity-driven warp bending in ~8px patches. 192/512
+           puts the dye at ~2 canvas pixels and the warp at ~5 — the
+           wake blends into the image. Phones keep 96/192: their
+           canvas is small and the nebula renders at 60% anyway. */
+        var vRes = lite ? 96 : 192, dRes = lite ? 192 : 512;
         var vw = aspect >= 1 ? Math.round(vRes * aspect) : vRes;
         var vh = aspect >= 1 ? vRes : Math.round(vRes / aspect);
         var dw = aspect >= 1 ? Math.round(dRes * aspect) : dRes;
@@ -1407,9 +1406,8 @@
        + a dye drop in the water; double-tap eases the cage back to its
        resting pose and resets the zoom. pointercancel (the browser
        taking a scroll) ends input cleanly with zero momentum — the
-       physics eases, nothing snaps. */
-    var pointerX = 0, pointerY = 0;
-    var orient = mat4Create(), scratchA = mat4Create(), scratchB = mat4Create();
+        physics eases, nothing snaps. */
+     var orient = mat4Create(), scratchA = mat4Create(), scratchB = mat4Create();
     var IDENT = mat4Create();
     var REST_ORIENT = mat4Create();
     mat4RotateX(scratchA, IDENT, 0.35);
@@ -1624,10 +1622,6 @@
       });
 
       window.addEventListener('pointermove', function (e) {
-        var nx = (e.clientX / window.innerWidth) * 2 - 1;
-        var ny = -((e.clientY / window.innerHeight) * 2 - 1);
-        pointerX = nx; pointerY = ny;
-
         var prev = pointers[e.pointerId];
         if (prev) {
           /* an active pointer (drag/pinch) — deltas from its own trail */
@@ -1700,9 +1694,6 @@
         beginDrag(e.clientX, e.clientY, null);
       });
       window.addEventListener('mousemove', function (e) {
-        var nx = (e.clientX / window.innerWidth) * 2 - 1;
-        var ny = -((e.clientY / window.innerHeight) * 2 - 1);
-        pointerX = nx; pointerY = ny;
         if (isDragging) {
           var nowT = performance.now();
           var dtm = Math.max(0.004, (nowT - lastMoveT) / 1000);
@@ -1922,7 +1913,6 @@
         gl.useProgram(bgProg);
         gl.uniform2f(bgU.res, useFbo ? bgW : canvas.width, useFbo ? bgH : canvas.height);
         gl.uniform1f(bgU.time, time);
-        gl.uniform2f(bgU.mouse, pointerX, pointerY);
         gl.uniform3fv(bgU.colA, colA);
         gl.uniform3fv(bgU.colB, colB);
         if (bgU.velTex) {
@@ -1977,10 +1967,18 @@
         gl.drawArrays(gl.POINTS, 0, ORB_COUNT);
       }
 
-      /* 2. Camera + persistent arcball orientation (pinch-eased Z) */
+      /* 2. Camera + persistent arcball orientation (pinch-eased Z).
+             ORDER MATTERS — camMat * orient rotates the cage around its
+             own center first, then the camera pushes it to depth, so
+             it stays centered forever. orient * camMat instead rotates
+             the already-translated eye space around the origin, sending
+             the cage on a wide orbit: offscreen, behind the camera,
+             then back in from the opposite side. (The pre-fluid build
+             composed proj * camMat * rotX * rotY — same order as
+             this.) Don't "simplify" this multiply. */
       var aspect = canvas.width / Math.max(1, canvas.height);
       mat4Perspective(projMat, Math.PI / 4, aspect, 0.1, 100.0);
-      mat4Multiply(worldMat, orient, camMat);
+      mat4Multiply(worldMat, camMat, orient);
       mat4Multiply(mvpMat, projMat, worldMat);
 
       /* Setup 3D Program */
