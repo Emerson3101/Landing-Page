@@ -20,7 +20,7 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project · 1st Place Award', 'Proyecto real · 1er Lugar') ?></span>
+        <span class="badge"><?= t('1st Place Award', '1er Lugar') ?></span>
         <?= t('AI & Desktop Engineering · Smart Cities Innovation', 'Ingeniería de IA y Escritorio · Innovación Ciudades Inteligentes') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -28,7 +28,7 @@ require __DIR__ . '/../includes/header.php';
       </h1>
       <p class="project__subtitle">
         <?= t(
-          'Award-winning smart assistant rebuilt from scratch into an enterprise-grade desktop consultation system with streaming NVIDIA NIM inference and disk-cached vector search.',
+          'Award-winning smart assistant rebuilt from the ground up as a desktop consultation system with streaming NVIDIA NIM inference and disk-cached vector search.',
           'Asistente galardonado reconstruido desde cero como un sistema de consulta de escritorio con inferencia streaming de NVIDIA NIM y búsqueda vectorial en caché de disco.'
         ) ?>
       </p>
@@ -50,16 +50,15 @@ require __DIR__ . '/../includes/header.php';
         <li><span class="tag">SpeechRecognition</span></li>
         <li><span class="tag">pyttsx3 Audio Thread</span></li>
         <li><span class="tag">Qt Custom Animations</span></li>
-        <li><span class="tag">High-Density Technical UI</span></li>
       </ul>
     </header>
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('From university contest winner to enterprise desktop architecture', 'De ganador de concurso universitario a arquitectura de escritorio empresarial') ?>:</strong>
+        <strong><?= t('From university contest winner to desktop application', 'De ganador de concurso universitario a aplicación de escritorio') ?>:</strong>
         <?= t(
-          'Originally took 1st place in Smart Cities as a voice-driven campus assistant. Re-architected as TecAssist Revisited with modular Python architecture, high-performance cosine vector retrieval, and token-by-token streaming inference.',
-          'Ganó el 1er lugar en Ciudades Inteligentes como asistente de voz para campus. Reestructurado como TecAssist Revisited con arquitectura modular en Python, recuperación vectorial de alto rendimiento por similitud de coseno e inferencia en streaming token a token.'
+          'Originally took 1st place in Smart Cities as a voice-driven campus assistant. Re-architected as TecAssist Revisited with a modular Python architecture, cosine-similarity vector retrieval, and token-by-token streaming inference.',
+          'Ganó el 1er lugar en Ciudades Inteligentes como asistente de voz para campus. Reestructurado como TecAssist Revisited con una arquitectura modular en Python, recuperación vectorial por similitud de coseno e inferencia en streaming token a token.'
         ) ?>
       </p>
     </div>
@@ -96,7 +95,7 @@ require __DIR__ . '/../includes/header.php';
       <div class="stack" data-reveal>
         <h2><?= t('The engineering challenge', 'El desafío de ingeniería') ?></h2>
         <?= tb(
-          '<p>Large language models frequently suffer from two fatal pitfalls when deployed in institutional contexts: <strong>hallucination</strong> (inventing regulations, office numbers, or procedures) and <strong>latency</strong> (waiting several seconds for a full paragraph to generate before showing any visual output to the user).</p>
+          '<p>Large language models frequently suffer from two critical pitfalls when deployed in institutional contexts: <strong>hallucination</strong> (inventing regulations, office numbers, or procedures) and <strong>latency</strong> (waiting several seconds for a full paragraph to generate before showing any visual output to the user).</p>
           <p>Furthermore, desktop applications frequently freeze during network calls if UI threads and API loops are tightly coupled. TecAssist Revisited was built to guarantee:</p>
           <ul>
             <li><strong>Strict Factual Grounding:</strong> The LLM is restricted to the provided institutional knowledge base. When information is absent, it transparently declines rather than fabricating answers.</li>
@@ -222,11 +221,11 @@ Fallback: lightweight keyword scoring with NFKD accent normalization.
 
       <!-- Impact & Results -->
       <div class="stack" data-reveal>
-        <h2><?= t('Verified achievements & competition outcomes', 'Logros verificados y resultados de competencia') ?></h2>
+        <h2><?= t('Achievements & competition results', 'Logros y resultados de la competencia') ?></h2>
         <ul class="project__highlights">
           <li><strong><?= t('1st Place Innovation Contest (Dec 2025):', '1er Lugar Concurso de Innovación (Dic 2025):') ?></strong> <?= t('Evaluated by an academic jury against 20+ competing teams, winning top honors in the Smart Cities division.', 'Evaluado por un jurado académico frente a más de 20 equipos, obteniendo el máximo galardón en Ciudades Inteligentes.') ?></li>
           <li><strong><?= t('<300ms Time-to-First-Token:', '<300ms Tiempo al primer token:') ?></strong> <?= t('Near-zero perceived latency via NVIDIA NIM streaming endpoints compared to multi-second delays in monolithic API calls.', 'Latencia percibida casi nula con streaming de NVIDIA NIM frente a esperas de varios segundos en llamadas monolíticas.') ?></li>
-          <li><strong><?= t('Refined Institutional Typography:', 'Tipografía Institucional Refinada:') ?></strong> <?= t('High-contrast vector icons and polished typography tailored for professional campus administration.', 'Iconos vectoriales de alto contraste y tipografía pulida adaptada a la gestión académica profesional.') ?></li>
+          <li><strong><?= t('Clear institutional UI:', 'Interfaz institucional clara:') ?></strong> <?= t('High-contrast vector icons and clear typography suited to institutional use.', 'Iconos vectoriales de alto contraste y tipografía clara adaptadas al uso institucional.') ?></li>
           <li><strong><?= t('100% Offline Keyword Fallback:', 'Respaldo 100% fuera de línea:') ?></strong> <?= t('Guaranteed functionality even when internet access or API credentials are unavailable.', 'Operatividad garantizada incluso ante caídas de internet o falta de credenciales de API.') ?></li>
         </ul>
       </div>

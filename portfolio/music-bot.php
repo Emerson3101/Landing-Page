@@ -18,7 +18,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('Audio Streaming & Concurrency · Discord Voice Architecture', 'Streaming de Audio y Concurrencia · Arquitectura de Voz Discord') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -53,7 +52,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Real media streaming engineering', 'Ingeniería real de streaming de medios') ?>:</strong>
+        <strong><?= t('Resilient audio streaming', 'Streaming de audio resiliente') ?>:</strong>
         <?= t(
           'Designed to overcome common Discord audio stream crashes caused by CDN token expirations, VoIP packet drop, and lingering ghost voice connections in idle channels.',
           'Diseñado para superar las caídas de audio habituales en Discord por expiración de tokens en CDN, pérdida de paquetes VoIP y conexiones fantasma en canales vacíos.'
@@ -99,7 +98,7 @@ require __DIR__ . '/../includes/header.php';
             <li><strong>Headless Server Authentication:</strong> Running on a remote headless VPS prevents standard browser-based Spotify OAuth popups. The system must seamlessly negotiate between cached tokens and headless Client Credentials fallback.</li>
             <li><strong>Voice Connection Leaks:</strong> Forgotten bot instances left in empty channels consume substantial CPU and bandwidth. The bot requires an automated garbage-collector loop to cleanly terminate orphaned voice sessions.</li>
           </ul>',
-          '<p>Transmitir audio en tiempo real sobre redes VoIP con el protocolo Opus de Discord presenta vulnerabilidades técnicas notables:</p>
+          '<p>Transmitir audio en tiempo real sobre redes VoIP con el protocolo Opus de Discord introduce modos de falla particulares:</p>
           <ul>
             <li><strong>Cortes y Pérdida de Paquetes:</strong> Los streams de audio se interrumpen cuando las CDN limitan conexiones a mitad de canción. Sin parámetros de reconexión en el subproceso FFmpeg, la música se corta repentinamente.</li>
             <li><strong>Autenticación en Servidores Headless:</strong> Operar en un VPS remoto sin entorno gráfico impide ventanas emergentes de OAuth para Spotify. El sistema debe alternar entre tokens cacheados y Client Credentials de forma transparente.</li>
@@ -213,14 +212,14 @@ require __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
-      <!-- Verified Outcomes -->
+      <!-- Outcomes -->
       <div class="stack" data-reveal>
-        <h2><?= t('Impact and verified outcomes', 'Impacto y resultados verificados') ?></h2>
+        <h2><?= t('Impact and outcomes', 'Impacto y resultados') ?></h2>
         <ul class="project__highlights">
           <li><strong><?= t('Zero Stutter Audio Streaming:', 'Streaming de Audio Continuo sin Cortes:') ?></strong> <?= t('FFmpeg reconnect flags eliminate stream termination caused by temporary CDN network timeouts.', 'Los parámetros de reconexión de FFmpeg eliminan cortes por latencia temporal en servidores CDN.') ?></li>
           <li><strong><?= t('Automated Server Resource Protection:', 'Protección Automatizada de Servidor:') ?></strong> <?= t('15-second background garbage-collector disconnects idle voice instances, saving CPU and bandwidth.', 'El recolector de basura en segundo plano desconecta sesiones inactivas, liberando CPU y ancho de banda.') ?></li>
           <li><strong><?= t('Headless Server Compatibility:', 'Compatibilidad con Servidores Headless:') ?></strong> <?= t('Graceful fallback to in-memory ClientCredentials allows unattended deployment on Linux servers without GUI.', 'El respaldo a ClientCredentials en memoria permite el despliegue desatendido en servidores Linux sin interfaz gráfica.') ?></li>
-          <li><strong><?= t('Discord Embed UI Refinement:', 'Refinamiento de Interfaz en Discord:') ?></strong> <?= t('Implemented clean text indicators, custom color badges, and professional volume bars for sleek player state display.', 'Implementó indicadores de texto limpios, insignias de color y barras de volumen sobrias para un estado de reproducción impecable.') ?></li>
+          <li><strong><?= t('Clean Discord player UI:', 'Interfaz de reproductor limpia:') ?></strong> <?= t('Clear text indicators, custom color badges, and professional volume bars for a readable player state.', 'Indicadores de texto claros, insignias de color y barras de volumen sobrias para un estado de reproducción legible.') ?></li>
         </ul>
       </div>
 

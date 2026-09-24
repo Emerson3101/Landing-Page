@@ -503,7 +503,7 @@ vertical-rhythm utility used inside blocks.
 ## 12. The portfolio data model (`assets/data/projects.json`)
 
 Single source of truth for the **grid cards only** (title, subtitle,
-category, tier, year, stack, summary, links). Each project *also* has a
+category, year, stack, summary, links). Each project *also* has a
 hand-written bilingual detail page at `portfolio/<slug>.php` (the JSON does
 NOT contain the case-study body — that's authorial and lives in the PHP).
 
@@ -511,15 +511,12 @@ Schema:
 ```jsonc
 {
   "categories": { "web": {"en":"Web","es":"Web"}, "backend":{…}, "embedded":{…}, "mobile":{…} },
-  "tiers":      { "real": {"en":"Real project","es":"Proyecto real"},
-                  "demo": {"en":"Showcase demo","es":"Demostración"} },
   "projects": [
     {
       "slug": "icv",                     // matches portfolio/<slug>.php
       "title":      { "en": "…", "es": "…" },
       "subtitle":   { "en": "…", "es": "…" },
       "category":   "web",               // a key in `categories`
-      "tier":       "real",              // 'real' | 'demo'
       "year":       "2024–2026",
       "featured":   true,                 // optional; true → spans 2 cols on wide grids
       "stack":      ["…","…"],            // proper nouns, NOT translated; [] is valid
@@ -537,16 +534,11 @@ helper** in `portfolio/index.php` (it mirrors the `t()` contract so the
 EN/ES toggle hides the right language without rebuilding the grid). Stack
 tags are rendered as `.tag` chips. `featured: true` marks the strongest
 projects (they populate the home-page showcase); on the portfolio grid only
-the FIRST featured card takes the double-width lead slot (`grid-column:
-span 2`, released under 42em) — the grid uses fixed column counts
-(1/2/3 by breakpoint) with `grid-auto-flow: dense` so rows always pack
-evenly. The home page renders its featured cards as a uniform 2×2 mosaic
-on wide viewports (no spans).
-
-**`tier` is an honesty signal.** `'real'` = real CV work (ICV, TecAssist);
-`'demo'` = built-for-portfolio showcase. Never blur this — the badge text
-and the absence/presence of the `.project__callout` in the detail page
-both reflect it.
+   the FIRST featured card takes the double-width lead slot (`grid-column:
+   span 2`, released under 42em) — the grid uses fixed column counts
+   (1/2/3 by breakpoint) with `grid-auto-flow: dense` so rows always pack
+   evenly. The home page renders its featured cards as a uniform 2×2 mosaic
+   on wide viewports (no spans).
 
 ---
 
@@ -554,16 +546,16 @@ both reflect it.
 
 1. **Add an entry to `assets/data/projects.json` → `projects[]`** with a
    unique `slug`, both-language `title`/`subtitle`/`summary`, the right
-   `category` key, `tier` (`'real'` or `'demo'`), `year`, `stack` (proper
+   `category` key, `year`, `stack` (proper
    nouns), and `links.detail` pointing at the PHP page you'll create. Set
    `featured: true` only for the strongest one (currently ICV).
 2. **Create `portfolio/<slug>.php`** by copying `portfolio/icv.php` as the
    canonical template (it's the most complete; §13.5 below). Update
    `$page_title`, `$page_description`, and the body. Keep the structure:
    `<section class="section project">` → `.container--prose` →
-   `.project__back` link → `.project__header` (`h1.project__title` +
-   `.project__meta` dl + `.project__stack` tag-list) →
-   `.project__callout` (real) or `--demo` variant → `.project__body.stack`
+    `.project__back` link → `.project__header` (`h1.project__title` +
+    `.project__meta` dl + `.project__stack` tag-list) →
+    `.project__callout` → `.project__body.stack`
    with `data-reveal-group` and `data-reveal` children → `.project__links`.
 3. **Translate every prose string** via `t()` or `tb()`. Keep stack tags
    untranslated. If you include a code figure, use the
@@ -590,7 +582,6 @@ require __DIR__ . '/../includes/header.php';
     <a class="project__back" href="/portfolio/"><?= t('All projects','Todos los proyectos') ?></a>
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project','Proyecto real') ?></span>
         <?= t('Web · CFE ZOTGM','Web · CFE ZOTGM') ?>
       </p>
       <h1 class="project__title" id="project-title"><?= t($en,$es) ?></h1>
@@ -790,15 +781,10 @@ Invoke-WebRequest http://localhost:8000/ -UseBasicParsing | Select-Object Status
 
 ## 19. Known pending items (flagged in code, blocked on external input)
 
-Two items are openly pending and explicitly marked. Don't silently "finish"
-them — they're blocked on Emerson.
+One item is openly pending and explicitly marked. Don't silently "finish"
+it — it's blocked on Emerson.
 
-1. **`portfolio/teassist.php` is an honest placeholder.** TecAssist is a
-   real first-place innovation-contest winner (Smart Cities, December
-   2025), but its stack and scope are to be confirmed. The page says
-   "Full write-up pending" bilingually. **Expand it to match the depth of
-   `icv.php` once Emerson provides the specifics** — don't invent them.
-2. **The social card image is a TODO in `includes/header.php`.** Add
+1. **The social card image is a TODO in `includes/header.php`.** Add
    `assets/img/social-card.png` at 1200×630 and uncomment the two meta tags
    (`og:image` / `twitter:image`) at the marked spot in `header.php`. The
    asset can't be generated here.

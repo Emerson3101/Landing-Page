@@ -19,7 +19,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('Industrial Telemetry & Grid Analytics · CFE ZOTGM', 'Telemetría Industrial y Analítica de Red · CFE ZOTGM') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -54,7 +53,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Real enterprise industrial deployment', 'Despliegue industrial empresarial real') ?>:</strong>
+        <strong><?= t('Enterprise deployment', 'Despliegue empresarial') ?>:</strong>
         <?= t(
           'Built, tested, and actively operated within the Guerrero–Morelos Transmission Zone (ZOTGM) of CFE. Designed to replace error-prone manual spreadsheets with an audit-ready, high-throughput computational pipeline.',
           'Construido, probado y operado activamente en la Zona de Transmisión Guerrero–Morelos (ZOTGM) de CFE. Diseñado para reemplazar hojas de cálculo manuales propensas a error con un pipeline de cálculo auditado y de alto rendimiento.'
@@ -98,7 +97,7 @@ require __DIR__ . '/../includes/header.php';
           <ul>
             <li><strong>400 kV Transmission Lines:</strong> Strict nominal boundaries with tight statutory variance tolerances.</li>
             <li><strong>230 kV &amp; 115 kV Regional Links:</strong> Dynamic limit tracking depending on local bus topology and seasonal load.</li>
-            <li><strong>The Legacy Bottleneck:</strong> Transmission engineers previously executed manual Excel DataLink pulls for dozens of nodes. The sheer volume of samples caused frequent spreadsheet crashes, took weeks of repetitive copy-pasting, and made official audits painful due to the lack of tamper-evident calculation history.</li>
+            <li><strong>The Legacy Bottleneck:</strong> Transmission engineers previously executed manual Excel DataLink pulls for dozens of nodes. The sheer volume of samples caused frequent spreadsheet crashes, took weeks of repetitive copy-pasting, and made official audits difficult due to the lack of tamper-evident calculation history.</li>
           </ul>',
           '<p>En las redes nacionales de transmisión eléctrica, el cumplimiento del <em>Código de Red</em> es de carácter legal y obligatorio para salvaguardar la estabilidad del sistema y prevenir apagones en cascada. La normativa exige un registro exacto de cualquier excursión de voltaje fuera de tolerancia:</p>
           <ul>
@@ -195,7 +194,7 @@ require __DIR__ . '/../includes/header.php';
               <tr>
                 <td><strong>PI Bridge Core</strong></td>
                 <td><code>.NET 3.5 / C# (ICVDatalink.exe)</code></td>
-                <td><?= t('Enterprise binary interfacing with OSIsoft PI SDK; performs headless temporal series extraction.', 'Binario empresarial enlazado con OSIsoft PI SDK; realiza extracción headless de series temporales.') ?></td>
+                <td><?= t('Binary interfacing with the OSIsoft PI SDK; performs headless time-series extraction.', 'Binario enlazado con el SDK de OSIsoft PI; realiza extracción headless de series de tiempo.') ?></td>
               </tr>
               <tr>
                 <td><strong>Batch Analytics Engine</strong></td>
@@ -265,9 +264,9 @@ require __DIR__ . '/../includes/header.php';
         ) ?>
       </div>
 
-      <!-- Verified Outcomes -->
+      <!-- Outcomes -->
       <div class="stack" data-reveal>
-        <h2><?= t('Impact and verified outcomes', 'Impacto y resultados verificados') ?></h2>
+        <h2><?= t('Impact and outcomes', 'Impacto y resultados') ?></h2>
         <ul class="project__highlights">
           <li><strong><?= t('>80% Reduction in Analysis Time:', 'Reducción >80% en tiempo de análisis:') ?></strong> <?= t('Turned multi-week manual spreadsheet calculations into automated, push-button evaluations completed in minutes.', 'Transformó cálculos manuales de varias semanas en hojas de cálculo en evaluaciones automáticas ejecutadas en minutos.') ?></li>
           <li><strong><?= t('50+ Transmission Localities Covered:', 'Más de 50 localidades de transmisión cubiertas:') ?></strong> <?= t('Full regional monitoring across Guerrero and Morelos substations.', 'Monitoreo regional integral en subestaciones de Guerrero y Morelos.') ?></li>

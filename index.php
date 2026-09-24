@@ -8,7 +8,7 @@
  */
 
 $page_title       = 'Emerson Plancarte — Software & Embedded Systems Engineer';
-$page_description = 'Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer. Real-world systems across electrical grid telemetry at CFE, AI desktop RAG assistants, Next.js web platforms, and Android Kotlin Compose apps.';
+$page_description = 'Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer. Electrical grid telemetry at CFE, desktop AI assistants, Next.js web platforms, and Android apps built with Kotlin and Compose.';
 $body_class       = 'page-home';
 require __DIR__ . '/includes/header.php';
 
@@ -37,7 +37,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
         <?= t('Featured Work', 'Proyectos Destacados') ?>
       </a>
       <a class="btn btn--secondary btn--lg" href="/portfolio/" data-magnetic>
-        <?= t('Complete Portfolio (7)', 'Portafolio Completo (7)') ?>
+        <?= t('Full Portfolio', 'Portafolio completo') ?>
       </a>
       <a class="btn btn--ghost btn--lg" href="#contact" data-magnetic>
         <?= t('Contact', 'Contacto') ?>
@@ -68,12 +68,12 @@ $featured_projects = array_filter($all_projects, function ($p) {
 
     <div class="about__intro stack" data-reveal>
       <?= tb(
-        '<p>I design and build production-grade software spanning <strong>industrial telemetry</strong>, <strong>AI-assisted desktop consultation</strong>, <strong>full-stack event platforms</strong>, and <strong>real-time Android mobile architectures</strong>. My approach prioritizes rock-solid system reliability, pragmatic clean architecture, and responsive, human-centered UI/UX.</p>',
-        '<p>Diseño y construyo software de producción abarcando <strong>telemetría industrial</strong>, <strong>asistentes de escritorio con IA</strong>, <strong>plataformas web full-stack</strong> y <strong>arquitecturas móviles Android en tiempo real</strong>. Mi enfoque prioriza la alta confiabilidad de sistemas, arquitectura limpia pragmática y experiencias de usuario responsivas e intuitivas.</p>'
+        '<p>I design and build software across <strong>industrial telemetry</strong>, <strong>desktop AI assistants</strong>, <strong>full-stack web platforms</strong>, and <strong>Android apps</strong> — with an emphasis on reliability, pragmatic architecture, and clear, user-focused interfaces.</p>',
+        '<p>Diseño y construyo software en <strong>telemetría industrial</strong>, <strong>asistentes de escritorio con IA</strong>, <strong>plataformas web full-stack</strong> y <strong>aplicaciones Android</strong> — con énfasis en confiabilidad, arquitectura pragmática e interfaces claras y centradas en el usuario.</p>'
       ) ?>
     </div>
 
-    <!-- Verified figures from Emerson's professional career & projects -->
+    <!-- Figures from Emerson's professional career & projects -->
     <ul class="stats" data-reveal-group <?= lang_attr('Headline figures', 'Cifras destacadas', 'aria-label') ?>>
       <li class="stat" data-reveal>
         <span class="stat__value">><span data-count-to="80">80</span><em>%</em></span>
@@ -85,11 +85,11 @@ $featured_projects = array_filter($all_projects, function ($p) {
       </li>
       <li class="stat" data-reveal>
         <span class="stat__value"><<span data-count-to="50">50</span><em>ms</em></span>
-        <span class="stat__label"><?= t('Peer drawing sync latency in Android', 'Latencia de trazo colaborativo en Android') ?></span>
+        <span class="stat__label"><?= t('Peer-to-peer stroke latency on Android', 'Latencia de trazos entre dispositivos en Android') ?></span>
       </li>
       <li class="stat" data-reveal>
-        <span class="stat__value">1<em>st</em></span>
-        <span class="stat__label"><?= t('Place, Tech Innovation Contest (Smart Cities)', 'Lugar, Concurso Innovación (Ciudades Inteligentes)') ?></span>
+        <span class="stat__value"><span data-lang="en">1<em>st</em> Place</span><span data-lang="es">1<em>er</em> Lugar</span></span>
+        <span class="stat__label"><?= t('Tech Innovation Contest (Smart Cities)', 'Concurso de Innovación Tecnológica (Ciudades Inteligentes)') ?></span>
       </li>
     </ul>
   </div>
@@ -107,8 +107,8 @@ $featured_projects = array_filter($all_projects, function ($p) {
       </h2>
       <p class="section__lead">
         <?= t(
-          'A selection of verified, full-scale systems spanning industrial energy monitoring, local AI RAG assistants, and collaborative mobile engineering.',
-          'Una selección de sistemas verificados que abarcan monitoreo de energía industrial, asistentes locales con IA y desarrollo móvil colaborativo.'
+          'A selection of projects spanning industrial energy monitoring, local AI assistants, and collaborative mobile apps.',
+          'Una selección de proyectos que abarca monitoreo de energía industrial, asistentes locales con IA y apps móviles colaborativas.'
         ) ?>
       </p>
     </header>
@@ -149,7 +149,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
             </ul>
 
             <span class="portfolio__cta" aria-hidden="true">
-              <?= t('Read case study & technical breakdown', 'Ver caso de estudio y desglose técnico') ?>
+              <?= t('Read the case study', 'Leer el caso de estudio') ?>
               <span class="portfolio__cta-arrow" aria-hidden="true">&rarr;</span>
             </span>
           </a>
@@ -159,7 +159,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
 
     <div class="projects__more" data-reveal style="margin-top: var(--space-5); text-align: center;">
       <a class="btn btn--secondary btn--lg" href="/portfolio/" data-magnetic>
-        <?= t('View all 7 engineering projects in portfolio', 'Ver los 7 proyectos de ingeniería en el portafolio') ?>
+        <?= t('Explore all 7 projects', 'Explorar los 7 proyectos') ?>
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: 0.5rem;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -178,8 +178,8 @@ $featured_projects = array_filter($all_projects, function ($p) {
       </h2>
       <p class="section__lead">
         <?= t(
-          'Technologies battle-tested in industrial deployments, machine learning workflows, and mobile production environments.',
-          'Tecnologías puestas a prueba en despliegues industriales, flujos de machine learning y entornos móviles de producción.'
+          'Technologies proven across industrial deployments, machine-learning workflows, and production mobile apps.',
+          'Tecnologías probadas en despliegues industriales, flujos de aprendizaje automático y apps móviles en producción.'
         ) ?>
       </p>
     </header>
@@ -269,7 +269,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
     <header class="section__header" data-reveal>
       <p class="section__eyebrow"><?= t('Education & Awards', 'Educación y Reconocimientos') ?></p>
       <h2 class="section__title" id="education-title" data-typetrick>
-        <?= t('Academic degree & contest awards', 'Grado académico y reconocimientos') ?>
+        <?= t('Academic background & awards', 'Formación académica y reconocimientos') ?>
       </h2>
     </header>
 
@@ -287,7 +287,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
         </p>
         <p class="card__footer education__marks">
           <span class="tag"><span class="tag__dot" aria-hidden="true"></span><?= t('GPA 3.7 / 4.0', 'Promedio 3.7 / 4.0') ?></span>
-          <span class="tag"><?= t('Cumulative 92.33', 'Promedio 92.33') ?></span>
+          <span class="tag"><?= t('Average 92.33 / 100', 'Promedio 92.33 / 100') ?></span>
           <span class="tag"><?= t('TOEFL Certified', 'Certificación TOEFL') ?></span>
         </p>
       </article>
@@ -300,7 +300,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
         <p class="card__body">
           <?= t('Smart Cities category, December 2025, for the project', 'Categoría Ciudades Inteligentes, diciembre de 2025, por el proyecto') ?>
           <strong><?= t('“TecAssist: Virtual Assistant”', '“TecAssist: Asistente Virtual”') ?></strong>
-          <?= t(', recognized for AI-grounded citizen consultation.', ', reconocido por consulta ciudadana orientada a IA.') ?>
+          <?= t('— an AI assistant for citizen consultation.', '— un asistente de IA para consulta ciudadana.') ?>
         </p>
         <p class="card__footer">
           <span class="badge">
@@ -327,8 +327,8 @@ $featured_projects = array_filter($all_projects, function ($p) {
       </h2>
       <p class="section__lead">
         <?= t(
-          'Interested in building an industrial telemetry tool, AI RAG assistant, or mobile app? I read every message.',
-          '¿Interesado en desarrollar una herramienta de telemetría industrial, asistente RAG con IA o app móvil? Leo cada mensaje.'
+          'Looking to build an industrial telemetry tool, an AI assistant, or a mobile app? I read every message.',
+          '¿Buscas desarrollar una herramienta de telemetría industrial, un asistente con IA o una app móvil? Leo cada mensaje.'
         ) ?>
       </p>
     </header>

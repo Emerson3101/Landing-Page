@@ -18,7 +18,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('Mobile Engineering · Android Clean Architecture', 'Ingeniería Móvil · Clean Architecture Android') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -54,7 +53,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Production-grade Android architecture', 'Arquitectura Android de nivel productivo') ?>:</strong>
+        <strong><?= t('Architecture highlights', 'Aspectos clave de la arquitectura') ?>:</strong>
         <?= t(
           'Engineered with reactive Kotlin Coroutines & Flow streams, multi-device coordinate normalization, optimistic local rendering, and headless widget updates via silent FCM notifications.',
           'Construida con Coroutines y Flow reactivos en Kotlin, normalización de coordenadas multidispositivo, renderizado optimista local y actualización remota de widgets mediante notificaciones silenciosas FCM.'
@@ -94,7 +93,7 @@ require __DIR__ . '/../includes/header.php';
       <div class="stack" data-reveal>
         <h2><?= t('The multi-device challenge', 'El desafío multidispositivo') ?></h2>
         <?= tb(
-          '<p>Building a seamless collaborative drawing experience between two Android devices encounters two massive hurdles:</p>
+          '<p>Building a seamless collaborative drawing experience between two Android devices runs into two core challenges:</p>
           <ul>
             <li><strong>Display Resolution Variance:</strong> If Device A has a 1440&times;3120 120Hz display and Device B has a 720&times;1600 60Hz screen, broadcasting raw pixel positions causes cropped drawings, distorted strokes, and out-of-bounds strokes.</li>
             <li><strong>Drawing Latency Tolerance:</strong> Human perception detects tactile drawing lag above 30ms. Waiting for network roundtrips before rendering a stroke renders the drawing experience unusable.</li>
@@ -227,11 +226,11 @@ require __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
-      <!-- Verified Outcomes -->
+      <!-- Outcomes -->
       <div class="stack" data-reveal>
-        <h2><?= t('Impact and verified metrics', 'Impacto y métricas verificadas') ?></h2>
+        <h2><?= t('Impact and performance metrics', 'Impacto y métricas de rendimiento') ?></h2>
         <ul class="project__highlights">
-          <li><strong><?= t('<50ms Peer Sync Latency:', '<50ms Latencia entre Pares:') ?></strong> <?= t('Near-zero perception of drawing delay between connected Android devices over standard Wi-Fi / LTE networks.', 'Percepción de trazo casi instantáneo entre dispositivos Android sobre redes Wi-Fi y LTE convencionales.') ?></li>
+          <li><strong><?= t('<50ms Peer Sync Latency:', '<50ms Latencia entre Pares:') ?></strong> <?= t('Strokes render with no perceptible delay between connected Android devices on standard Wi-Fi / LTE networks.', 'Los trazos se renderizan sin retardo perceptible entre dispositivos Android sobre redes Wi-Fi y LTE convencionales.') ?></li>
           <li><strong><?= t('100% Cross-Resolution Precision:', '100% Precisión Multirresolución:') ?></strong> <?= t('Mathematical unit projection preserves identical stroke proportion and curves across budget and flagship screen aspect ratios.', 'La proyección matemática unitaria preserva proporciones y curvas idénticas en cualquier relación de aspecto.') ?></li>
           <li><strong><?= t('Sub-Second Home Widget Refresh:', 'Actualización de Widget en Sub-Segundo:') ?></strong> <?= t('Glance 1.1.0 widget automatically renders remote changes directly on the Android home screen via silent FCM triggers.', 'El widget Glance 1.1.0 refleja trazos remotos directamente en la pantalla de inicio mediante avisos silenciosos FCM.') ?></li>
           <li><strong><?= t('Vector UI & Minimalist Toolbar:', 'Interfaz Vectorial y Barra Minimalista:') ?></strong> <?= t('Custom vector brushes, palette swatches, and clean SVG status icons throughout all screens.', 'Pinceles vectoriales, selectores de paleta y limpios iconos SVG en todas las pantallas.') ?></li>

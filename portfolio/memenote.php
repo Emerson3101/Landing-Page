@@ -7,7 +7,7 @@
  */
 
 $page_title       = 'MemeNote — Android Productivity & Habit Suite — Emerson Plancarte';
-$page_description = 'Production-grade Android productivity suite built with Jetpack Compose, Room SQLite (7+ entities), manual DI container, 4 Glance home-screen widgets, and reboot-resilient reminders.';
+$page_description = 'Offline-first Android productivity app built with Jetpack Compose, Room SQLite (7+ entities), manual DI, 4 Glance home-screen widgets, and reboot-resilient reminders.';
 require __DIR__ . '/../includes/header.php';
 ?>
 
@@ -18,7 +18,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('Mobile Engineering · Android Productivity Suite', 'Ingeniería Móvil · Suite de Productividad Android') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -54,7 +53,7 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Real production Android architecture', 'Arquitectura Android de producción real') ?>:</strong>
+        <strong><?= t('Architecture highlights', 'Aspectos clave de la arquitectura') ?>:</strong>
         <?= t(
           'Designed to overcome build complexity and slow annotation-processing cycles through pragmatic manual Dependency Injection, reactive Kotlin Flow pipelines, and instant home-screen widget synchronization.',
           'Diseñada para superar la complejidad de compilación y procesadores de anotaciones lentos mediante Inyección de Dependencias manual pragmática, flujos Flow reactivos y sincronización instantánea de widgets de inicio.'
@@ -221,14 +220,14 @@ require __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
-      <!-- Verified Outcomes -->
+      <!-- Outcomes -->
       <div class="stack" data-reveal>
-        <h2><?= t('Impact and verified outcomes', 'Impacto y resultados verificados') ?></h2>
+        <h2><?= t('Impact and outcomes', 'Impacto y resultados') ?></h2>
         <ul class="project__highlights">
-          <li><strong><?= t('Zero-Latency Widget Updates:', 'Actualización de Widgets sin Latencia:') ?></strong> <?= t('Room InvalidationTracker delivers immediate updates to home-screen widgets without waiting for system polling intervals.', 'InvalidationTracker de Room sincroniza widgets de inicio al instante sin depender de sondeos periódicos del sistema.') ?></li>
+          <li><strong><?= t('Instant widget updates:', 'Actualización instantánea de widgets:') ?></strong> <?= t('Room InvalidationTracker delivers immediate updates to home-screen widgets without waiting for system polling intervals.', 'InvalidationTracker de Room sincroniza widgets de inicio al instante sin depender de sondeos periódicos del sistema.') ?></li>
           <li><strong><?= t('>60% Faster Compilation Times:', 'Compilación >60% Más Rápida:') ?></strong> <?= t('Manual dependency injection eliminates annotation processing build stalls caused by KAPT/KSP.', 'La inyección de dependencias manual elimina cuellos de botella por procesadores de anotaciones KAPT/KSP.') ?></li>
-          <li><strong><?= t('100% Reboot Survival for Alarms:', '100% Supervivencia de Alarmas tras Reinicio:') ?></strong> <?= t('BootReceiver guarantees uninterrupted reminder notifications across unexpected phone power cycles.', 'BootReceiver garantiza la restauración completa de recordatorios tras reinicios de batería o sistema.') ?></li>
-          <li><strong><?= t('Material 3 Typography & Stroke Glyphs:', 'Tipografía Material 3 y Glifos Vectoriales:') ?></strong> <?= t('Polished typography, stroke vector icons, and Material 3 design tokens ensuring a clean, distraction-free aesthetic.', 'Tipografía cuidada, iconos vectoriales y tokens Material 3 que ofrecen una estética limpia y sin distracciones.') ?></li>
+          <li><strong><?= t('Reminders survive reboots:', 'Recordatorios que persisten tras reinicios:') ?></strong> <?= t('BootReceiver guarantees uninterrupted reminder notifications across unexpected phone power cycles.', 'BootReceiver garantiza la restauración completa de recordatorios tras reinicios de batería o sistema.') ?></li>
+          <li><strong><?= t('Material 3 Typography & Stroke Icons:', 'Tipografía Material 3 e Iconos de Trazo:') ?></strong> <?= t('Material 3 design tokens, stroke vector icons, and clean typography for a distraction-free aesthetic.', 'Tokens de Material 3, iconos vectoriales de trazo y tipografía limpia para una estética sin distracciones.') ?></li>
         </ul>
       </div>
 

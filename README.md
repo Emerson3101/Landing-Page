@@ -128,13 +128,8 @@ focus and closes on Escape, and all interactive surfaces have a visible
 
 ## Still to populate
 
-Two items remain openly pending and are flagged in the code:
+One item remains openly pending and is flagged in the code:
 
-- `portfolio/teassist.php` is an honest placeholder. TecAssist is a real
-  first-place innovation-contest winner (Smart Cities, December 2025), but
-  its stack and scope are to be confirmed so the page stays accurate rather
-  than invented. Once Emerson provides the specifics, expand that detail page
-  to match the depth of the ICV case study.
 - The social card image (`og:image` / `twitter:image`) is a TODO in
   `includes/header.php` — add `assets/img/social-card.png` at 1200×630 and
   uncomment the two meta tags.

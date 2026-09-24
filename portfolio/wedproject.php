@@ -18,7 +18,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('Web Systems · Full-Stack Next.js 16', 'Sistemas Web · Full-Stack Next.js 16') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -26,8 +25,8 @@ require __DIR__ . '/../includes/header.php';
       </h1>
       <p class="project__subtitle">
         <?= t(
-          'Production Next.js 16 SaaS-grade event platform with visual drag-and-drop table layouts, real-time companion drift detection, and serverless SVG passcard generation.',
-          'Plataforma de eventos en producción nivel SaaS con Next.js 16, editor visual drag-and-drop de mesas, detección de desfase de acompañantes y generación serverless de pases SVG.'
+          'Full-stack Next.js 16 event platform with visual drag-and-drop table layouts, real-time companion drift detection, and serverless passcard generation.',
+          'Plataforma de eventos full-stack en Next.js 16 con editor visual drag-and-drop de mesas, detección de desfase de acompañantes en tiempo real y generación serverless de pases.'
         ) ?>
       </p>
 
@@ -48,13 +47,13 @@ require __DIR__ . '/../includes/header.php';
         <li><span class="tag">GSAP ScrollTrigger</span></li>
         <li><span class="tag">Satori &amp; Sharp</span></li>
         <li><span class="tag">ExcelJS Logistics</span></li>
-        <li><span class="tag">Zero-Emoji Standard</span></li>
+        <li><span class="tag">Lucide Icons</span></li>
       </ul>
     </header>
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Real production event platform', 'Plataforma real de eventos en producción') ?>:</strong>
+        <strong><?= t('Purpose-built event platform', 'Plataforma de eventos construida a medida') ?>:</strong>
         <?= t(
           'Engineered for Alma & Chava’s wedding in September 2026. Manages end-to-end guest RSVP, companion limits, interactive venue table seating, dietary restrictions, and collaborative music curation.',
           'Diseñada para la boda de Alma y Chava en septiembre de 2026. Administra el registro completo de confirmación (RSVP), límites de acompañantes, distribución de mesas en el salón, restricciones dietéticas y curación colaborativa de música.'
@@ -70,7 +69,7 @@ require __DIR__ . '/../includes/header.php';
           <div class="pipeline-step">
             <span class="pipeline-step__num">01. RSVP</span>
             <h3 class="pipeline-step__title">Client RSVP &amp; Companions</h3>
-            <p class="pipeline-step__desc"><?= t('Mobile-first invite portal allowing guests to confirm attendance, register verified companion names, and declare dietary allergies.', 'Portal móvil para que invitados confirmen asistencia, registren nombres de acompañantes y especifiquen alergias alimentarias.') ?></p>
+            <p class="pipeline-step__desc"><?= t('Mobile-first invite portal allowing guests to confirm attendance, register their companions’ names, and declare dietary allergies.', 'Portal móvil para que invitados confirmen asistencia, registren nombres de acompañantes y especifiquen alergias alimentarias.') ?></p>
           </div>
           <div class="pipeline-step">
             <span class="pipeline-step__num">02. SEATING</span>
@@ -212,7 +211,7 @@ require __DIR__ . '/../includes/header.php';
           <li><strong><?= t('Zero Seating Drift:', 'Cero Desfase en Asientos:') ?></strong> <?= t('Decoupled snapshot strategy ensures that even if a guest alters their RSVP later, the physical seating chart retains historical integrity while highlighting variances.', 'Estrategia de snapshots desacoplados que asegura la integridad histórica del plano aun si el invitado modifica su confirmación.') ?></li>
           <li><strong><?= t('Single-Roundtrip Data Loading:', 'Carga en un solo Viaje de Red:') ?></strong> <?= t('Promise.all parallel fetches eliminate waterfall latency, loading entire floorplans with 250+ attendees in <180ms.', 'Consultas paralelas con Promise.all que eliminan cascadas de red, cargando planos completos con más de 250 asistentes en <180ms.') ?></li>
           <li><strong><?= t('Sub-Second Passcard Generation:', 'Generación de Pases en Sub-Segundo:') ?></strong> <?= t('Serverless Satori + Sharp rendering completes within 400ms without heavyweight Puppeteer/Chrome browser dependencies.', 'Renderizado serverless con Satori y Sharp completado en <400ms sin sobrecargas de Puppeteer o navegadores pesados.') ?></li>
-          <li><strong><?= t('Strict Zero-Emoji Policy:', 'Política Estricta Cero Emojis:') ?></strong> <?= t('Clean, sophisticated UI leveraging Lucide React stroke icons, subtle serif typography, and custom ambient motion.', 'Interfaz limpia y sofisticada con iconos de trazo de Lucide React, tipografía refinada y movimiento ambiental sutil.') ?></li>
+          <li><strong><?= t('Consistent visual language:', 'Lenguaje visual consistente:') ?></strong> <?= t('A consistent interface built on Lucide stroke icons, restrained typography, and subtle motion.', 'Una interfaz consistente con iconos de trazo de Lucide, tipografía sobria y movimiento sutil.') ?></li>
         </ul>
       </div>
 

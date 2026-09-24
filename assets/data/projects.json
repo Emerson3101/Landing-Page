@@ -1,14 +1,11 @@
 {
-  "_comment": "Single source of truth for the portfolio grid and featured project showcases. Each project has a dedicated bilingual detail page in portfolio/<slug>.php. All projects represent real, verified engineering work from Emerson Plancarte.",
+  "_comment": "Single source of truth for the portfolio grid and featured project showcases. Each project has a dedicated bilingual detail page in portfolio/<slug>.php.",
   "categories": {
     "industrial": { "en": "Industrial & Telemetry", "es": "Industrial y Telemetría" },
     "ai":         { "en": "AI & Desktop",          "es": "IA y Escritorio" },
     "web":        { "en": "Web Systems",           "es": "Sistemas Web" },
     "mobile":     { "en": "Mobile (Android)",      "es": "Móvil (Android)" },
     "backend":    { "en": "Backend & Cloud",       "es": "Backend y Nube" }
-  },
-  "tiers": {
-    "real": { "en": "Real project", "es": "Proyecto real" }
   },
   "projects": [
     {
@@ -22,12 +19,11 @@
         "es": "Monitoreo automatizado de calidad de voltaje y capacidad de carga conforme al Código de Red en CFE ZOTGM"
       },
       "category": "industrial",
-      "tier": "real",
       "year": "2024–2026",
       "featured": true,
       "stack": [".NET 3.5", "C#", "PHP", "JavaScript", "Chart.js", "Bootstrap", "AJAX", "PI System", "MySQL"],
       "summary": {
-        "en": "An enterprise telemetry and compliance platform at CFE evaluating the Voltage Quality Index (ICV) and transmission line load capacity across 50+ localities — slashing manual analysis time by over 80% with real-time alerts and audit-ready reporting.",
+        "en": "An enterprise telemetry and compliance platform at CFE evaluating the Voltage Quality Index (ICV) and transmission line load capacity across 50+ localities — cutting manual analysis time by over 80% with real-time alerts and audit-ready reporting.",
         "es": "Plataforma empresarial de telemetría y cumplimiento normativo en CFE que evalúa el Índice de Calidad de Voltaje (ICV) y la cargabilidad de líneas en más de 50 localidades — reduciendo el tiempo de análisis en más de un 80% con alertas en tiempo real y reportes auditables."
       },
       "links": { "detail": "/portfolio/icv/" }
@@ -39,17 +35,16 @@
         "es": "TecAssist Revisited — Asistente de Consulta IA y Motor RAG"
       },
       "subtitle": {
-        "en": "1st Place Smart Cities Innovation Contest winner evolved into a desktop RAG assistant",
-        "es": "Ganador del 1er Lugar en Innovación Tecnológica (Ciudades Inteligentes) evolucionado a asistente RAG de escritorio"
+        "en": "1st Place Smart Cities Innovation Contest winner, rebuilt as a desktop RAG assistant",
+        "es": "Ganador del 1er Lugar en Innovación Tecnológica (Ciudades Inteligentes), reconstruido como asistente RAG de escritorio"
       },
       "category": "ai",
-      "tier": "real",
       "year": "2025–2026",
       "featured": true,
       "stack": ["Python", "PyQt6", "NVIDIA NIM", "RAG", "SQLite", "SpeechRecognition", "pyttsx3", "Vector Embeddings"],
       "summary": {
-        "en": "A modern desktop AI consultation assistant powered by NVIDIA NIM token streaming and localized RAG indexing (.pdf/.docx/.txt/.md). Features voice input/output, vector caching, and an ambient Aurora UI with polished vector iconography.",
-        "es": "Asistente moderno de escritorio con IA impulsado por NVIDIA NIM con respuestas en streaming e indexación RAG local (.pdf/.docx/.txt/.md). Cuenta con entrada/salida de voz, caché de embeddings vectoriales y diseño ambiental Aurora con iconografía vectorial."
+        "en": "A modern desktop AI consultation assistant powered by NVIDIA NIM token streaming and localized RAG indexing (.pdf/.docx/.txt/.md). Features voice input and output, vector caching, and a custom Aurora UI.",
+        "es": "Asistente moderno de escritorio con IA impulsado por NVIDIA NIM con respuestas en streaming e indexación RAG local (.pdf/.docx/.txt/.md). Cuenta con entrada y salida de voz, caché de embeddings vectoriales y una interfaz Aurora personalizada."
       },
       "links": { "detail": "/portfolio/teassist/" }
     },
@@ -57,20 +52,19 @@
       "slug": "wedproject",
       "title": {
         "en": "Event Platform — Real-Time Wedding Coordination & Seating Planner",
-        "es": "Plataforma de Eventos — Coordinación Nupcial y Plano de Asientos en Tiempo Real"
+        "es": "Plataforma de Eventos — Coordinación de Boda y Asientos en Tiempo Real"
       },
       "subtitle": {
         "en": "Full-stack event platform with interactive visual seating planner & companion management",
         "es": "Plataforma web full-stack con plano de asientos interactivo y gestión de acompañantes"
       },
       "category": "web",
-      "tier": "real",
       "year": "2026",
       "featured": true,
       "stack": ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "Supabase", "Framer Motion", "GSAP", "Satori", "Lucide"],
       "summary": {
-        "en": "A comprehensive guest management system featuring an interactive top-down seating planner ('Mesas') with drag-and-drop constraints, dynamic printable passcards generated server-side, YouTube-powered collaborative playlist voting, and guest photo sharing.",
-        "es": "Sistema integral de gestión de invitados con plano visual interactivo de mesas ('Mesas') con restricciones drag-and-drop, pases imprimibles generados en servidor, playlist colaborativa con YouTube y carga de fotos de invitados."
+        "en": "A guest management platform with an interactive top-down seating planner ('Mesas'), server-generated printable passcards, YouTube-powered collaborative playlist voting, and guest photo sharing.",
+        "es": "Plataforma de gestión de invitados con plano visual interactivo de mesas ('Mesas'), pases imprimibles generados en servidor, playlist colaborativa con YouTube y carga de fotos de invitados."
       },
       "links": { "detail": "/portfolio/wedproject/" }
     },
@@ -85,7 +79,6 @@
         "es": "App Android en Jetpack Compose con sincronización de trazos <50ms y widget Glance interactivo"
       },
       "category": "mobile",
-      "tier": "real",
       "year": "2025–2026",
       "featured": true,
       "stack": ["Kotlin", "Jetpack Compose", "Clean Architecture", "Hilt", "Firebase RTDB", "Firestore", "Glance Widget", "WorkManager"],
@@ -106,13 +99,12 @@
         "es": "Aplicación Android offline-first con persistencia Room, DI manual y 4 widgets Glance"
       },
       "category": "mobile",
-      "tier": "real",
       "year": "2025–2026",
       "featured": false,
       "stack": ["Kotlin", "Jetpack Compose", "Material 3", "Room SQLite", "DataStore", "Glance Widgets", "AlarmManager", "Flow / Coroutines"],
       "summary": {
-        "en": "A production-grade Android productivity suite managing notes, tasks, habits, and agenda with an 8-entity Room SQLite database, manual dependency injection container, reboot-resilient reminders, and 4 Glance home-screen widgets.",
-        "es": "Suite de productividad para Android con gestión de notas, tareas, hábitos y agenda mediante base de datos Room SQLite de 8 entidades, contenedor DI manual, recordatorios resistentes a reinicios y 4 widgets Glance."
+        "en": "A full-featured Android productivity app for notes, tasks, habits, and agenda, built on an 8-entity Room SQLite database, a manual dependency-injection container, reboot-resilient reminders, and 4 Glance home-screen widgets.",
+        "es": "App de productividad para Android con notas, tareas, hábitos y agenda sobre una base de datos Room SQLite de 8 entidades, contenedor de DI manual, recordatorios resistentes a reinicios y 4 widgets Glance."
       },
       "links": { "detail": "/portfolio/memenote/" }
     },
@@ -127,7 +119,6 @@
         "es": "Asistente asíncrono de Discord e interfaz web FastAPI para inferencia local de LLMs"
       },
       "category": "ai",
-      "tier": "real",
       "year": "2025–2026",
       "featured": false,
       "stack": ["Python", "FastAPI", "discord.py", "httpx", "LM Studio", "Uvicorn", "AsyncIO", "Pillow"],
@@ -148,13 +139,12 @@
         "es": "Bot de streaming de audio asíncrono de alta fidelidad para reproducción de YouTube y Spotify"
       },
       "category": "backend",
-      "tier": "real",
       "year": "2025",
       "featured": false,
       "stack": ["Python", "discord.py", "Spotipy (Spotify API)", "yt-dlp", "FFmpeg", "AsyncIO", "Logging"],
       "summary": {
-        "en": "An asynchronous Discord audio playback service featuring resilient queue management, real-time voice channel state tracking, Spotify Web API track/playlist resolution, and high-performance FFmpeg audio transcoding.",
-        "es": "Servicio asíncrono de reproducción de audio en Discord con gestión resiliente de colas, seguimiento de estado de canales de voz, resolución de pistas/playlists con la API de Spotify y transcodificación de audio eficiente con FFmpeg."
+        "en": "An asynchronous Discord audio playback service with resilient queue management, real-time voice channel state tracking, Spotify Web API track/playlist resolution, and FFmpeg audio transcoding.",
+        "es": "Servicio asíncrono de reproducción de audio en Discord con gestión resiliente de colas, seguimiento de estado de canales de voz, resolución de pistas y playlists con la API de Spotify y transcodificación de audio con FFmpeg."
       },
       "links": { "detail": "/portfolio/music-bot/" }
     }

@@ -18,7 +18,6 @@ require __DIR__ . '/../includes/header.php';
 
     <header class="project__header" data-reveal>
       <p class="project__cat">
-        <span class="badge portfolio__tier portfolio__tier--real"><?= t('Real project', 'Proyecto real') ?></span>
         <?= t('AI & Backend Systems · Discord API & Local LLMs', 'Sistemas de IA y Backend · API de Discord y LLMs Locales') ?>
       </p>
       <h1 class="project__title" id="project-title">
@@ -47,16 +46,15 @@ require __DIR__ . '/../includes/header.php';
         <li><span class="tag">Uvicorn Server</span></li>
         <li><span class="tag">Sliding Window Memory</span></li>
         <li><span class="tag">Markdown Block Healing</span></li>
-        <li><span class="tag">Production UI/UX</span></li>
       </ul>
     </header>
 
     <div class="project__callout" data-reveal>
       <p>
-        <strong><?= t('Zero-cloud-cost, privacy-first local AI engineering', 'Ingeniería en IA local con cero costo en la nube y privacidad total') ?>:</strong>
+        <strong><?= t('Local-first, privacy-focused AI', 'IA local con enfoque en privacidad') ?>:</strong>
         <?= t(
-          'Allows private Discord communities and local workstations to converse with open-weights neural models (e.g. LLaMA 3, Mistral, DeepSeek) executed 100% on-premise, entirely eliminating cloud subscription fees and data surveillance.',
-          'Permite a comunidades privadas en Discord e interfaces locales consultar modelos neuronales abiertos (como LLaMA 3, Mistral o DeepSeek) ejecutados al 100% en hardware local, eliminando suscripciones de nube y riesgos de privacidad.'
+          'Lets private Discord communities and local workstations converse with open-weight models (e.g. LLaMA 3, Mistral, DeepSeek) running entirely on local hardware — no cloud subscriptions, and no data leaving the network.',
+          'Permite a comunidades privadas de Discord y estaciones de trabajo locales conversar con modelos abiertos (como LLaMA 3, Mistral o DeepSeek) ejecutados por completo en hardware local — sin suscripciones en la nube y sin que los datos salgan de la red.'
         ) ?>
       </p>
     </div>
@@ -96,13 +94,13 @@ require __DIR__ . '/../includes/header.php';
           '<p>Integrating high-parameter neural models into a chat platform like Discord involves tricky concurrency challenges:</p>
           <ul>
             <li><strong>Gateway Heartbeat Timeouts:</strong> If a local LLM takes 20–40 seconds to process a large query on consumer GPU hardware, synchronous HTTP calls would freeze the event loop, causing Discord to drop the bot connection with <code>Gateway disconnected</code> errors.</li>
-            <li><strong>Context Window Saturation:</strong> Unrestricted multi-turn history on 8GB consumer VRAM quickly exceeds the model’s context limit, triggering catastrophic out-of-memory crashes.</li>
+            <li><strong>Context Window Saturation:</strong> Unrestricted multi-turn history on 8GB consumer VRAM quickly exceeds the model’s context limit, triggering out-of-memory crashes.</li>
             <li><strong>Discord 2000-Character Boundary:</strong> Lengthy code explanations exceed Discord’s message cap. Naive string slicing splits formatted code blocks in half, producing ugly, unclosed markdown.</li>
           </ul>',
           '<p>Integrar modelos neuronales de gran tamaño en una plataforma como Discord plantea retos severos de concurrencia:</p>
           <ul>
             <li><strong>Caídas de Heartbeat del Gateway:</strong> Si un modelo local toma 20 a 40 segundos para generar una respuesta compleja en GPUs comerciales, llamadas HTTP síncronas congelarían el event loop, provocando desconexiones del bot.</li>
-            <li><strong>Saturación de Memoria VRAM:</strong> Un historial conversacional ilimitado en tarjetas de 8GB desborda rápidamente la ventana de contexto, provocando errores fatales de falta de memoria.</li>
+            <li><strong>Saturación de Memoria VRAM:</strong> Un historial conversacional ilimitado en tarjetas de 8GB desborda rápidamente la ventana de contexto, provocando fallas por falta de memoria.</li>
             <li><strong>Límite de 2000 Caracteres en Discord:</strong> Respuestas extensas con código exceden el límite de Discord. Un corte ingenuo de cadenas fragmenta los bloques de código, arruinando el formateo.'
         ) ?>
       </div>
@@ -204,14 +202,14 @@ require __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
-      <!-- Verified Outcomes -->
+      <!-- Outcomes -->
       <div class="stack" data-reveal>
         <h2><?= t('Impact and engineering outcomes', 'Impacto y resultados de ingeniería') ?></h2>
         <ul class="project__highlights">
-          <li><strong><?= t('$0 Cloud Incurred Expenses:', '$0 en Gastos de Nube:') ?></strong> <?= t('Full enterprise-grade conversational AI capabilities without recurring token billing or external API dependencies.', 'Capacidades completas de IA conversacional sin facturación por token ni dependencias de APIs externas.') ?></li>
+          <li><strong><?= t('$0 in cloud costs:', '$0 en costos de nube:') ?></strong> <?= t('Full conversational AI capabilities without recurring token billing or external API dependencies.', 'Capacidades completas de IA conversacional sin facturación por token ni dependencias de APIs externas.') ?></li>
           <li><strong><?= t('100% Privacy & Data Sovereignty:', '100% Privacidad y Soberanía de Datos:') ?></strong> <?= t('Zero conversation telemetry or message history leaves the host workstation intranet.', 'Ningún mensaje ni dato de telemetría abandona la red local de la estación de trabajo.') ?></li>
-          <li><strong><?= t('Zero Formatting Corruption:', 'Cero Corrupción de Formateo:') ?></strong> <?= t('Markdown boundary repair prevents broken code blocks and truncated monospace text across Discord message splits.', 'La reparación de límites Markdown impide fragmentación de bloques de código en mensajes divididos.') ?></li>
-          <li><strong><?= t('Polished Embed Architecture:', 'Arquitectura de Embeds Sobria:') ?></strong> <?= t('Clean monochrome embeds, technical status badges, and refined typography for consistent readability.', 'Embeds monocromáticos sobrios, insignias técnicas y tipografía refinada para máxima legibilidad.') ?></li>
+          <li><strong><?= t('No broken formatting:', 'Formato siempre intacto:') ?></strong> <?= t('Markdown boundary repair prevents broken code blocks and truncated monospace text across Discord message splits.', 'La reparación de límites Markdown impide fragmentación de bloques de código en mensajes divididos.') ?></li>
+          <li><strong><?= t('Clean embed design:', 'Diseño de embeds limpio:') ?></strong> <?= t('Monochrome embeds, technical status badges, and clear typography for consistent readability.', 'Embeds monocromáticos, insignias técnicas y tipografía clara para una lectura consistente.') ?></li>
         </ul>
       </div>
 
