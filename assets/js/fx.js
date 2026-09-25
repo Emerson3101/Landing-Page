@@ -242,6 +242,15 @@
           if (spans[i].offsetParent !== null) { target = spans[i]; break; }
         }
       }
+      /* Bilingual elements: the spans typing does NOT consume keep their
+         plain text. Mark them — gradient-clip titles are transparent
+         color, and .is-split strips the parent's fill, so the untouched
+         language would paint as nothing the moment the language toggle
+         flips to it. fx.css gives .is-plain spans their own two-tone
+         fill so the header stays legible in either language. */
+      for (var m = 0; m < spans.length; m++) {
+        if (spans[m] !== target) spans[m].classList.add('is-plain');
+      }
       var text = target.textContent;
       /* screen readers must never letter-by-letter through the .pc spans —
          the untyped container keeps the full string as its accessible name */

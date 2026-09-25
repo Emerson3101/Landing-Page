@@ -290,6 +290,21 @@ html[data-theme="dark"]::before {
   background-clip: text;
   color: transparent;
 }
+/* The language span typing did not consume (fx.js marks it .is-plain)
+   keeps plain text — a language flip reveals it as-is. The title's
+   color is transparent and .is-split above strips the parent's fill,
+   so without its own two-tone background the flipped header would
+   occupy its space and paint nothing. */
+.hero__title.is-split [data-lang].is-plain {
+  background: linear-gradient(
+    160deg,
+    var(--color-text) 55%,
+    color-mix(in srgb, var(--color-accent) 55%, var(--color-text)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 /* When a shimmery letter is mid-decode, switch to plain accent text so the
    glyph cycles read on the mono font, not the gradient. */
 .hero__title .pc--shimmer {
