@@ -21,26 +21,34 @@
         water), double-tap reset.
      4. Theme-responsive colors (#36e8a0 mint, #4aa8ff cyan).
      5. Performance guards: pauses when scrolled out of view or the
-        tab is hidden, caps DPR at 2, phone-tier frame gate (~24 ms).
+        tab is hidden, caps DPR at 2 (1.5 on the phone tier), paces
+        rendered frames on the phone tier (~16.5 ms gate).
 
-   PHYSICS CORE. Every rate (momentum damping, auto-spin, pulse decay,
-   camera easing) is dt-normalized, so the feel is identical at 30, 60
-   or 120 Hz. Desktop renders at the full rAF cadence; the frame gate
-   is phone-tier only. Fluid sim steps at a fixed cadence (60 Hz
-   desktop / 30 Hz phone) accumulated from real frame time, and goes
-   near-idle (just the two decay passes) once no splat has arrived
-   for ~2.5 s.
+    PHYSICS CORE. Every rate (momentum damping, auto-spin, pulse decay,
+    camera easing) is dt-normalized, so the feel is identical at 30, 60
+    or 120 Hz. Desktop renders at the full rAF cadence; the frame gate
+    is phone-tier only. Fluid sim steps at a fixed cadence (60 Hz
+    desktop / 30 Hz phone) accumulated from real frame time, idles
+    down to the two decay passes once no splat has arrived for ~2.5 s,
+    and sleeps completely (zero sim draws) after ~5.5 s of stillness —
+    the next touch of cursor or finger wakes it instantly.
 
-   FLUID AURORA ("hand through tinted water"). Requires
-   OES_texture_half_float, EXT_color_buffer_half_float AND
-   OES_texture_half_float_linear — any missing piece quietly skips the
-    subsystem and the nebula keeps its calm drifting look (a 1×1
-    zero texture backs the uniforms, so the specialized shader reads
-    no wake). Resolutions: velocity 192 / dye 512 on desktop, 96 / 192
-   on phones, aspect-shaped, reallocated on orientation change.
-   Cursor movement stirs anywhere over the hero band; on touch,
-   window-level touchmove stirs page-wide — scrolling drags the water
-   with it. Reduced motion skips the fluid entirely.
+    FLUID AURORA ("hand through tinted water"). Requires
+    OES_texture_half_float, EXT_color_buffer_half_float AND
+    OES_texture_half_float_linear — any missing piece quietly skips the
+     subsystem and the nebula keeps its calm drifting look (a 1×1
+     zero texture backs the uniforms, so the specialized shader reads
+     no wake). Resolutions: velocity 192 / dye 512 on desktop, 96 / 192
+    on phones, aspect-shaped, reallocated on orientation change.
+    The nebula couples to the fields through 4-tap box-smoothed
+    samples (no reliance on half-float LINEAR quality, which some
+    drivers implement badly) and a soft-saturating displacement cap:
+    stirring bends the fbm domain by up to ~4.5% of the screen, so
+    every octave keeps its detail and the velocity grid's texel seams
+    stay invisible — no smearing, no printed grid, no dithering.
+    Cursor movement stirs anywhere over the hero band; on touch,
+    window-level touchmove stirs page-wide — scrolling drags the water
+    with it. Reduced motion skips the fluid entirely.
 
    PHONE-FIRST RENDERING TIER (coarse pointers / narrow viewports).
    Same scene, same fidelity — the cost moves, not the pixels:
@@ -56,11 +64,22 @@
         nothing) and drawn with a blend that reproduces the shader's
        pre-tonemap accumulation. The orbs actually render at FULL
        resolution, so the sparkle is indistinguishable from desktop.
-     - Nebula FBO: the soft-focus fbm aurora (all 4 octaves kept)
-       renders into an offscreen framebuffer at 60% and is composited
-       with linear filtering — visually equivalent on a field that is
-       soft by design — and refreshed every 2nd frame, in step with
-       the half-rate fluid sim.
+      - Nebula FBO: the soft-focus fbm aurora (all 4 octaves kept)
+        renders into an offscreen framebuffer at 50% and is composited
+        with linear filtering — visually equivalent on a field that is
+        soft by design. While the wake is alive it refreshes every
+        rendered frame (the water must answer the finger at once, and
+        at the halved scale that costs less than the old every-2nd-
+        frame 60% refresh); once calm it drops to every 2nd frame
+        with the slowly drifting sky.
+      - Device pixel ratio caps at 1.5: the hero is a soft aurora
+        plus additive glow lines, every full-canvas pass (composite,
+        wireframe, sprites, and the browser's own CSS-mask
+        compositing per frame) costs bandwidth per device pixel, and
+        a 300+ PPI panel at 1.5 still renders them Retina-crisp.
+      - Full-canvas clears are gone — every pass writes every pixel
+        anyway (fullscreen triangle, blending off), so the extra
+        clear was pure bandwidth.
      - The crisp 3D wireframe, nodes and halo keep full canvas
        resolution every frame.
      - Uniform/attribute locations are cached once after linking.
@@ -293,7 +312,10 @@
           '/* FLUID — velocity field (domain warp) + dye field (wake) */',
           'uniform sampler2D u_vel;',
           'uniform sampler2D u_dye;',
+          'uniform vec2  u_velTexel;',
+          'uniform vec2  u_dyeTexel;',
           'uniform float u_warp;',
+          'uniform float u_warpCap;',
           'uniform float u_dyeGain;',
           ''
         );
@@ -338,10 +360,24 @@
         src.push(
           '  /* FLUID WARP — the nebula domain bends around the wake. The',
           '     minus sign makes the pattern trail the pointer, the way',
-          '     water follows a moving hand. */',
+          '     water follows a moving hand. The field is read through a',
+          '     4-tap box (half-float LINEAR quality is not trusted across',
+          '     drivers) and the displacement is soft-capped: it grows',
+          '     linearly for a gentle stir and saturates toward u_warpCap,',
+          '     so the hardest flick bends the sky by a few percent of the',
+          '     screen instead of smearing the fbm across it — every',
+          '     octave keeps its detail and the velocity texel seams stay',
+          '     below visibility. */',
           '  vec2 fuv = gl_FragCoord.xy / u_res;',
-          '  vec2 fvel = clamp(texture2D(u_vel, fuv).xy, vec2(-500.0), vec2(500.0));',
-          '  uv -= fvel * u_warp;',
+          '  vec2 vo = u_velTexel * 0.6;',
+          '  vec2 fvel = texture2D(u_vel, fuv).xy;',
+          '  fvel += texture2D(u_vel, fuv + vec2( vo.x,  vo.y)).xy;',
+          '  fvel += texture2D(u_vel, fuv + vec2(-vo.x,  vo.y)).xy;',
+          '  fvel += texture2D(u_vel, fuv + vec2( vo.x, -vo.y)).xy;',
+          '  fvel = clamp(fvel * 0.25, vec2(-4000.0), vec2(4000.0));',
+          '  vec2 disp = fvel * u_warp;',
+          '  disp *= u_warpCap / (u_warpCap + length(disp));',
+          '  uv -= disp;',
           ''
         );
       }
@@ -385,8 +421,15 @@
           '  /* FLUID WAKE — the dye field is a map of how disturbed the',
           '     water is. It never adds new color: it lifts the light of',
           '     the nebula already sitting there, the way stirred water',
-          '     catches whatever glow is passing through it. */',
-          '  float wake = dot(texture2D(u_dye, fuv).rgb, vec3(0.3333));',
+          '     catches whatever glow is passing through it. The same',
+          '     4-tap box keeps any driver from printing its texel grid',
+          '     into the glow. */',
+          '  vec2 dn = u_dyeTexel * 0.6;',
+          '  vec3 dye = texture2D(u_dye, fuv).rgb;',
+          '  dye += texture2D(u_dye, fuv + vec2( dn.x,  dn.y)).rgb;',
+          '  dye += texture2D(u_dye, fuv + vec2(-dn.x,  dn.y)).rgb;',
+          '  dye += texture2D(u_dye, fuv + vec2( dn.x, -dn.y)).rgb;',
+          '  float wake = dot(dye, vec3(0.0833));',
           '  col *= 1.0 + wake * u_dyeGain;'
         );
       }
@@ -864,7 +907,10 @@
        fluid binding below naturally null-safe. */
     bgU.velTex  = gl.getUniformLocation(bgProg, 'u_vel');
     bgU.dyeTex  = gl.getUniformLocation(bgProg, 'u_dye');
+    bgU.velTexel = gl.getUniformLocation(bgProg, 'u_velTexel');
+    bgU.dyeTexel = gl.getUniformLocation(bgProg, 'u_dyeTexel');
     bgU.warp    = gl.getUniformLocation(bgProg, 'u_warp');
+    bgU.warpCap = gl.getUniformLocation(bgProg, 'u_warpCap');
     bgU.dyeGain = gl.getUniformLocation(bgProg, 'u_dyeGain');
 
     if (orbitProg) orbitU = {
@@ -1041,7 +1087,7 @@
        direct full-res path. Realloc work is skipped when the size is
        unchanged (two integer compares per frame).
        ------------------------------------------------------------------ */
-    var BG_SCALE = 0.6;
+    var BG_SCALE = 0.5;
     var bgFbo = null, bgTex = null, bgW = 0, bgH = 0;
 
     function ensureBgTarget(w, h) {
@@ -1099,14 +1145,16 @@
           vel      192 / 96   (desktop / phone)   velocity xy
           dye      512 / 192                      wake mask rgb
           pressure 192 / 96                      Jacobi solve scratch
-       Step (fixed dt — 60 Hz desktop, 30 Hz phone, accumulated from
-       real frame time so any refresh rate behaves the same):
-         splats → curl → vorticity confinement → divergence →
-         pressure (Jacobi ×N) → gradient subtract → advect velocity →
-         advect dye. When no splat has arrived for ~2.5 s only the two
-       advection/decay passes run — the water finishes calming at
-       near-zero cost. Targets are built lazily on the first sized
-       frame and rebuilt on orientation change.
+        Step (fixed dt — 60 Hz desktop, 30 Hz phone, accumulated from
+        real frame time so any refresh rate behaves the same):
+          splats → curl → vorticity confinement → divergence →
+          pressure (Jacobi ×N) → gradient subtract → advect velocity →
+          advect dye. When no splat has arrived for ~2.5 s only the two
+        advection/decay passes run — the water finishes calming at
+        near-zero cost — and after ~5.5 s of stillness the sim sleeps
+        outright (no draws at all) until the next splat wakes it.
+        Targets are built lazily on the first sized
+        frame and rebuilt on orientation change.
        ------------------------------------------------------------------ */
     var SIM_DT = lite ? 0.033 : 0.016;
     var PRESSURE_ITERS = lite ? 12 : 20;
@@ -1117,22 +1165,45 @@
     var CURL_STRENGTH = 24;
     /* The interaction the visitor sees is the DOMAIN WARP — stirring
        drags and bends the nebula structures that already exist on
-       screen. The dye field only lifts the existing light a touch in
-       the wake (never a new hue), so the water stays inside the
-       page's palette no matter how it is stirred. */
-    var FLUID_WARP = 0.005;
+       screen. FLUID_WARP is the small-signal gain (sim velocity → uv
+       displacement); the nebula shader soft-saturates the displacement
+       toward FLUID_WARP_CAP, so a gentle stir bends the sky a little
+       and the hardest flick never smears it past ~4.5% of the screen —
+       the fbm keeps every octave of detail and the low-res velocity
+       grid stays invisible. The dye field only lifts the existing
+       light a touch in the wake (never a new hue), so the water stays
+       inside the page's palette no matter how it is stirred. */
+    var FLUID_WARP = 0.0015;
+    var FLUID_WARP_CAP = 0.09;
     var FLUID_DYE_GAIN = 0.35;
     var splats = [];
     var splatBudget = 16;
     var simAccum = 0;
     var simSteps = 0;
     var lastSplatT = -10;
+    var simAsleep = false;
 
     var vel = null, dye = null, pressure = null;
     var curlT = null, divT = null;
     var fluidOK = false, fluidBuildFailed = false;
     var fluidAspect = 0;
     var zeroTex = null;
+
+    /* Cached hero rect. getBoundingClientRect per pointer/touch event
+       (touchmove fires at input rate during every scroll) is a forced
+       layout read — measurable jank on phones. The cache is dirtied by
+       scroll/resize, the only things that move or resize the canvas,
+       and refreshed lazily by the next splat. */
+    var heroRect = null, heroRectDirty = true;
+    window.addEventListener('scroll', function () { heroRectDirty = true; }, { passive: true });
+    window.addEventListener('resize', function () { heroRectDirty = true; }, { passive: true });
+    function heroRectNow() {
+      if (heroRectDirty || !heroRect) {
+        heroRect = canvas.getBoundingClientRect();
+        heroRectDirty = false;
+      }
+      return heroRect;
+    }
 
     /* Map a pointer/finger delta into the fluid queue. Touch splats
        come from the window-level touchmove twin in the interaction
@@ -1142,7 +1213,7 @@
        visible field. */
     function queuePointerSplat(x, y, px, py) {
       if (!fluidOK || !heroVisible) return;
-      var rect = canvas.getBoundingClientRect();
+      var rect = heroRectNow();
       var u = (x - rect.left) / Math.max(1, rect.width);
       var v = 1 - (y - rect.top) / Math.max(1, rect.height);
       if (u < -0.08 || u > 1.08 || v < -0.06 || v > 1.06) return;
@@ -1151,19 +1222,21 @@
       if (Math.abs(dx) + Math.abs(dy) < 0.0004) return;
       if (splats.length >= splatBudget) return;
       splats.push({ u: u, v: v, vx: dx * SPLAT_FORCE, vy: dy * SPLAT_FORCE, drop: false });
+      simAsleep = false;
     }
 
     /* A tap injects a small dye drop (with a random nudge) — a fingertip
        touching the water. */
     function queueDrop(x, y) {
       if (!fluidOK || !heroVisible) return;
-      var rect = canvas.getBoundingClientRect();
+      var rect = heroRectNow();
       var u = (x - rect.left) / Math.max(1, rect.width);
       var v = 1 - (y - rect.top) / Math.max(1, rect.height);
       if (u < -0.08 || u > 1.08 || v < -0.06 || v > 1.06) return;
       if (splats.length >= splatBudget) return;
       var ang = Math.random() * Math.PI * 2;
       splats.push({ u: u, v: v, vx: Math.cos(ang) * 60, vy: Math.sin(ang) * 60, drop: true });
+      simAsleep = false;
     }
 
     function makeTarget(w, h) {
@@ -1776,8 +1849,12 @@
       }, { passive: true });
     }
 
-    /* Sizing & DPR */
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* Sizing & DPR. Phones cap at 1.5: the hero is a soft aurora plus
+       additive glow lines, every full-canvas pass (composite, cage,
+       sprites, and the browser's own CSS-mask compositing each frame)
+       costs bandwidth per device pixel, and a 300+ PPI panel at 1.5
+       still renders them Retina-crisp. Desktop keeps the cap of 2. */
+    var dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2);
     function resize() {
       var w = Math.floor(canvas.clientWidth * dpr);
       var h = Math.floor(canvas.clientHeight * dpr);
@@ -1864,12 +1941,16 @@
     function render(now) {
       rafId = null;
       if (!heroVisible || document.hidden) { schedule(); return; }
-      /* phone tier keeps the ~24 ms battery gate; desktop runs at the
-         full rAF cadence — dt-scaled physics keep the feel identical.
-         The first frame (lastTime still 0) always passes: dtRaw 0.016
-         would otherwise trip the gate and starve the loop forever. */
+      /* phone tier paces frames at ~16.5 ms — a 60 Hz screen renders
+          every rAF when the frame fits (the old 24 ms gate capped every
+          phone at 30 fps with a 15 fps nebula), weak devices fall back
+          naturally behind the compositor, and 90–120 Hz panels still
+          skip the in-between rAFs. Desktop runs at the full rAF
+          cadence. The first frame (lastTime still 0) always passes:
+          dtRaw 0.016 would otherwise trip the gate and starve the
+          loop forever. */
       var dtRaw = lastTime ? (now - lastTime) / 1000 : 1;
-      if (lite && dtRaw < 0.024) { schedule(); return; }
+      if (lite && dtRaw < 0.0165) { schedule(); return; }
       var dt = lastTime ? Math.min(0.05, Math.max(0.001, dtRaw)) : 0.016;
       lastTime = now;
       frameIdx++;
@@ -1887,29 +1968,44 @@
       if (fluidOK) {
         var fasp = canvas.width / Math.max(1, canvas.height);
         if (Math.abs(fasp - fluidAspect) > Math.max(0.12, fluidAspect * 0.12)) buildFluidTargets();
-        simAccum += dt;
-        var steps = 0;
-        while (simAccum >= SIM_DT && steps < 2) { stepFluid(time); simAccum -= SIM_DT; steps++; }
-        if (steps === 2) simAccum = 0;
+        /* The sim sleeps once the water has been still for ~5.5 s: the
+           decay passes have long faded both fields below visibility, so
+           the sleeping textures read as zero warp and zero wake — the
+           calm pre-fluid look, at zero cost. Any splat wakes it, and it
+           never sleeps with splats still queued: the fresh queue keeps
+           the accumulator building until the step that drains it
+           refreshes lastSplatT. */
+        if (!simAsleep) {
+          simAccum += dt;
+          var steps = 0;
+          while (simAccum >= SIM_DT && steps < 2) { stepFluid(time); simAccum -= SIM_DT; steps++; }
+          if (steps === 2) simAccum = 0;
+          if (!splats.length && time - lastSplatT > 5.5) { simAsleep = true; simAccum = 0; }
+        }
       }
 
       gl.disable(gl.BLEND);
-      gl.clearColor(0, 0, 0, 0);
 
       /* 1. Lush Aurora Nebula Background — fluid-coupled.
              Desktop: full-res direct render, orbs included in the shader.
-             Phone: nebula-only into a low-res offscreen FBO (refreshed
-             every 2nd frame, in step with the half-rate fluid sim),
-             composited each frame with linear filtering; orbs are
-             separate full-res sprites (step 1b). */
+             Phone: nebula-only into a low-res offscreen FBO, composited
+             each frame with linear filtering; orbs are separate full-res
+             sprites (step 1b). While the wake is alive the FBO refreshes
+             every rendered frame — the water answers the finger at the
+             full frame cadence, and at the halved scale that still costs
+             less than the old every-2nd-frame refresh — and it drops
+             back to every 2nd frame once calm, in step with the slow
+             sky drift. No clears anywhere: every pass writes every
+             pixel through a fullscreen triangle with blending off, so
+             the old clear passes were pure bandwidth. */
       var useFbo = !!(lite && blitU && bgFbo);
       if (lite && blitU) ensureBgTarget(canvas.width, canvas.height);
-      var drawNebula = !useFbo || (frameIdx % 2) === 1;
+      var fluidAwake = fluidOK && (time - lastSplatT) < 2.5;
+      var drawNebula = !useFbo || fluidAwake || (frameIdx % 2) === 1;
 
       if (drawNebula) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, useFbo ? bgFbo : null);
         gl.viewport(0, 0, useFbo ? bgW : canvas.width, useFbo ? bgH : canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(bgProg);
         gl.uniform2f(bgU.res, useFbo ? bgW : canvas.width, useFbo ? bgH : canvas.height);
         gl.uniform1f(bgU.time, time);
@@ -1925,7 +2021,15 @@
           gl.bindTexture(gl.TEXTURE_2D, fluidOK ? dye.read.tex : zeroTex);
           gl.uniform1i(bgU.dyeTex, 1);
           gl.uniform1f(bgU.warp, FLUID_WARP);
+          gl.uniform1f(bgU.warpCap, FLUID_WARP_CAP);
           gl.uniform1f(bgU.dyeGain, FLUID_DYE_GAIN);
+          /* texel sizes drive the 4-tap smoothing offsets; harmless
+             unit values back the 1×1 zero texture before the fluid
+             targets exist */
+          gl.uniform2f(bgU.velTexel,
+            fluidOK ? 1 / vel.read.w : 1, fluidOK ? 1 / vel.read.h : 1);
+          gl.uniform2f(bgU.dyeTexel,
+            fluidOK ? 1 / dye.read.w : 1, fluidOK ? 1 / dye.read.h : 1);
         }
         gl.enableVertexAttribArray(bgU.aPos);
         gl.bindBuffer(gl.ARRAY_BUFFER, bgQuadBuf);
@@ -1934,10 +2038,10 @@
       }
 
       if (useFbo) {
-        /* Composite the low-res nebula onto the canvas. */
+        /* Composite the low-res nebula onto the canvas — the blit
+           writes every pixel with blending off, so no clear is needed. */
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(blitProg);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, bgTex);
@@ -2073,6 +2177,7 @@
             resetting: resetting,
             resetP: resetting ? 1 - Math.exp(-4 * resetT) : 0,
             fluid: fluidOK,
+            simAsleep: simAsleep,
             queuedSplats: splats.length,
             simSteps: simSteps,
             orient: [orient[0], orient[1], orient[2], orient[4], orient[5], orient[6], orient[8], orient[9], orient[10]]
