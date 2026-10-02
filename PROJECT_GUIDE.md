@@ -105,8 +105,10 @@ includes/
   nav.php                       Site header + nav links + theme/lang/mobile-toggle buttons + drawer
   i18n.php                      t(), tb(), lang_attr() — the bilingual helpers (see §4)
 api/
-  contact.php                   POST-only JSON contact endpoint (see §14)
+  contact.php                   POST-only JSON contact endpoint, dynamic hosts (see §14)
   _README.md
+netlify/
+  functions/contact.js          The same endpoint, Netlify flavor — serverless, Resend-backed (see §14)
 assets/
   css/
     tokens.css                  DESIGN TOKENS — single source of truth (see §5)
@@ -459,10 +461,12 @@ don't "tidy" it to the top):
 - **`main.js`** — `I18N` dictionary + `t()`, `applyToggleLabels`,
   `syncAttrI18n`, `initThemeToggle`, `initLangToggle`, `initNavDrawer`,
   `initBackToTop`, `initContactForm`. The contact form does live client
-  validation (regexes in `validate()`), async submit to `/api/contact.php`
-  with `submitViaApi()`, surfaces 422/429 server errors, and **falls back
-  to `mailto:`** (`submitViaMailto`) if the endpoint is unreachable. Honeypot
-  is the hidden `#cf-company` field — a non-empty value silently drops.
+  validation (regexes in `validate()`), async submit to `/api/contact`
+  (the PHP endpoint on dynamic hosts, the Netlify function on static —
+  same contract) with `submitViaApi()`, surfaces 422/429 server errors,
+  and **falls back to `mailto:`** (`submitViaMailto`) if the endpoint is
+  unavailable or the send failed (500). Honeypot is the hidden
+  `#cf-company` field — a non-empty value silently drops.
 - **`animations.js`** — `initReveal`, `initCountUp`, `initScrollSpy` (§8).
 - **`webgl-hero.js`** — self-boots wherever a `#hero-gl` canvas exists
   (home + portfolio index). Two coupled systems:
@@ -670,18 +674,29 @@ require __DIR__ . '/../includes/header.php';
 
 ---
 
-## 14. The contact endpoint (`api/contact.php`)
+## 14. The contact endpoints (`api/contact.php` + `netlify/functions/contact.js`)
 
-POST-only, JSON-in/JSON-out. Reads JSON (preferred) or
-`application/x-www-form-urlencoded` (no-JS fallback). Returns:
+**One URL, two implementations.** The form POSTs to `/api/contact`:
+- **Dynamic hosts** — `.htaccess` rewrites it to `api/contact.php`;
+  `serve.php` maps it for local dev. Nothing in those files changed.
+- **Netlify static** — `netlify/functions/contact.js` serves the same
+  path via its `config.path` export. Zero dependencies (no npm, no
+  bundler — one ESM file), read from the repo root at deploy time.
+
+Both are POST-only, JSON-in/JSON-out. Reads JSON (preferred) or
+`application/x-www-form-urlencoded` (no-JS fallback — the form carries
+`action="/api/contact" method="POST"`, inert while JS owns the submit).
+Returns:
 - `200 {ok:true}` — accepted (mailed best-effort + CSV-logged)
 - `400 {ok:false,error:"bad-request",message}` — body unreadable / > 16 KB
 - `405 {ok:false,error:"method",message}` — non-POST (sets `Allow: POST`)
 - `422 {ok:false,errors:{name,email,message}}` — validation failed
 - `429 {ok:false,error:"rate-limited",message}` — over per-IP throttle
+- `500 {ok:false,error:"send-failed",message}` — **function only**:
+  `RESEND_API_KEY` missing / Resend rejected / send timed out
 
-Pipeline: method gate → parse → **rate-limit (5/IP/hr, file-based at
-`storage/rl/<md5(ip)>.json`)** → **honeypot `company` field (silent
+**PHP pipeline:** method gate → parse → **rate-limit (5/IP/hr, file-based
+at `storage/rl/<md5(ip)>.json`)** → **honeypot `company` field (silent
 `200 {ok:true}` if filled — bot bait)** → validate → deliver (`mail()`
 best-effort + always CSV-log) → respond.
 
@@ -705,6 +720,36 @@ must NOT be web-served — `storage/.htaccess` denies Apache; on nginx or
 .htaccess-disabled hosts, move `storage/` above the web root and point
 `STORAGE` at the absolute path.
 
+### The Netlify twin (`netlify/functions/contact.js`)
+Mirrors the PHP pipeline, bilingual strings, and status codes exactly
+(same constants at the top of the file), with four deliberate
+differences:
+
+1. **Real delivery** — email goes out via the Resend REST API
+   (`POST api.resend.com/emails`) with the key from the
+   `RESEND_API_KEY` env var set in the Netlify UI. Sign up for Resend
+   with `emersonplancarte@gmail.com`: unverified-domain Resend accounts
+   deliver only to the account owner's own address, which covers this
+   single-recipient case. `reply_to` is the visitor, so replying in
+   Gmail reaches them directly.
+2. **No CSV log** — serverless has no writable filesystem. The email
+   IS the record.
+3. **Failed send → 500, not 200** — with no CSV fallback, an OK would
+   silently lose the message. A 500 makes the front-end fall back to
+   the visitor's own mail client (`submitViaMailto`). An 8 s
+   `AbortController` timeout turns a hanging Resend call into the same
+   500.
+4. **Throttle is in-memory** — a module-scope `Map`, per warm instance;
+   a cold start or instance recycle resets it (a 5000-entry safety
+   valve prevents unbounded growth). IP comes from
+   `x-nf-client-connection-ip`, set by Netlify's edge and unspoofable.
+
+Testing it: it's a plain ESM file on Node 18+, so the whole pipeline
+can be exercised locally with a small harness (Request/Response globals
++ `import(pathToFileURL(...))`) — no Netlify CLI or npm needed. With no
+key set, valid submissions end at 500 `send-failed`, which is the
+expected local outcome.
+
 ### Front-end contract (`main.js` `initContactForm`)
 The form is `#contact-form` with `#cf-name`, `#cf-email`, `#cf-message`,
 honeypot `#cf-company`, status region `#cf-status` (paired with
@@ -712,8 +757,9 @@ honeypot `#cf-company`, status region `#cf-status` (paired with
 `cf-message-err`), submit `#cf-submit`. On submit: preventDefault, bail if
 honeypot filled, `validate()` (live regex email check), POST JSON, then:
 200 → success status + reset; 422 → surface server field errors onto the
-fields; 429 → show server message; any other failure (404/500/network) →
-**mailto: fallback** so the message still reaches Emerson.
+fields; 429 → show server message; any other failure (404/500/network,
+including the function's send-failed) → **mailto: fallback** so the
+message still reaches Emerson.
 
 ---
 
@@ -819,7 +865,7 @@ be a second that the first was masking.
 Invoke-WebRequest http://localhost:8000/ -UseBasicParsing | Select-Object StatusCode, @{n='Len';e={$_.Content.Length}}
 ```
   and do the same for `/portfolio/`, a detail page, `/assets/css/tokens.css`,
-  `/assets/css/fonts.css`, a woff2, and `POST /api/contact.php` with a
+  `/assets/css/fonts.css`, a woff2, and `POST /api/contact` with a
   small JSON body. Expect 200 across the board; check `storage/messages.csv`
   for the new row after the contact POST.
 - **Contrast:** if you change a color token, re-check WCAG 2.2 AA (4.5:1
@@ -844,6 +890,19 @@ it — it's blocked on Emerson.
 
 ## 20. Deploy checklist (summary — full version in `README.md`)
 
+**Netlify (the live static deploy):**
+1. Push to GitHub — Netlify runs `php build.php` and publishes `_site/`
+   (never publishes `api/`, `storage/`, `includes/`, or `netlify/` —
+   `build.php` excludes them; the function is read from the repo root).
+2. One-time: create the free Resend account with
+   `emersonplancarte@gmail.com`, and set `RESEND_API_KEY` in Netlify →
+   Site configuration → Environment variables.
+3. Smoke-test the live form: submit once, confirm the email arrives.
+   A 500 response in the browser console means the key is missing or
+   Resend rejected — the front-end will have opened the mail client
+   fallback, but fix the key before shipping.
+
+**Dynamic host (Apache + PHP 7.4+):**
 1. Upload the entire project to a PHP 7.4+-enabled host, served from the
    web root (root-absolute paths require it).
 2. Set `$site_url` in `includes/header.php` to the real origin.
@@ -876,7 +935,9 @@ it — it's blocked on Emerson.
 - **…add a color / re-theme** → §5 (`tokens.css`; both theme blocks).
 - **…add motion to a new section** → §8 (`data-reveal` / `data-reveal-group`).
 - **…add a stat counter** → §8 (`data-count-to`, final value in source).
-- **…change the contact config/throttle** → §14 (`api/contact.php` constants).
+- **…change the contact config/throttle** → §14 (`api/contact.php`
+  constants AND `netlify/functions/contact.js` constants — keep both
+  flavors in lockstep).
 - **…regenerate fonts after weight/family changes** → §6
   (`node assets/fonts/_fetch-fonts.js`; don't hand-edit `fonts.css`).
 - **…change the deploy domain** → §15 (three files together).

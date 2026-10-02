@@ -373,7 +373,10 @@ $featured_projects = array_filter($all_projects, function ($p) {
       </li>
     </ul>
 
-    <form class="contact-form" id="contact-form" novalidate data-reveal>
+    <!-- action/method = no-JS path: a native submit posts urlencoded to
+         /api/contact (api/contact.php on dynamic hosts, the Netlify
+         function on static). With JS on, preventDefault owns the submit. -->
+    <form class="contact-form" id="contact-form" action="/api/contact" method="POST" novalidate data-reveal>
       <div class="contact-form__row">
         <div class="field">
           <label class="field__label" for="cf-name">

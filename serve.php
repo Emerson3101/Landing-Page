@@ -11,7 +11,9 @@ declare(strict_types=1);
  *   /portfolio/          -> portfolio/index.php
  *   /portfolio/icv/      -> portfolio/icv.php
  *   /styleguide/         -> styleguide.php
- *   /api/contact.php     -> api/contact.php        (still POSTs)
+ *   /api/contact         -> api/contact.php        (canonical form POST URL;
+ *   /api/contact.php     -> api/contact.php         Apache + Netlify serve
+ *                                                   the same path)
  *
  * Everything else (assets, fonts, JSON) is served straight from disk.
  */

@@ -298,10 +298,12 @@
         lang: document.documentElement.getAttribute('data-active-lang') === 'es' ? 'es' : 'en'
       };
 
-      // Phase 7 PHP endpoint. 200 -> done. 422 -> surface the server's
-      // bilingual field errors. 429 -> show its message. 404/500/network
-      // (endpoint down) -> fall back to the visitor's own mail client so
-      // the message still reaches me.
+      // One URL, every host: /api/contact is api/contact.php on Apache
+      // and local dev, and the Netlify function (netlify/functions/
+      // contact.js) on the static deploy. 200 -> done. 422 -> surface
+      // the server's bilingual field errors. 429 -> show its message.
+      // 404/500/network (endpoint down) -> fall back to the visitor's
+      // own mail client so the message still reaches me.
       submitViaApi(payload).then(function (res) {
         if (res.ok) { done(null); return; }
         if (res.status === 422 && res.data && res.data.errors) {
@@ -333,7 +335,7 @@
     });
 
     function submitViaApi(payload) {
-      return fetch('/api/contact.php', {
+      return fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload)

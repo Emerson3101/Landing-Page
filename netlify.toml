@@ -12,6 +12,13 @@
 [build.environment]
   PHP_VERSION = "8.2"
 
+# Serverless functions run from the repo root (NOT the publish dir) —
+# netlify/functions/contact.js serves POST /api/contact for the contact
+# form (mirrors api/contact.php; delivery via Resend, RESEND_API_KEY env).
+# Netlify auto-detects this directory; declared here for visibility.
+[functions]
+  directory = "netlify/functions"
+
 # Clean URLs are already real directories (portfolio/icv/index.html) —
 # no rewrites needed. The trailing-slash-less variant is normalized here
 # to avoid duplicate-URL SEO issues on the CDN edge.

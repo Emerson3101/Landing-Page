@@ -75,10 +75,14 @@ function copy_static(string $src, string $dst, string $root): void {
     $s = $src . '/' . $f;
     $d = $dst . '/' . $f;
 
-    // Never ship sources, the API endpoint, storage, or dev/build-only files
-    // (assets/fonts/_fetch-fonts.js is a dev regeneration script).
+    // Never ship sources, the API endpoint, storage, the serverless
+    // function, or dev/build-only files (assets/fonts/_fetch-fonts.js is
+    // a dev regeneration script; netlify/functions/ runs server-side —
+    // Netlify reads it from the repo root, not the publish).
     $rel = str_replace('\\', '/', substr($s, strlen($root) + 1));
-    if (preg_match('#^(api|storage|includes|\.playwright-mcp|\.claude|\.git|\.github|node_modules|_site)/#', $rel)
+    // (a|b)(/|$) — match the tree contents AND the bare top-level dir,
+    // otherwise copy_static creates the excluded dir as an empty husk.
+    if (preg_match('#^(api|storage|includes|netlify|\.playwright-mcp|\.claude|\.git|\.github|node_modules|_site)(/|$)#', $rel)
         || (preg_match('#\.(php|md|txt)$#', $rel) && basename($rel) !== 'robots.txt')
         || $rel === '.gitignore' || $rel === 'netlify.toml' || $rel === 'build.php'
         || $rel === 'serve.php' || $rel === '.htaccess' || $rel === 'assets/fonts/_fetch-fonts.js') {
