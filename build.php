@@ -23,7 +23,7 @@ declare(strict_types=1);
  * Usage:
  *   php build.php [origin]
  *
- *   origin  absolute site origin, default https://emerson-plancarte.netlify.app
+ *   origin  absolute site origin, default https://emersonplancarte.netlify.app
  *           (or from the SITE_URL environment variable). Used for canonical /
  *           Open Graph URLs and substituted into sitemap.xml + robots.txt.
  */
@@ -31,7 +31,7 @@ declare(strict_types=1);
 /* --- Config ---------------------------------------------------------- */
 $ROOT   = __DIR__;
 $OUT    = $ROOT . '/_site';
-$origin = rtrim($argv[1] ?? (getenv('SITE_URL') ?: 'https://emerson-plancarte.netlify.app'), '/');
+$origin = rtrim($argv[1] ?? (getenv('SITE_URL') ?: 'https://emersonplancarte.netlify.app'), '/');
 
 /* Pages to render: url-path => source file (relative to $ROOT). Adding a
  * page = adding one line here (or a portfolio/<slug>.php, auto-included). */
@@ -78,14 +78,18 @@ function copy_static(string $src, string $dst, string $root): void {
     // Never ship sources, the API endpoint, storage, the serverless
     // function, or dev/build-only files (assets/fonts/_fetch-fonts.js is
     // a dev regeneration script; netlify/functions/ runs server-side —
-    // Netlify reads it from the repo root, not the publish).
+    // Netlify reads it from the repo root, not the publish). The root
+    // robots.txt + sitemap.xml are skipped because this build GENERATES
+    // origin-substituted versions of both below — copying the sources
+    // would clobber them with the placeholder origins.
     $rel = str_replace('\\', '/', substr($s, strlen($root) + 1));
     // (a|b)(/|$) — match the tree contents AND the bare top-level dir,
     // otherwise copy_static creates the excluded dir as an empty husk.
     if (preg_match('#^(api|storage|includes|netlify|\.playwright-mcp|\.claude|\.git|\.github|node_modules|_site)(/|$)#', $rel)
-        || (preg_match('#\.(php|md|txt)$#', $rel) && basename($rel) !== 'robots.txt')
+        || preg_match('#\.(php|md|txt)$#', $rel)
         || $rel === '.gitignore' || $rel === 'netlify.toml' || $rel === 'build.php'
-        || $rel === 'serve.php' || $rel === '.htaccess' || $rel === 'assets/fonts/_fetch-fonts.js') {
+        || $rel === 'serve.php' || $rel === '.htaccess' || $rel === 'assets/fonts/_fetch-fonts.js'
+        || $rel === 'sitemap.xml') {
       continue;
     }
 
@@ -95,10 +99,14 @@ function copy_static(string $src, string $dst, string $root): void {
 }
 
 /** Render one page and return its HTML, faking the request URI so
- *  header.php's canonical/OG URLs point at the clean URL. */
+ *  header.php's canonical/OG URLs point at the clean URL. The origin is
+ *  set as a LOCAL var on purpose: `include` inside this function runs in
+ *  the function's scope, so header.php's `$site_url ?? …` reads THIS
+ *  variable — assigning $GLOBALS here would be invisible to the page
+ *  and every canonical would fall back to the placeholder. */
 function render_page(string $root, string $file, string $url_path, string $origin): string {
   $_SERVER['REQUEST_URI'] = $url_path;
-  $GLOBALS['site_url']    = $origin;
+  $site_url = $origin;
   ob_start();
   include $root . '/' . $file;
   $html = (string)ob_get_clean();

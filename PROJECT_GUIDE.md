@@ -140,8 +140,8 @@ storage/
   .htaccess                     Apache denial (Deny from all)
   rl/                           Per-IP rate-limit json files (md5(ip).json), auto-created
   index.html                    Blank — index blocking only
-robots.txt                      SEO — allow all, disallow /api/ /storage/ /styleguide.php, Sitemap line
-sitemap.xml                     8 URLs, lastmod dates — origin must match header.php $site_url
+robots.txt                      SEO — allow all, disallow /api/ /storage/ /styleguide.php, Sitemap line (netlify origin)
+sitemap.xml                     9 URLs, lastmod dates — origin matches header.php $site_url (see §15)
 styleguide.php                  INTERNAL design-system review page (not nav-linked)
 .htaccess                       Optional Apache polish (gzip, cache headers, contact no-store)
 README.md                       User-facing deploy guide (6 steps)
@@ -765,14 +765,13 @@ message still reaches Emerson.
 
 ## 15. SEO: the origin must agree in THREE places
 
-There is a placeholder origin `https://emerson-plancarte.example` set in
-**three files that must all match on deploy**:
+The live origin `https://emersonplancarte.netlify.app` is set in
+**three files that must all match** (set together 2026-10-02):
 
-1. `includes/header.php` → `$site_url` (drives canonical, OG tags, and the
-   JSON-LD `Person` `url`).
+1. `includes/header.php` → `$site_url` fallback (drives canonical, OG
+   tags, and the JSON-LD `Person` `url`).
 2. `robots.txt` → the `Sitemap:` line.
-3. `sitemap.xml` → every `<loc>` (and the `lastmod` dates should be
-   refreshed at deploy).
+3. `sitemap.xml` → every `<loc>` (plus the `lastmod` dates).
 
 When you change the domain, update all three together. The JSON-LD
 `Person` schema in `header.php` is static and site-wide (name, jobTitle,
@@ -780,10 +779,17 @@ email, phone, Acapulco address, LinkedIn, GitHub `Emerson3101`,
 `knowsLanguage [es,en]`, `knowsAbout` the skill list) — it was hand-written,
 not generated; update it if Emerson's details change.
 
+On the static build, `build.php` injects ITS OWN origin (same default)
+into every page's canonical/OG via a local `$site_url` before the page
+include (the include runs inside `render_page()`, so the variable must
+be local — a `$GLOBALS` assignment is invisible there) and then writes
+origin-correct `robots.txt` + `sitemap.xml` into `_site/`. The source
+`robots.txt`/`sitemap.xml` are NOT copied into the static output — they
+are templates for dynamic mode only.
+
 `robots.txt` allows all, disallows `/api/`, `/storage/`, `/styleguide.php`.
-`sitemap.xml` lists 8 URLs: home, `/portfolio/`, and the 6 detail pages
-(teassist is included). `styleguide.php` is intentionally not nav-linked
-(internal review only).
+`sitemap.xml` lists 9 URLs: home, `/portfolio/`, and the 7 detail pages.
+`styleguide.php` is intentionally not nav-linked (internal review only).
 
 ---
 

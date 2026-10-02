@@ -2,8 +2,9 @@
 # Public content is crawlable; the contact endpoint, contact logs, and the
 # internal styleguide are not meant to be indexed.
 #
-# Replace the origin in the Sitemap line with the real deploy URL (it must
-# match the $site_url set in includes/header.php).
+# The origin below is the live deploy. Changing domains means updating this
+# Sitemap line, every <loc> in sitemap.xml, and the $site_url fallback in
+# includes/header.php TOGETHER (see PROJECT_GUIDE §15).
 
 User-agent: *
 Allow: /
@@ -11,4 +12,4 @@ Disallow: /api/
 Disallow: /storage/
 Disallow: /styleguide.php
 
-Sitemap: https://emerson-plancarte.example/sitemap.xml
+Sitemap: https://emersonplancarte.netlify.app/sitemap.xml

@@ -92,9 +92,10 @@ the visitor's own mail client instead of silently losing the message.
    static host is not enough in this mode — the contact endpoint and
    the shared includes require PHP 7.4+.)
 2. Set the real origin in `includes/header.php`. The `$site_url` fallback
-   is currently the placeholder `https://emerson-plancarte.example`; it
-   feeds the canonical URL, Open Graph tags, and JSON-LD `Person` schema,
-   so it must be correct for the live domain.
+   currently defaults to the live Netlify origin
+   (`https://emersonplancarte.netlify.app`); on a different domain, change
+   it — it feeds the canonical URL, Open Graph tags, and JSON-LD
+   `Person` schema, so it must be correct for the host's domain.
 3. Update the origin in `robots.txt` (the `Sitemap:` line) and in
    `sitemap.xml` (every `<loc>`) to match that same domain. All three —
    `header.php`, `robots.txt`, `sitemap.xml` — must agree.

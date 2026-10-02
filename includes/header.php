@@ -20,8 +20,9 @@ $page_lang        = $page_lang        ?? 'en'; // JS updates <html lang> when th
 
 // Origin for canonical / Open Graph URLs. Precedence: per-page $site_url,
 // then the SITE_URL environment variable (set by build.php/serve.php or the
-// host), then the placeholder default. sitemap.xml must match this.
-$site_url  = $site_url  ?? (getenv('SITE_URL') ?: 'https://emerson-plancarte.example');
+// host), then the live-site default. sitemap.xml + robots.txt must match
+// this — all three change together (see PROJECT_GUIDE §15).
+$site_url  = $site_url  ?? (getenv('SITE_URL') ?: 'https://emersonplancarte.netlify.app');
 $canonical = $canonical ?? ($site_url . ($_SERVER['REQUEST_URI'] ?? '/'));
 $og_type   = $og_type   ?? 'website';
 // Optional per-page <body> class (e.g. 'page-home') for page-scoped CSS.
