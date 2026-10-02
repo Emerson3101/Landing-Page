@@ -8,7 +8,7 @@
  */
 
 $page_title       = 'Portfolio — Emerson Plancarte';
-$page_description = 'Selected projects by Emerson Plancarte — software and embedded systems engineer. Industrial electrical grid telemetry, desktop AI assistants, Next.js event platforms, and real-time Android applications.';
+$page_description = 'Selected projects by Emerson Plancarte — backend developer specializing in .NET and modern web stacks. Industrial electrical grid telemetry, cloud-native RAG systems, Next.js web platforms, and Android applications.';
 require __DIR__ . '/../includes/header.php';
 
 $data     = json_decode(file_get_contents(__DIR__ . '/../assets/data/projects.json'), true);
@@ -36,8 +36,8 @@ function bi_field(array $field) {
     </h1>
     <p class="hero__subtitle" data-reveal data-typetrick>
       <?= t(
-        'Selected work spanning industrial telemetry, AI desktop applications, modern web platforms, and mobile engineering.',
-        'Trabajo seleccionado que abarca telemetría industrial, aplicaciones de escritorio con IA, plataformas web modernas y desarrollo móvil.'
+        'Selected work spanning industrial grid telemetry, cloud-native RAG systems, modern web platforms, and mobile engineering.',
+        'Trabajo seleccionado que abarca telemetría industrial de red, sistemas RAG cloud-native, plataformas web modernas y desarrollo móvil.'
       ) ?>
     </p>
   </div>

@@ -590,7 +590,7 @@
         { kind: es ? 'sección' : 'section', label: es ? 'Contacto' : 'Contact', run: function () { location.href = '/#contact'; } },
         { kind: es ? 'página' : 'page', label: es ? 'Portafolio completo' : 'Full Portfolio', run: function () { location.href = '/portfolio/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'ICV & Cargabilidad (CFE Telemetría)', run: function () { location.href = '/portfolio/icv/'; } },
-        { kind: es ? 'proyecto' : 'project', label: 'TecAssist Revisited (RAG Desktop AI)', run: function () { location.href = '/portfolio/teassist/'; } },
+        { kind: es ? 'proyecto' : 'project', label: es ? 'TecAssist.NET (Sistema RAG Cloud-Native)' : 'TecAssist.NET (Cloud-Native RAG System)', run: function () { location.href = '/portfolio/teassist/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'Wedding Platform & Seating Planner (Next.js 16)', run: function () { location.href = '/portfolio/wedproject/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'Shared Canvas (Real-Time Android Drawing)', run: function () { location.href = '/portfolio/shared-canvas/'; } },
         { kind: es ? 'proyecto' : 'project', label: 'MemeNote (Android Productivity & Glance Widgets)', run: function () { location.href = '/portfolio/memenote/'; } },

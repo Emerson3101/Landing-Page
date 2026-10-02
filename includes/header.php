@@ -14,8 +14,8 @@
 
 require_once __DIR__ . '/i18n.php';
 
-$page_title       = $page_title       ?? 'Emerson Plancarte — Software & Embedded Systems Engineer';
-$page_description = $page_description ?? 'Personal landing page of Emerson Salvador Plancarte Cerecedo — software and embedded systems engineer.';
+$page_title       = $page_title       ?? 'Emerson Plancarte — Backend Developer | .NET & Web Stacks';
+$page_description = $page_description ?? 'Emerson Salvador Plancarte Cerecedo — Backend developer specializing in .NET (C#, ASP.NET) and web stacks (PHP, Node.js, Next.js/TypeScript) with SQL Server and PostgreSQL experience.';
 $page_lang        = $page_lang        ?? 'en'; // JS updates <html lang> when the language toggle flips
 
 // Origin for canonical / Open Graph URLs. Precedence: per-page $site_url,
@@ -74,7 +74,7 @@ $body_class = $body_class ?? '';
     "name": "Emerson Salvador Plancarte Cerecedo",
     "givenName": "Emerson",
     "familyName": "Plancarte Cerecedo",
-    "jobTitle": "Software & Embedded Systems Engineer",
+    "jobTitle": "Backend Developer | .NET & Web Stacks",
     "url": "<?= htmlspecialchars($site_url . '/', ENT_QUOTES, 'UTF-8') ?>",
     "email": "mailto:emersonplancarte@gmail.com",
     "telephone": "+52 744 447 3905",
@@ -90,7 +90,7 @@ $body_class = $body_class ?? '';
       "https://github.com/Emerson3101"
     ],
     "knowsLanguage": ["es", "en"],
-    "knowsAbout": ["C#", "C", "C++", "Python", "Kotlin", "PHP", "Java", "JavaScript", "SQL", "Embedded Systems", "ESP32", "Laravel", "Android", "Web Development"]
+    "knowsAbout": [".NET", "ASP.NET", "C#", "PHP", "Node.js", "Next.js", "TypeScript", "JavaScript", "SQL Server", "PostgreSQL", "Supabase", "Microsoft Azure", "REST APIs", "RAG", "Kotlin", "Android", "Embedded Systems", "Raspberry Pi", "Arduino", "ESP32", "Docker", "CI/CD"]
   }
   </script>
 

@@ -31,22 +31,22 @@
     {
       "slug": "teassist",
       "title": {
-        "en": "TecAssist Revisited — AI Consultation Assistant & RAG Engine",
-        "es": "TecAssist Revisited — Asistente de Consulta IA y Motor RAG"
+        "en": "TecAssist.NET — Cloud-Native RAG Technical Assistant",
+        "es": "TecAssist.NET — Asistente Técnico Cloud-Native con RAG"
       },
       "subtitle": {
-        "en": "1st Place Smart Cities Innovation Contest winner, rebuilt as a desktop RAG assistant",
-        "es": "Ganador del 1er Lugar en Innovación Tecnológica (Ciudades Inteligentes), reconstruido como asistente RAG de escritorio"
+        "en": "ASP.NET Core 10 Web API, Clean Architecture, pgvector, NVIDIA NIM & Next.js 16 chat UI",
+        "es": "API Web ASP.NET Core 10, Clean Architecture, pgvector, NVIDIA NIM e interfaz de chat en Next.js 16"
       },
-      "category": "ai",
+      "category": "backend",
       "year": "2025–2026",
       "featured": true,
-      "stack": ["Python", "PyQt6", "NVIDIA NIM", "RAG", "SQLite", "SpeechRecognition", "pyttsx3", "Vector Embeddings"],
+      "stack": ["ASP.NET Core 10", "C#", "Clean Architecture", "EF Core", "Supabase", "PostgreSQL", "pgvector", "NVIDIA NIM", "Next.js 16", "TypeScript", "xUnit", "Testcontainers", "Azure App Service", "Docker"],
       "summary": {
-        "en": "A modern desktop AI consultation assistant powered by NVIDIA NIM token streaming and localized RAG indexing (.pdf/.docx/.txt/.md). Features voice input and output, vector caching, and a custom Aurora UI.",
-        "es": "Asistente moderno de escritorio con IA impulsado por NVIDIA NIM con respuestas en streaming e indexación RAG local (.pdf/.docx/.txt/.md). Cuenta con entrada y salida de voz, caché de embeddings vectoriales y una interfaz Aurora personalizada."
+        "en": "Rebuilt an award-winning university AI-assistant concept as a cloud-native RAG system: ASP.NET Core 10 Web API (Clean Architecture), EF Core, and Supabase (PostgreSQL + pgvector), with streaming, cited answers via NVIDIA NIM and a Next.js 16 chat UI. Secured with Supabase Auth (ES256 JWT/JWKS) and Postgres RLS; shipped 42 automated tests (xUnit, Testcontainers) via GitHub Actions CI/CD deploying to Azure App Service.",
+        "es": "Reconstrucción del asistente universitario galardonado como sistema RAG cloud-native: API ASP.NET Core 10 (Clean Architecture), EF Core y Supabase (PostgreSQL + pgvector), con respuestas en streaming y citadas vía NVIDIA NIM y chat en Next.js 16. Asegurado con Supabase Auth (JWT ES256/JWKS) y Row-Level Security en Postgres; implementé 42 pruebas automatizadas (xUnit, Testcontainers) vía CI/CD en GitHub Actions con despliegue en Azure App Service."
       },
-      "links": { "detail": "/portfolio/teassist/" }
+      "links": { "detail": "/portfolio/teassist/", "github": "https://github.com/Emerson3101/TecAssistNet" }
     },
     {
       "slug": "wedproject",
@@ -61,12 +61,12 @@
       "category": "web",
       "year": "2026",
       "featured": true,
-      "stack": ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "Supabase", "Framer Motion", "GSAP", "Satori", "Lucide"],
+      "stack": ["Next.js 16", "TypeScript", "Supabase", "PostgreSQL", "Tailwind CSS v4", "REST APIs", "Resend", "Cloudinary", "Vercel"],
       "summary": {
-        "en": "A guest management platform with an interactive top-down seating planner ('Mesas'), server-generated printable passcards, YouTube-powered collaborative playlist voting, and guest photo sharing.",
-        "es": "Plataforma de gestión de invitados con plano visual interactivo de mesas ('Mesas'), pases imprimibles generados en servidor, playlist colaborativa con YouTube y carga de fotos de invitados."
+        "en": "Full-stack event platform (Next.js 16, TypeScript, Supabase/PostgreSQL) with automated Vercel deployments: 20+ REST endpoints, cookie-based guest/admin auth behind an edge gate, and a 7-table PostgreSQL schema with stored procedures for atomic RSVP upserts and idempotent playlist voting (enforcing seating capacity server-side).",
+        "es": "Plataforma full-stack de eventos (Next.js 16, TypeScript, Supabase/PostgreSQL) con despliegues automatizados en Vercel: más de 20 endpoints REST, autenticación por cookies tras un edge gate y esquema PostgreSQL de 7 tablas con procedimientos almacenados para RSVP atómicos y votación de música (validando capacidad de mesas en servidor)."
       },
-      "links": { "detail": "/portfolio/wedproject/" }
+      "links": { "detail": "/portfolio/wedproject/", "github": "https://github.com/Emerson3101/wedproject" }
     },
     {
       "slug": "shared-canvas",
@@ -83,10 +83,10 @@
       "featured": true,
       "stack": ["Kotlin", "Jetpack Compose", "Clean Architecture", "Hilt", "Firebase RTDB", "Firestore", "Glance Widget", "WorkManager"],
       "summary": {
-        "en": "A collaborative drawing app built on Clean Architecture featuring normalized unit-space coordinate rendering across differing device resolutions, live presence awareness, and an interactive home-screen Glance widget synced via silent push notifications.",
-        "es": "Aplicación de dibujo colaborativo basada en Clean Architecture con normalización de coordenadas para diferentes resoluciones, presencia en vivo y un widget interactivo Glance para la pantalla de inicio con sincronización silenciosa."
+        "en": "A two-user drawing app (Kotlin, Jetpack Compose, Clean Architecture, Hilt) with a dual-database sync engine: Firebase Realtime Database (~50–100ms live streaming) plus Cloud Firestore for durable storage.",
+        "es": "Aplicación de dibujo para dos usuarios (Kotlin, Jetpack Compose, Clean Architecture, Hilt) con motor de sincronización de doble base de datos: Firebase Realtime Database (~50–100ms en vivo) y Cloud Firestore para almacenamiento duradero."
       },
-      "links": { "detail": "/portfolio/shared-canvas/" }
+      "links": { "detail": "/portfolio/shared-canvas/", "github": "https://github.com/Emerson3101/SharedCanvas" }
     },
     {
       "slug": "memenote",
@@ -101,12 +101,12 @@
       "category": "mobile",
       "year": "2025–2026",
       "featured": false,
-      "stack": ["Kotlin", "Jetpack Compose", "Material 3", "Room SQLite", "DataStore", "Glance Widgets", "AlarmManager", "Flow / Coroutines"],
+      "stack": ["Kotlin", "Jetpack Compose", "Room SQLite", "DataStore", "R8 Shrinking", "Glance Widgets", "Material 3"],
       "summary": {
-        "en": "A full-featured Android productivity app for notes, tasks, habits, and agenda, built on an 8-entity Room SQLite database, a manual dependency-injection container, reboot-resilient reminders, and 4 Glance home-screen widgets.",
-        "es": "App de productividad para Android con notas, tareas, hábitos y agenda sobre una base de datos Room SQLite de 8 entidades, contenedor de DI manual, recordatorios resistentes a reinicios y 4 widgets Glance."
+        "en": "An offline-first Android app (Kotlin, Jetpack Compose, Room, DataStore) for notes, tasks, habits, and agenda; cut the release APK from 26.8 MB to 6.5 MB with R8.",
+        "es": "Aplicación Android sin conexión (Kotlin, Jetpack Compose, Room, DataStore) para notas, tareas, hábitos y agenda; reduje el APK de 26.8 MB a 6.5 MB con optimización R8."
       },
-      "links": { "detail": "/portfolio/memenote/" }
+      "links": { "detail": "/portfolio/memenote/", "github": "https://github.com/Emerson3101/MemeNote" }
     },
     {
       "slug": "ai-bot",
