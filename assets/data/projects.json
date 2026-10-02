@@ -26,7 +26,7 @@
         "en": "An enterprise telemetry and compliance platform at CFE evaluating the Voltage Quality Index (ICV) and transmission line load capacity across 50+ localities — cutting manual analysis time by over 80% with real-time alerts and audit-ready reporting.",
         "es": "Plataforma empresarial de telemetría y cumplimiento normativo en CFE que evalúa el Índice de Calidad de Voltaje (ICV) y la cargabilidad de líneas en más de 50 localidades — reduciendo el tiempo de análisis en más de un 80% con alertas en tiempo real y reportes auditables."
       },
-      "links": { "detail": "/portfolio/icv/" }
+      "links": { "detail": "/portfolio/icv/", "github": "https://github.com/Emerson3101/ICV", "github_cargabilidad": "https://github.com/Emerson3101/Cargabilidad" }
     },
     {
       "slug": "teassist",
@@ -126,7 +126,7 @@
         "en": "A dual-interface AI system integrating local LLMs via LM Studio's OpenAI-compatible API. Features slash commands, per-channel sliding window conversation history, system prompt tuning, and a FastAPI web app with dynamic mobile QR pairing.",
         "es": "Sistema de IA de interfaz dual que integra LLMs locales mediante la API de LM Studio. Incluye slash commands, historial conversacional por canal con ventana deslizante, ajuste de prompt de sistema y panel web FastAPI con emparejamiento QR."
       },
-      "links": { "detail": "/portfolio/ai-bot/" }
+      "links": { "detail": "/portfolio/ai-bot/", "github": "https://github.com/Emerson3101/LLMDiscordbot-Playground" }
     },
     {
       "slug": "music-bot",
@@ -146,7 +146,7 @@
         "en": "An asynchronous Discord audio playback service with resilient queue management, real-time voice channel state tracking, Spotify Web API track/playlist resolution, and FFmpeg audio transcoding.",
         "es": "Servicio asíncrono de reproducción de audio en Discord con gestión resiliente de colas, seguimiento de estado de canales de voz, resolución de pistas y playlists con la API de Spotify y transcodificación de audio con FFmpeg."
       },
-      "links": { "detail": "/portfolio/music-bot/" }
+      "links": { "detail": "/portfolio/music-bot/", "github": "https://github.com/Emerson3101/MemeMusicBot" }
     }
   ]
 }

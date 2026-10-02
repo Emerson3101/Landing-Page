@@ -133,6 +133,8 @@ assets/
   data/
     projects.json              Portfolio data — single source of truth for the grid (see §12)
     _README.md
+  docs/
+    Emerson_Plancarte_CV_ES.pdf, Emerson_Plancarte_Resume_EN.pdf  Downloadable CV / Resume PDFs
   img/
     _README.md                  (social-card.png goes here when added — §19)
 storage/

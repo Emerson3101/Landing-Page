@@ -30,3 +30,11 @@
   from = "/styleguide"
   to = "/styleguide/"
   status = 301
+[[redirects]]
+  from = "/Emerson_Plancarte_Resume_EN.pdf"
+  to = "/assets/docs/Emerson_Plancarte_Resume_EN.pdf"
+  status = 301
+[[redirects]]
+  from = "/Emerson_Plancarte_CV_ES.pdf"
+  to = "/assets/docs/Emerson_Plancarte_CV_ES.pdf"
+  status = 301

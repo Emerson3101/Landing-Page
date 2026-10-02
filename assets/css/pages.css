@@ -478,6 +478,23 @@
   letter-spacing: 0.08em;
   color: var(--color-accent);
 }
+.portfolio__gh-badge {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+  border: 1px solid var(--color-border);
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.portfolio__card:hover .portfolio__gh-badge {
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+}
 .portfolio__title {
   font-family: var(--font-display);
   font-size: var(--step-2);

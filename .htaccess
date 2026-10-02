@@ -74,3 +74,7 @@ Options -Indexes
 # /portfolio/ -> portfolio/index.php (put before index.html so dynamic
 # mode wins when both exist; harmless in pure-static hosting).
 DirectoryIndex index.php index.html
+
+# Legacy root CV / Resume redirects
+Redirect 301 /Emerson_Plancarte_Resume_EN.pdf /assets/docs/Emerson_Plancarte_Resume_EN.pdf
+Redirect 301 /Emerson_Plancarte_CV_ES.pdf /assets/docs/Emerson_Plancarte_CV_ES.pdf

@@ -35,6 +35,7 @@ require __DIR__ . '/../includes/header.php';
         <div><dt><?= t('UI & Widget', 'UI y Widgets') ?></dt><dd>Jetpack Compose &amp; Glance 1.1.0</dd></div>
         <div><dt><?= t('Sync Latency', 'Latencia de Sincronía') ?></dt><dd>&lt;50ms <?= t('peer-to-peer over Firebase', 'punto a punto con Firebase') ?></dd></div>
         <div><dt><?= t('Architecture', 'Arquitectura') ?></dt><dd>Clean Architecture + Dagger Hilt DI</dd></div>
+        <div><dt><?= t('Repository', 'Repositorio') ?></dt><dd><a href="https://github.com/Emerson3101/SharedCanvas" target="_blank" rel="noopener">github.com/Emerson3101/SharedCanvas</a></dd></div>
       </dl>
 
       <ul class="tag-list project__stack" <?= lang_attr('Stack', 'Pila tecnológica', 'aria-label') ?>>
@@ -238,8 +239,14 @@ require __DIR__ . '/../includes/header.php';
       </div>
 
       <div class="project__links" data-reveal>
-        <a class="btn btn--primary" href="/#contact"><?= t('Ask about this project', 'Pregunta sobre este proyecto') ?></a>
-        <a class="btn btn--secondary" href="/portfolio/"><?= t('Back to portfolio', 'Volver al portafolio') ?></a>
+        <a class="btn btn--primary" href="https://github.com/Emerson3101/SharedCanvas" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" style="margin-right: 0.35rem; width: 1.1em; height: 1.1em; vertical-align: -0.15em;">
+            <path d="M12 .5a11.5 11.5 0 0 0-3.635 22.41c.576.106.787-.25.787-.556 0-.275-.01-1.004-.016-1.972-3.198.696-3.873-1.542-3.873-1.542-.523-1.329-1.278-1.683-1.278-1.683-1.045-.714.08-.7.08-.7 1.156.082 1.764 1.188 1.764 1.188 1.027 1.761 2.695 1.252 3.352.957.103-.744.402-1.252.732-1.54-2.553-.29-5.238-1.278-5.238-5.687 0-1.257.449-2.283 1.187-3.09-.119-.291-.515-1.462.112-3.05 0 0 .967-.31 3.169 1.18a10.99 10.99 0 0 1 5.772 0c2.2-1.49 3.166-1.18 3.166-1.18.629 1.588.233 2.759.115 3.05.74.807 1.185 1.833 1.185 3.09 0 4.42-2.689 5.393-5.252 5.678.413.356.78 1.058.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .309.208.668.793.555A11.5 11.5 0 0 0 12 .5z"/>
+          </svg>
+          <?= t('View on GitHub', 'Ver en GitHub') ?>
+        </a>
+        <a class="btn btn--secondary" href="/#contact"><?= t('Ask about this project', 'Pregunta sobre este proyecto') ?></a>
+        <a class="btn btn--ghost" href="/portfolio/"><?= t('Back to portfolio', 'Volver al portafolio') ?></a>
       </div>
     </div>
   </div>

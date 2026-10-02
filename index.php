@@ -39,7 +39,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
       <a class="btn btn--secondary btn--lg" href="/portfolio/" data-magnetic>
         <?= t('Full Portfolio', 'Portafolio completo') ?>
       </a>
-      <a class="btn btn--ghost btn--lg" <?= lang_attr('/Emerson_Plancarte_Resume_EN.pdf', '/Emerson_Plancarte_CV_ES.pdf', 'href') ?> target="_blank" rel="noopener" data-magnetic>
+      <a class="btn btn--ghost btn--lg" <?= lang_attr('/assets/docs/Emerson_Plancarte_Resume_EN.pdf', '/assets/docs/Emerson_Plancarte_CV_ES.pdf', 'href') ?> target="_blank" rel="noopener" data-magnetic>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-right: 0.35rem; width: 1.1em; height: 1.1em; vertical-align: -0.15em;">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
@@ -134,6 +134,14 @@ $featured_projects = array_filter($all_projects, function ($p) {
                 <span data-lang="en"><?= htmlspecialchars($catLabel['en'], ENT_QUOTES, 'UTF-8') ?></span>
                 <span data-lang="es"><?= htmlspecialchars($catLabel['es'], ENT_QUOTES, 'UTF-8') ?></span>
               </span>
+              <?php if (!empty($p['links']['github'])): ?>
+                <span class="portfolio__gh-badge">
+                  <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true" style="width: 1em; height: 1em; vertical-align: -0.15em;">
+                    <path d="M12 .5a11.5 11.5 0 0 0-3.635 22.41c.576.106.787-.25.787-.556 0-.275-.01-1.004-.016-1.972-3.198.696-3.873-1.542-3.873-1.542-.523-1.329-1.278-1.683-1.278-1.683-1.045-.714.08-.7.08-.7 1.156.082 1.764 1.188 1.764 1.188 1.027 1.761 2.695 1.252 3.352.957.103-.744.402-1.252.732-1.54-2.553-.29-5.238-1.278-5.238-5.687 0-1.257.449-2.283 1.187-3.09-.119-.291-.515-1.462.112-3.05 0 0 .967-.31 3.169 1.18a10.99 10.99 0 0 1 5.772 0c2.2-1.49 3.166-1.18 3.166-1.18.629 1.588.233 2.759.115 3.05.74.807 1.185 1.833 1.185 3.09 0 4.42-2.689 5.393-5.252 5.678.413.356.78 1.058.78 2.13 0 1.538-.014 2.778-.014 3.157 0 .309.208.668.793.555A11.5 11.5 0 0 0 12 .5z"/>
+                  </svg>
+                  GitHub
+                </span>
+              <?php endif; ?>
             </div>
 
             <h3 class="portfolio__title">
@@ -370,7 +378,7 @@ $featured_projects = array_filter($all_projects, function ($p) {
 
     <ul class="contact-list" data-reveal-group>
       <li data-reveal>
-        <a class="contact-link" <?= lang_attr('/Emerson_Plancarte_Resume_EN.pdf', '/Emerson_Plancarte_CV_ES.pdf', 'href') ?> target="_blank" rel="noopener">
+        <a class="contact-link" <?= lang_attr('/assets/docs/Emerson_Plancarte_Resume_EN.pdf', '/assets/docs/Emerson_Plancarte_CV_ES.pdf', 'href') ?> target="_blank" rel="noopener">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
